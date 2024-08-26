@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Game>
+  <NumberOfFiles>10</NumberOfFiles>
+  <NumberOfRanks>8</NumberOfRanks>
+  <NumberOfPositionsInGame>1</NumberOfPositionsInGame>
+  <CastleDistance>3</CastleDistance>
+  <Position>
+    <Squares>
+      <Rank> .| .| .| .| .| .| .| .| .| .</Rank>
+      <Rank> .| .| .| K| .| .| .| .| .| .</Rank>
+      <Rank> .|-p| .| p| .| .| .| .| .| p</Rank>
+      <Rank>-B| .|-p|-G|-Q|-p| .| .| .| .</Rank>
+      <Rank>-p| p|-K| .| p| .| .| .| R| G</Rank>
+      <Rank> .|-R| .| .|-W| Q| .|-N| p| .</Rank>
+      <Rank> .| .| .| p| .| N|-p| W|-p| B</Rank>
+      <Rank> .| .| .| .| .| .| .| .| .| .</Rank>
+    </Squares>
+    <ColourToMove>b</ColourToMove>
+    <CastleWhiteRightBlockedPerm>true</CastleWhiteRightBlockedPerm>
+    <CastleWhiteLeftBlockedPerm>true</CastleWhiteLeftBlockedPerm>
+    <CastleBlackRightBlockedPerm>true</CastleBlackRightBlockedPerm>
+    <CastleBlackLeftBlockedPerm>true</CastleBlackLeftBlockedPerm>
+    <FiftyMovesRulePlyCount>0</FiftyMovesRulePlyCount>
+    <RepetitionCount>0</RepetitionCount>
+  </Position>
+</Game>

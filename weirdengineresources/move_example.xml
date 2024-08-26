@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Move>
+  <FromSquare>h7</FromSquare>
+  <ToSquare>h8</ToSquare>
+  <PromoteToPiece>Q</PromoteToPiece>
+</Move>

@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Game>
+  <NumberOfFiles>10</NumberOfFiles>
+  <NumberOfRanks>8</NumberOfRanks>
+  <NumberOfPositionsInGame>1</NumberOfPositionsInGame>
+  <CastleDistance>3</CastleDistance>
+  <Position>
+    <Squares>
+      <Rank>-B|R|.|-R|-K|-G|.|.|.|-R</Rank>
+      <Rank>.|p|-p|.|-p|W|-p|.|.|-Q</Rank>
+      <Rank>.|.|.|-p|.|-p|.|-p|.|.</Rank>
+      <Rank>N|-N|.|.|.|.|B|.|.|.</Rank>
+      <Rank>.|.|.|-p|W|-N|.|.|.|.</Rank>
+      <Rank>Q|.|.|p|.|p|G|p|.|.</Rank>
+      <Rank>.|.|p|-W|p|-W|p|N|.|.</Rank>
+      <Rank>.|.|.|.|.|K|.|R|.|.</Rank>
+    </Squares>
+    <EnrichedSquares>
+      <EnrichedRank>  |  |  |  |  |  |  |  |  |  </EnrichedRank>
+      <EnrichedRank>  |  |  |  |  |  |  |  |  |  </EnrichedRank>
+      <EnrichedRank>  |  |  |  |  |  |  |  |  |  </EnrichedRank>
+      <EnrichedRank>  |  |  |  |  |  |  |  |  |  </EnrichedRank>
+      <EnrichedRank>  |  |  |  |  |  |  |  |  |  </EnrichedRank>
+      <EnrichedRank>  |  |  |  | -|  |  |  |  |  </EnrichedRank>
+      <EnrichedRank>  |  |  |  | -|  |  |  |  |  </EnrichedRank>
+      <EnrichedRank>  |  |  |  | -|  |  |  |  |  </EnrichedRank>
+    </EnrichedSquares>
+    <AllMovesFromHere>
+      <Move>0|7|1|6|.||3|16</Move>
+      <Move>1|4|0|2|.||-20|3</Move>
+      <Move>1|4|0|6|.||50|14</Move>
+      <Move>1|4|2|2|.||50|13</Move>
+      <Move>2|6|2|5|.||5|14</Move>
+      <Move>2|6|2|4|.||5|13</Move>
+      <Move>3|1|1|1|.||5|13</Move>
+      <Move>3|1|3|0|.||5|14</Move>
+      <Move>3|1|4|2|.||5|14</Move>
+      <Move>3|1|4|0|.||5|14</Move>
+      <Move>3|1|2|0|.||5|14</Move>
+      <Move>3|1|2|2|.||5|13</Move>
+      <Move>3|1|1|3|.||5|12</Move>
+      <Move>3|1|2|3|.||5|14</Move>
+      <Move>3|1|1|0|.||5|14</Move>
+      <Move>3|1|1|2|.||5|12</Move>
+      <Move>3|5|3|4|.||5|16</Move>
+      <Move>3|7|2|7|.||70|20</Move>
+      <Move>3|7|1|7|.||-20|14</Move>
+      <Move>3|7|3|6|.||Illegal - own King in check|120|0</Move>
+      <Move>4|6|4|5|.||5|14</Move>
+      <Move>4|6|4|4|.||5|14</Move>
+      <Move>4|7|3|6|.||20|21</Move>
+      <Move>4|7|5|6|.||-1|14</Move>
+      <Move>5|1|1|1|.||5|13</Move>
+      <Move>5|1|0|1|.||5|13</Move>
+      <Move>5|1|7|3|.||5|14</Move>
+      <Move>5|1|6|0|.||5|14</Move>
+      <Move>5|1|4|0|.||5|14</Move>
+      <Move>5|1|4|2|.||5|14</Move>
+      <Move>5|1|6|3|.||5|14</Move>
+      <Move>5|1|3|0|.||5|14</Move>
+      <Move>5|3|4|1|.||3|14</Move>
+      <Move>5|3|4|5|.||5|14</Move>
+      <Move>5|3|6|1|.||3|14</Move>
+      <Move>5|3|6|5|.||5|14</Move>
+      <Move>5|3|3|2|.||3|22</Move>
+      <Move>5|3|3|4|.||5|14</Move>
+      <Move>5|3|7|2|.||3|21</Move>
+      <Move>5|3|7|4|.||5|14</Move>
+      <Move>5|5|5|4|.||5|14</Move>
+      <Move>5|5|6|4|.||-1|14</Move>
+      <Move>5|7|5|6|.||-1|14</Move>
+      <Move>5|7|6|7|.||5|14</Move>
+      <Move>6|6|6|5|.||5|14</Move>
+      <Move>7|5|7|4|.||5|14</Move>
+      <Move>7|5|6|4|.||-1|14</Move>
+      <Move>9|6|8|6|.||5|14</Move>
+      <Move>9|6|7|6|.||5|14</Move>
+      <Move>9|6|9|5|.||5|14</Move>
+      <Move>9|6|9|4|.||5|14</Move>
+      <Move>9|6|9|3|.||5|14</Move>
+      <Move>9|6|9|2|.||5|14</Move>
+      <Move>9|6|9|1|.||5|14</Move>
+      <Move>9|6|9|0|.||5|14</Move>
+      <Move>9|6|8|7|.||5|14</Move>
+      <Move>9|6|8|5|.||5|14</Move>
+      <Move>9|6|7|4|.||5|14</Move>
+      <Move>9|6|6|3|.||5|14</Move>
+      <Move>9|6|5|2|.||20|3</Move>
+      <Move>9|6|4|1|.||-98|41</Move>
+      <Move>9|6|3|0|.||-50|40</Move>
+      <Move>9|7|8|7|.||5|14</Move>
+      <Move>9|7|7|7|.||5|14</Move>
+      <Move>9|7|6|7|.||5|14</Move>
+    </AllMovesFromHere>
+    <ColourToMove>b</ColourToMove>
+    <CastleWhiteRightBlockedPerm>true</CastleWhiteRightBlockedPerm>
+    <CastleWhiteLeftBlockedPerm>true</CastleWhiteLeftBlockedPerm>
+    <CastleBlackRightBlockedPerm>true</CastleBlackRightBlockedPerm>
+    <CastleBlackLeftBlockedPerm>true</CastleBlackLeftBlockedPerm>
+    <FiftyMovesRulePlyCount>0</FiftyMovesRulePlyCount>
+    <RepetitionCount>0</RepetitionCount>
+  </Position>
+  <EnrichedPosition />
+</Game>
