@@ -42,9 +42,6 @@
             this.exportToXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveBoardAsImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openingbookToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.importFromXMLToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.exportToXMLToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reloadSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showResourcesLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -97,7 +94,7 @@
             this.lblCalculationLine.AutoSize = true;
             this.lblCalculationLine.Location = new System.Drawing.Point(12, 87);
             this.lblCalculationLine.Name = "lblCalculationLine";
-            this.lblCalculationLine.Size = new System.Drawing.Size(118, 17);
+            this.lblCalculationLine.Size = new System.Drawing.Size(109, 16);
             this.lblCalculationLine.TabIndex = 8;
             this.lblCalculationLine.Text = "(Calculation Line)";
             // 
@@ -106,7 +103,7 @@
             this.lblInformation.AutoSize = true;
             this.lblInformation.Location = new System.Drawing.Point(12, 128);
             this.lblInformation.Name = "lblInformation";
-            this.lblInformation.Size = new System.Drawing.Size(132, 17);
+            this.lblInformation.Size = new System.Drawing.Size(123, 16);
             this.lblInformation.TabIndex = 9;
             this.lblInformation.Text = "Position information";
             // 
@@ -115,7 +112,6 @@
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.openingbookToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.engineToolStripMenuItem,
             this.editToolStripMenuItem,
@@ -165,29 +161,6 @@
             this.saveBoardAsImageToolStripMenuItem.Size = new System.Drawing.Size(231, 26);
             this.saveBoardAsImageToolStripMenuItem.Text = "Save board as image";
             this.saveBoardAsImageToolStripMenuItem.Click += new System.EventHandler(this.saveBoardAsImageToolStripMenuItem_Click);
-            // 
-            // openingbookToolStripMenuItem
-            // 
-            this.openingbookToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.importFromXMLToolStripMenuItem1,
-            this.exportToXMLToolStripMenuItem1});
-            this.openingbookToolStripMenuItem.Name = "openingbookToolStripMenuItem";
-            this.openingbookToolStripMenuItem.Size = new System.Drawing.Size(114, 24);
-            this.openingbookToolStripMenuItem.Text = "Openingbook";
-            // 
-            // importFromXMLToolStripMenuItem1
-            // 
-            this.importFromXMLToolStripMenuItem1.Name = "importFromXMLToolStripMenuItem1";
-            this.importFromXMLToolStripMenuItem1.Size = new System.Drawing.Size(206, 26);
-            this.importFromXMLToolStripMenuItem1.Text = "Import from XML";
-            this.importFromXMLToolStripMenuItem1.Click += new System.EventHandler(this.importFromXMLToolStripMenuItem1_Click);
-            // 
-            // exportToXMLToolStripMenuItem1
-            // 
-            this.exportToXMLToolStripMenuItem1.Name = "exportToXMLToolStripMenuItem1";
-            this.exportToXMLToolStripMenuItem1.Size = new System.Drawing.Size(206, 26);
-            this.exportToXMLToolStripMenuItem1.Text = "Export to XML";
-            this.exportToXMLToolStripMenuItem1.Click += new System.EventHandler(this.exportToXMLToolStripMenuItem1_Click);
             // 
             // settingsToolStripMenuItem
             // 
@@ -346,7 +319,7 @@
             this.lblUserMove.AutoSize = true;
             this.lblUserMove.Location = new System.Drawing.Point(12, 326);
             this.lblUserMove.Name = "lblUserMove";
-            this.lblUserMove.Size = new System.Drawing.Size(163, 17);
+            this.lblUserMove.Size = new System.Drawing.Size(151, 16);
             this.lblUserMove.TabIndex = 16;
             this.lblUserMove.Text = "Enter your move as XML";
             // 
@@ -355,7 +328,7 @@
             this.lblUserPosition.AutoSize = true;
             this.lblUserPosition.Location = new System.Drawing.Point(12, 470);
             this.lblUserPosition.Name = "lblUserPosition";
-            this.lblUserPosition.Size = new System.Drawing.Size(178, 17);
+            this.lblUserPosition.Size = new System.Drawing.Size(164, 16);
             this.lblUserPosition.TabIndex = 17;
             this.lblUserPosition.Text = "Enter your position as XML";
             // 
@@ -377,7 +350,7 @@
             this.lblStatusMessage.AutoSize = true;
             this.lblStatusMessage.Location = new System.Drawing.Point(12, 47);
             this.lblStatusMessage.Name = "lblStatusMessage";
-            this.lblStatusMessage.Size = new System.Drawing.Size(160, 17);
+            this.lblStatusMessage.Size = new System.Drawing.Size(151, 16);
             this.lblStatusMessage.TabIndex = 19;
             this.lblStatusMessage.Text = "Specify settings location";
             // 
@@ -454,9 +427,6 @@
         private System.Windows.Forms.ToolStripMenuItem validateMoveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadPositionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem doMoveToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openingbookToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem importFromXMLToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem exportToXMLToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem suggestMoveAndDoToolStripMenuItem;
         private System.Windows.Forms.Label lblStatusMessage;

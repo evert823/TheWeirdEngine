@@ -272,10 +272,7 @@ namespace TheWeirdEngine
                    this.MyWeirdEngineBackend.FindOnly1stMate_n_line.ToString() + "\n";
 
             s = s + "NumberOfPliesToCalculate " +
-                   this.MyWeirdEngineBackend.NumberOfPliesToCalculate.ToString() + "\n";
-
-            s = s + "MinimumPliesMemory " +
-                   this.MyWeirdEngineBackend.MinimumPliesMemory.ToString();
+                   this.MyWeirdEngineBackend.NumberOfPliesToCalculate.ToString();
 
             return s;
         }

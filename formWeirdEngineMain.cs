@@ -367,43 +367,12 @@ namespace TheWeirdEngine
 
         private void importFromXMLToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            XElement MyBookXML;
-
-            openFileDialog1.Filter = "XML files (*.xml)|*.xml";
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    MyBookXML = XElement.Load(openFileDialog1.FileName);
-                    this.DisableGUI();
-                    MyWeirdEngineBackend.GetMemorizedPositionsFromXML(MyBookXML);
-                }
-                catch (System.Xml.XmlException)
-                {
-                    MessageBox.Show("There is an issue with the XML");
-                }
-                this.EnableGUI();
-                this.pictureBox1.Invalidate();
-                this.RefreshInformation();
-            }
+            MessageBox.Show("No such functionality");
         }
 
         private void exportToXMLToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            XElement MyBookXML;
-
-            saveFileDialog1.Filter = "XML files (*.xml)|*.xml";
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                if (saveFileDialog1.FileName != "")
-                {
-                    this.DisableGUI();
-                    MyBookXML = MyWeirdEngineBackend.MemorizedPositionsAsXElement(MyWeirdEngineBackend.MyGame);
-                    MyBookXML.Save(saveFileDialog1.FileName);
-                    this.RefreshInformation();
-                    this.EnableGUI();
-                }
-            }
+            MessageBox.Show("No such functionality");
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)

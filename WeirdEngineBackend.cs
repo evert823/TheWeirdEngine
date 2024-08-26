@@ -13,12 +13,6 @@ using System.Xml.Linq;
 namespace TheWeirdEngine
 {
 
-    public struct MemorySearchAnswer
-    {
-        public int Memory_idx;//-1 = not found
-        public bool DoRecalculate;
-    }
-
     public struct PosEvaluationResult
     {
         public bool MeInCheck;
@@ -151,11 +145,6 @@ namespace TheWeirdEngine
         //Temp --> Castle temporarily not allowed because of the current position
         //This can be derived from the primary position information, which is done during enrichment of the position
 
-        //The following is relevant when this is a Memorized Position
-        public byte NumberOfPliesPreviousCalculation;
-        public bool ComesFromBook;
-        //
-
     }
 
     public struct Game
@@ -186,23 +175,10 @@ namespace TheWeirdEngine
         public Move EnteredMove;
         public int EnteredMoveIdentifiedidx;
 
-        public int NumberOfMemorizedPositionsInGame;
-        public Position[] MyMemorizedPosition;
-
-        //Below is for test purposes
-        public int ReuseFromMemoryCount;
-        //
-
     }
     public class WeirdEngineBackend
     {
         public const int MaxNumberOfPositions = 1000;
-        public const int MaxNumberOfMemorizedPositionsInGame = 10000;
-
-
-
-        //Positions are only stored in memory when calculation has been done with at least MinimumPliesMemory
-        public byte MinimumPliesMemory;
 
         //FindOnly1stMate_n_line tells the Engine to stop evaluating more moves from the current position and calculation context
         //once one mating move has been found
@@ -220,7 +196,6 @@ namespace TheWeirdEngine
             this.FindOnly1stMate_n_line = true;//Can be overruled from settings file
             this.NumberOfPliesToCalculate = 3;//Can be overruled from settings file
             this.BoardFromWhitePerspective = true;
-            this.SetMinimumPliesMemory();
             this.ResetGame(pNumberOfFiles, pNumberOfRanks, 1);
         }
 
@@ -234,9 +209,6 @@ namespace TheWeirdEngine
             this.MyGame.ActualCurrentPositionidx = pNumberOfPositionsInGame - 1;
             this.MyGame.MyPosition = new Position[MaxNumberOfPositions];
             this.MyGame.EnteredMoveIdentifiedidx = -1;
-            this.MyGame.MyMemorizedPosition = null;
-            this.MyGame.MyMemorizedPosition = new Position[MaxNumberOfMemorizedPositionsInGame];
-            this.MyGame.NumberOfMemorizedPositionsInGame = 0;
             this.MyGame.ExternalAbort = false;
  
             for (i = 0; i < MaxNumberOfPositions; i++)
@@ -248,188 +220,6 @@ namespace TheWeirdEngine
                 this.MyGame.MyPosition[i].CastleBlackLeftBlockedPerm = false;
                 this.MyGame.MyPosition[i].CastleBlackRightBlockedPerm = false;
             }
-            for (i = 0; i < MaxNumberOfMemorizedPositionsInGame; i++)
-            {
-                this.MyGame.MyMemorizedPosition[i].MySquare = new Square[this.MyGame.NumberOfFiles, this.MyGame.NumberOfRanks];
-                this.MyGame.MyMemorizedPosition[i].MovesFromHere = new Move[10];
-                this.MyGame.MyMemorizedPosition[i].CastleWhiteLeftBlockedPerm = false;
-                this.MyGame.MyMemorizedPosition[i].CastleWhiteRightBlockedPerm = false;
-                this.MyGame.MyMemorizedPosition[i].CastleBlackLeftBlockedPerm = false;
-                this.MyGame.MyMemorizedPosition[i].CastleBlackRightBlockedPerm = false;
-                this.MyGame.MyMemorizedPosition[i].ComesFromBook = false;
-            }
-        }
-
-
-        private void SetMinimumPliesMemory()
-        {
-            if (this.NumberOfPliesToCalculate > 5)
-            {
-                this.MinimumPliesMemory = 3;
-            } else
-            {
-                this.MinimumPliesMemory = 6;//This effectively switches it off
-            }
-            this.MinimumPliesMemory = 20;
-        }
-
-        private void CopyPositionToMemorizedPosition(int pFromPositionNumber, int pMemorizedPositionNumber,
-                                                     byte pAppliedNumberOfPlies, Move pPreferredMove)
-        {
-            int i;
-            int j;
-            int p;
-            int q;
-
-            p = pFromPositionNumber;
-            q = pMemorizedPositionNumber;
-
-            for (i = 0; i < this.MyGame.NumberOfFiles; i++)
-            {
-                for (j = 0; j < this.MyGame.NumberOfRanks; j++)
-                {
-                    this.MyGame.MyMemorizedPosition[q].MySquare[i, j].PieceTypeColour =
-                                this.MyGame.MyPosition[p].MySquare[i, j].PieceTypeColour;
-                    this.MyGame.MyMemorizedPosition[q].MySquare[i, j].EnPassantLeftAllowed =
-                                this.MyGame.MyPosition[p].MySquare[i, j].EnPassantLeftAllowed;
-                    this.MyGame.MyMemorizedPosition[q].MySquare[i, j].EnPassantRightAllowed =
-                                this.MyGame.MyPosition[p].MySquare[i, j].EnPassantRightAllowed;
-                }
-            }
-            this.MyGame.MyMemorizedPosition[q].ColourToMove = this.MyGame.MyPosition[p].ColourToMove;
-
-            this.MyGame.MyMemorizedPosition[q].CastleWhiteRightBlockedPerm = this.MyGame.MyPosition[p].CastleWhiteRightBlockedPerm;
-            this.MyGame.MyMemorizedPosition[q].CastleWhiteLeftBlockedPerm = this.MyGame.MyPosition[p].CastleWhiteLeftBlockedPerm;
-            this.MyGame.MyMemorizedPosition[q].CastleBlackRightBlockedPerm = this.MyGame.MyPosition[p].CastleBlackRightBlockedPerm;
-            this.MyGame.MyMemorizedPosition[q].CastleBlackLeftBlockedPerm = this.MyGame.MyPosition[p].CastleBlackLeftBlockedPerm;
-
-            this.MyGame.MyMemorizedPosition[q].FiftyMovesRulePlyCount = this.MyGame.MyPosition[p].FiftyMovesRulePlyCount;
-            this.MyGame.MyMemorizedPosition[q].RepetitionCount = this.MyGame.MyPosition[p].RepetitionCount;
-
-            this.MyGame.MyMemorizedPosition[q].ComesFromBook = false;
-            this.MyGame.MyMemorizedPosition[q].NumberOfPliesPreviousCalculation = pAppliedNumberOfPlies;
-
-            this.MyGame.MyMemorizedPosition[q].NumberOfFoundMoves = 1;
-            this.MyGame.MyMemorizedPosition[q].MovesFromHere[0] = pPreferredMove;
-        }
-
-        private bool PositionMatchesMemorizedPosition(int pPositionNumber, int pMemorizedPositionNumber, byte pProposedNumberOfPlies)
-        {
-            //To compare two positions as to decide for match in memory
-
-            byte i;
-            byte j;
-
-            if (pProposedNumberOfPlies < MinimumPliesMemory & this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].ComesFromBook == false)
-            {
-                return false;
-            }
-
-            if (this.MyGame.MyPosition[pPositionNumber].ColourToMove !=
-                            this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].ColourToMove)
-            {
-                return false;
-            }
-
-            if (this.MyGame.MyPosition[pPositionNumber].CastleWhiteRightBlockedPerm !=
-                            this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].CastleWhiteRightBlockedPerm)
-            {
-                return false;
-            }
-            if (this.MyGame.MyPosition[pPositionNumber].CastleWhiteLeftBlockedPerm !=
-                            this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].CastleWhiteLeftBlockedPerm)
-            {
-                return false;
-            }
-            if (this.MyGame.MyPosition[pPositionNumber].CastleBlackRightBlockedPerm !=
-                            this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].CastleBlackRightBlockedPerm)
-            {
-                return false;
-            }
-            if (this.MyGame.MyPosition[pPositionNumber].CastleBlackLeftBlockedPerm !=
-                            this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].CastleBlackLeftBlockedPerm)
-            {
-                return false;
-            }
-            for (i = 0; i < this.MyGame.NumberOfFiles; i++)
-            {
-                for (j = 0; j < this.MyGame.NumberOfRanks; j++)
-                {
-                    if (this.MyGame.MyPosition[pPositionNumber].MySquare[i, j].PieceTypeColour !=
-                        this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].MySquare[i, j].PieceTypeColour)
-                    {
-                        return false;
-                    }
-                    if (this.MyGame.MyPosition[pPositionNumber].MySquare[i, j].EnPassantLeftAllowed !=
-                        this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].MySquare[i, j].EnPassantLeftAllowed)
-                    {
-                        return false;
-                    }
-                    if (this.MyGame.MyPosition[pPositionNumber].MySquare[i, j].EnPassantRightAllowed !=
-                        this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].MySquare[i, j].EnPassantRightAllowed)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            if (this.MyGame.MyPosition[pPositionNumber].FiftyMovesRulePlyCount >
-                            this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].FiftyMovesRulePlyCount &
-                this.MyGame.MyPosition[pPositionNumber].FiftyMovesRulePlyCount >= 100 - pProposedNumberOfPlies)
-            {
-                return false;
-            }
-            if (this.MyGame.MyPosition[pPositionNumber].RepetitionCount >
-                            this.MyGame.MyMemorizedPosition[pMemorizedPositionNumber].RepetitionCount &
-                 this.MyGame.MyPosition[pPositionNumber].RepetitionCount == 2 & pProposedNumberOfPlies >= 4)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private MemorySearchAnswer FindMatchInMemory(int pPositionNumber, byte pProposedNumberOfPlies)
-        {
-            MemorySearchAnswer output;
-            int p;
-
-            output.Memory_idx = -1;
-            output.DoRecalculate = false;
-
-            p = 0;
-
-            while (p < this.MyGame.NumberOfMemorizedPositionsInGame & output.Memory_idx == -1)
-            {
-                if (PositionMatchesMemorizedPosition(pPositionNumber, p, pProposedNumberOfPlies) == true)
-                {
-                    output.Memory_idx = p;
-                }
-
-                p++;
-            }
-            if (output.Memory_idx == -1)
-            {
-                output.DoRecalculate = true;
-                return output;
-            }
-
-            if (this.MyGame.MyMemorizedPosition[output.Memory_idx].ComesFromBook == true |
-                this.MyGame.MyMemorizedPosition[output.Memory_idx].NumberOfPliesPreviousCalculation >= pProposedNumberOfPlies |
-                this.MyGame.MyMemorizedPosition[output.Memory_idx].MovesFromHere[0].MyResult.PositionAdvantage > 90 |
-                this.MyGame.MyMemorizedPosition[output.Memory_idx].MovesFromHere[0].MyResult.PositionAdvantage < -90 |
-                this.MyGame.MyMemorizedPosition[output.Memory_idx].MovesFromHere[0].MyResult.PositionAdvantage == 0 |
-                this.MyGame.MyMemorizedPosition[output.Memory_idx].MovesFromHere[0].MyResult.MeInCheck == true |
-                this.MyGame.MyMemorizedPosition[output.Memory_idx].MovesFromHere[0].MyResult.IsStaleMate == true |
-                this.MyGame.MyMemorizedPosition[output.Memory_idx].MovesFromHere[0].MyResult.IsMate == true |
-                this.MyGame.MyMemorizedPosition[output.Memory_idx].MovesFromHere[0].MyResult.IsDrawByMaterial == true)
-            {
-                output.DoRecalculate = false;
-                return output;
-            }
-
-            output.DoRecalculate = true;
-            return output;
         }
 
         private void EnrichCloseToOtherKingScore(int pPositionNumber)
@@ -763,8 +553,6 @@ namespace TheWeirdEngine
             decimal RelativeBestFoundAdvantage;
             string prevCalculationLineMessage;
             byte NumberOfPliesFromHere;
-            MemorySearchAnswer MyMemorySearchAnswer;
-            Random MyRandom;
 
             output.MeInCheck = false;
             output.IsStaleMate = false;
@@ -796,34 +584,6 @@ namespace TheWeirdEngine
             }
             //Code for insufficient material has been removed here
             //Detect draw by repetition/50 moves/insufficientmaterial END
-
-            MyMemorySearchAnswer = this.FindMatchInMemory(pPositionNumber, pNumberOfPlies);
-            if (MyMemorySearchAnswer.Memory_idx > -1 & MyMemorySearchAnswer.DoRecalculate == false)
-            {
-                this.MyGame.ReuseFromMemoryCount++;
-                this.MyGame.MyPosition[pPositionNumber].NumberOfFoundMoves =
-                                this.MyGame.MyMemorizedPosition[MyMemorySearchAnswer.Memory_idx].NumberOfFoundMoves;
-                for (mn = 0; mn < this.MyGame.MyPosition[pPositionNumber].NumberOfFoundMoves; mn++)
-                {
-                    this.MyGame.MyPosition[pPositionNumber].MovesFromHere[mn] =
-                          this.MyGame.MyMemorizedPosition[MyMemorySearchAnswer.Memory_idx].MovesFromHere[mn];
-                }
-
-                MyRandom = new Random();
-                mn = MyRandom.Next(0, this.MyGame.MyMemorizedPosition[MyMemorySearchAnswer.Memory_idx].NumberOfFoundMoves);
-
-                output = this.MyGame.MyMemorizedPosition[MyMemorySearchAnswer.Memory_idx].MovesFromHere[mn].MyResult;
-                output.BestMoveidx = mn;
-                if (output.PositionAdvantage > 90)
-                {
-                    output.PositionAdvantage = output.PositionAdvantage - 1;
-                }
-                if (output.PositionAdvantage < -90)
-                {
-                    output.PositionAdvantage = output.PositionAdvantage + 1;
-                }
-                return output;
-            }
 
             //When already at deepest calculation level, evaluate the position only
             if (pNumberOfPlies == 0)
@@ -1000,20 +760,6 @@ namespace TheWeirdEngine
             }
 
             mn = output.BestMoveidx;
-
-            if (MyMemorySearchAnswer.Memory_idx == -1 & MyGame.NumberOfMemorizedPositionsInGame < MaxNumberOfMemorizedPositionsInGame
-                & pNumberOfPlies >= MinimumPliesMemory & AlphaBetaStop == false)
-            {
-                MyGame.NumberOfMemorizedPositionsInGame++;
-                CopyPositionToMemorizedPosition(pPositionNumber, MyGame.NumberOfMemorizedPositionsInGame - 1,
-                    pNumberOfPlies, this.MyGame.MyPosition[pPositionNumber].MovesFromHere[mn]);
-            }
-            if (MyMemorySearchAnswer.Memory_idx > -1 & MyMemorySearchAnswer.DoRecalculate == true
-                & pNumberOfPlies >= MinimumPliesMemory & AlphaBetaStop == false)
-            {
-                CopyPositionToMemorizedPosition(pPositionNumber, MyMemorySearchAnswer.Memory_idx,
-                    pNumberOfPlies, this.MyGame.MyPosition[pPositionNumber].MovesFromHere[mn]);
-            }
 
             output.PositionAdvantage = this.MyGame.MyPosition[pPositionNumber].MovesFromHere[mn].MyResult.PositionAdvantage;
             if (output.PositionAdvantage > 90)
@@ -1484,8 +1230,6 @@ namespace TheWeirdEngine
 
             p = this.MyGame.NumberOfPositionsInGame - 1;
 
-            this.MyGame.ReuseFromMemoryCount = 0;
-
             if (this.MyGame.MyPosition[p].ColourToMove == 1)
             {
                 InitialGSPC = 120;
@@ -1502,8 +1246,6 @@ namespace TheWeirdEngine
             s = "SuggestMove finished - " + this.MoveAsString(this.MyGame.MyPosition[p], MyStaticEvaluation.BestMoveidx)
                     + "|" + PosEvaluationResultAsString(MyStaticEvaluation);
             
-            s = s + " Positions reused from memory : " + this.MyGame.ReuseFromMemoryCount.ToString() +
-                            " total Memory items : " + this.MyGame.NumberOfMemorizedPositionsInGame.ToString();
             this.MyGame.StatusMessage = s;
         }
 
@@ -1516,8 +1258,6 @@ namespace TheWeirdEngine
             string s;
 
             p = this.MyGame.NumberOfPositionsInGame - 1;
-
-            this.MyGame.ReuseFromMemoryCount = 0;
 
             if (this.MyGame.MyPosition[p].ColourToMove == 1)
             {
@@ -1534,9 +1274,6 @@ namespace TheWeirdEngine
 
             s = "SuggestMoveAndDo finished - " + this.MoveAsString(this.MyGame.MyPosition[p], MyStaticEvaluation.BestMoveidx)
                     + "|" + PosEvaluationResultAsString(MyStaticEvaluation);
-
-            s = s + " Positions reused from memory : " + this.MyGame.ReuseFromMemoryCount.ToString() +
-                            " total Memory items : " + this.MyGame.NumberOfMemorizedPositionsInGame.ToString();
 
             if (this.MyGame.ExternalAbort == false)
             {
@@ -4833,22 +4570,15 @@ namespace TheWeirdEngine
 
             return XEPosition;
         }
-        private XElement PositionAsXElement(Position pPosition, bool pMemorizedPosition)
+        private XElement PositionAsXElement(Position pPosition)
         {
             XElement XEPosition;
 
             XEPosition = new XElement("Position");
             XEPosition.Add(SquaresAsXElement(pPosition.MySquare));
 
-            if (pMemorizedPosition == true)
-            {
-                
-                XEPosition.Add(MemorizedMovesFromHereAsXElement(pPosition));
-            } else
-            {
-                XEPosition.Add(EnrichedSquaresAsXElement(pPosition.MySquare));
-                XEPosition.Add(MovesFromHereAsXElement(pPosition));
-            }
+            XEPosition.Add(EnrichedSquaresAsXElement(pPosition.MySquare));
+            XEPosition.Add(MovesFromHereAsXElement(pPosition));
 
             if (pPosition.ColourToMove == 1)
             { XEPosition.Add(new XElement("ColourToMove", "w")); }
@@ -4862,21 +4592,6 @@ namespace TheWeirdEngine
             { XEPosition.Add(new XElement("CastleBlackRightBlockedPerm", "true")); }
             if (pPosition.CastleBlackLeftBlockedPerm == true)
             { XEPosition.Add(new XElement("CastleBlackLeftBlockedPerm", "true")); }
-
-            if (pMemorizedPosition == true)
-            {
-                if (pPosition.CastleWhiteRightBlockedPerm == false)
-                { XEPosition.Add(new XElement("CastleWhiteRightBlockedPerm", "false")); }
-                if (pPosition.CastleWhiteLeftBlockedPerm == false)
-                { XEPosition.Add(new XElement("CastleWhiteLeftBlockedPerm", "false")); }
-                if (pPosition.CastleBlackRightBlockedPerm == false)
-                { XEPosition.Add(new XElement("CastleBlackRightBlockedPerm", "false")); }
-                if (pPosition.CastleBlackLeftBlockedPerm == false)
-                { XEPosition.Add(new XElement("CastleBlackLeftBlockedPerm", "false")); }
-                XEPosition.Add(new XElement("NumberOfPliesPreviousCalculation", pPosition.NumberOfPliesPreviousCalculation.ToString()));
-                if (pPosition.ComesFromBook == true)
-                { XEPosition.Add(new XElement("ComesFromBook", "true")); }
-            }
 
             XEPosition.Add(new XElement("FiftyMovesRulePlyCount", pPosition.FiftyMovesRulePlyCount.ToString()));
             XEPosition.Add(new XElement("RepetitionCount", pPosition.RepetitionCount.ToString()));
@@ -4938,7 +4653,7 @@ namespace TheWeirdEngine
 
             for (i=0;i < pGame.NumberOfPositionsInGame;i++)
             { 
-                XEGame.Add(PositionAsXElement(pGame.MyPosition[i], false));
+                XEGame.Add(PositionAsXElement(pGame.MyPosition[i]));
                 XEGame.Add(EnrichedPositionAsXElement(pGame.MyPosition[i]));
             }
 
@@ -5014,7 +4729,7 @@ namespace TheWeirdEngine
                     PositionCount = PositionCount + 1;
                 }
             }
-            this.MyGame.StatusMessage = "Import XML finished - this has also cleared the opening book in memory!!!!!";
+            this.MyGame.StatusMessage = "Import XML finished";
         }
 
         private byte LetterAsi(string c)
@@ -5222,7 +4937,6 @@ namespace TheWeirdEngine
                 if (elem.Name == "NumberOfPliesToCalculate")
                 {
                     this.NumberOfPliesToCalculate = byte.Parse(elem.Value);
-                    this.SetMinimumPliesMemory();
                 }
             }
             this.MyGame.StatusMessage = "Settings reloaded";
@@ -5290,194 +5004,6 @@ namespace TheWeirdEngine
             MyMove.Add(new XElement("PositionAdvantage", pMove.MyResult.PositionAdvantage.ToString()));
 
             return MyMove;
-        }
-
-        private XElement MemorizedMovesFromHereAsXElement(Position pPosition)
-        {
-            int i;
-            XElement AllMovesFromHere;
-
-            AllMovesFromHere = new XElement("AllMovesFromHere");
-
-            for (i = 0; i < pPosition.NumberOfFoundMoves; i++)
-            {
-                AllMovesFromHere.Add(MoveAsXElement(pPosition.MovesFromHere[i]));
-            }
-            return AllMovesFromHere;
-        }
-
-        private void GetAllMovesFromXML(XElement parElement, int pPositionNumber)
-        {
-            IEnumerable<XElement> ElementsNum = parElement.Elements();
-            int mn;
-
-            this.MyGame.MyMemorizedPosition[pPositionNumber].NumberOfFoundMoves = 0;
-            mn = 0;
-
-            foreach (XElement elem in ElementsNum)
-            {
-                if (elem.Name == "Move")
-                {
-                    this.MyGame.MyMemorizedPosition[pPositionNumber].MovesFromHere[mn] = GetMoveFromXML(elem);
-                    mn++;
-                    this.MyGame.MyMemorizedPosition[pPositionNumber].NumberOfFoundMoves++;
-                }
-            }
-        }
-
-        public XElement MemorizedPositionsAsXElement(Game pGame)
-        {
-            XElement XEMemory;
-            int i;
-            XEMemory = new XElement("MemorizedPositions");
-            XEMemory.Add(new XElement("NumberOfFiles", pGame.NumberOfFiles.ToString()));
-            XEMemory.Add(new XElement("NumberOfRanks", pGame.NumberOfRanks.ToString()));
-            XEMemory.Add(new XElement("CastleDistance", pGame.CastleDistance.ToString()));
-
-            for (i = 0; i < pGame.NumberOfMemorizedPositionsInGame; i++)
-            {
-                XEMemory.Add(PositionAsXElement(pGame.MyMemorizedPosition[i], true));
-            }
-
-            this.MyGame.StatusMessage = "Export XML finished";
-
-            return XEMemory;
-        }
-        public void GetMemorizedPositionsFromXML(XElement parElement)
-        {
-            IEnumerable<XElement> ElementsNum = parElement.Elements();
-
-            int eNumberOfFiles;
-            int eNumberOfRanks;
-            int eCastleDistance;
-
-            this.MyGame.NumberOfMemorizedPositionsInGame = 0;
-
-            foreach (XElement elem in ElementsNum)
-            {
-                if (elem.Name == "NumberOfFiles")
-                {
-                    eNumberOfFiles = byte.Parse(elem.Value);
-                    if (eNumberOfFiles != this.MyGame.NumberOfFiles)
-                    {
-                        MessageBox.Show("NumberOfFiles does not match with the current game parameters.");
-                        return;
-                    }
-                }
-                if (elem.Name == "NumberOfRanks")
-                {
-                    eNumberOfRanks = byte.Parse(elem.Value);
-                    if (eNumberOfRanks != this.MyGame.NumberOfRanks)
-                    {
-                        MessageBox.Show("NumberOfRanks does not match with the current game parameters.");
-                        return;
-                    }
-                }
-                if (elem.Name == "CastleDistance")
-                {
-                    eCastleDistance = int.Parse(elem.Value);
-                    if (eCastleDistance != this.MyGame.CastleDistance)
-                    {
-                        MessageBox.Show("CastleDistance does not match with the current game parameters.");
-                        return;
-                    }
-                }
-                if (elem.Name == "Position")
-                {
-                    this.GetOneMemorizedPositionFromXML(elem, this.MyGame.NumberOfMemorizedPositionsInGame);
-                    this.MyGame.NumberOfMemorizedPositionsInGame++;
-                }
-
-            }
-            this.MyGame.StatusMessage = "Import openingbook finished";
-        }
-
-        private void GetOneMemorizedPositionFromXML(XElement parElement, int pPositionNumber)
-        {
-            IEnumerable<XElement> ElementsNum = parElement.Elements();
-
-            foreach (XElement elem in ElementsNum)
-            {
-                if (elem.Name == "Squares")
-                {
-                    this.GetMemorizedSquaresFromXML(elem, pPositionNumber);
-                }
-                if (elem.Name == "AllMovesFromHere")
-                {
-                    this.GetAllMovesFromXML(elem, pPositionNumber);
-
-                    //We also mark this memorized position as coming from an opening book
-                    this.MyGame.MyMemorizedPosition[pPositionNumber].ComesFromBook = true;
-                }
-                if (elem.Name == "ColourToMove")
-                {
-                    if (elem.Value.ToLower() == "w") { this.MyGame.MyMemorizedPosition[pPositionNumber].ColourToMove = 1; }
-                    else { this.MyGame.MyMemorizedPosition[pPositionNumber].ColourToMove = -1; }
-                }
-                if (elem.Name == "CastleWhiteRightBlockedPerm")
-                {
-                    if (elem.Value == "true") { this.MyGame.MyMemorizedPosition[pPositionNumber].CastleWhiteRightBlockedPerm = true; }
-                }
-                if (elem.Name == "CastleWhiteLeftBlockedPerm")
-                {
-                    if (elem.Value == "true") { this.MyGame.MyMemorizedPosition[pPositionNumber].CastleWhiteLeftBlockedPerm = true; }
-                }
-                if (elem.Name == "CastleBlackRightBlockedPerm")
-                {
-                    if (elem.Value == "true") { this.MyGame.MyMemorizedPosition[pPositionNumber].CastleBlackRightBlockedPerm = true; }
-                }
-                if (elem.Name == "CastleBlackLeftBlockedPerm")
-                {
-                    if (elem.Value == "true") { this.MyGame.MyMemorizedPosition[pPositionNumber].CastleBlackLeftBlockedPerm = true; }
-                }
-                if (elem.Name == "FiftyMovesRulePlyCount")
-                {
-                    this.MyGame.MyMemorizedPosition[pPositionNumber].FiftyMovesRulePlyCount = byte.Parse(elem.Value);
-                }
-                if (elem.Name == "RepetitionCount")
-                {
-                    this.MyGame.MyMemorizedPosition[pPositionNumber].RepetitionCount = byte.Parse(elem.Value);
-                }
-            }
-        }
-
-        private void GetMemorizedSquaresFromXML(XElement parElement, int pPositionNumber)
-        {
-            //White's last rank is the first line in the xml, so a person can read the xml easier in an editor
-            //A leading asterisk indicates en passant left (left/right = from White's perspective)
-            //A trailing asterisk indicates en passant right
-            IEnumerable<XElement> ElementsNum = parElement.Elements();
-            string strMyValue;
-            int i;
-            int j;
-            string s;
-
-            j = this.MyGame.NumberOfRanks - 1;
-            foreach (XElement elem in ElementsNum)
-            {
-                if (elem.Name == "Rank")
-                {
-                    strMyValue = elem.Value;
-
-                    string[] MySquares = strMyValue.Split('|');
-                    for (i = 0; i < MySquares.Length; i++)
-                    {
-                        s = MySquares[i].Trim(' ');
-                        if (s.Substring(0, 1) == "*")
-                        {
-                            this.MyGame.MyMemorizedPosition[pPositionNumber].MySquare[i, j].EnPassantLeftAllowed = true;
-                            s = s.Substring(1);
-                        }
-                        if (s.Substring(s.Length - 1, 1) == "*")
-                        {
-                            this.MyGame.MyMemorizedPosition[pPositionNumber].MySquare[i, j].EnPassantRightAllowed = true;
-                            s = s.Substring(0, s.Length - 1);
-                        }
-                        this.MyGame.MyMemorizedPosition[pPositionNumber].MySquare[i, j].PieceTypeColour = StringAsPieceTypeColour(s);
-                    }
-                    j = j - 1;
-                }
-            }
         }
 
         //End of the section that deals with text and XML representation
