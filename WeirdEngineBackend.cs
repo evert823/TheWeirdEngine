@@ -531,8 +531,8 @@ namespace TheWeirdEngine
 
         //EvaluationByCalculation and EvaluationByPosition have a lot of code in common
         //But are also each doing really different things
-        private PosEvaluationResult EvaluationByCalculation(int pPositionNumber, byte pNumberOfPlies, decimal pGuaranteedScorePreviousCaller,
-                                                             bool pApplyAlphaBetaLogic)
+        private PosEvaluationResult EvaluationByCalculation(int pPositionNumber, byte pNumberOfPlies,
+                                                             decimal alpha, decimal beta)
         {
             PosEvaluationResult output;
             PosEvaluationResult dummyoutput;
@@ -540,10 +540,15 @@ namespace TheWeirdEngine
             bool LegalMoveFound;
             bool MatingMoveFound;
             bool AlphaBetaStop;
+            decimal newalpha;
+            decimal newbeta;
             decimal BestFoundAdvantage;
             decimal RelativeBestFoundAdvantage;
             string prevCalculationLineMessage;
             byte NumberOfPliesFromHere;
+
+            newalpha = alpha;
+            newbeta = beta;
 
             output.MeInCheck = false;
             output.IsStaleMate = false;
@@ -568,7 +573,7 @@ namespace TheWeirdEngine
             //Enrich this position
             if (pNumberOfPlies >= 5)
             {
-                dummyoutput = this.EvaluationByCalculation(pPositionNumber, 3, this.MyGame.MyPosition[pPositionNumber].ColourToMove * 120, false);
+                dummyoutput = this.EvaluationByCalculation(pPositionNumber, 3, newalpha, newbeta);
                 this.PrioritizeMovesFromHere(pPositionNumber);
                 this.Init_Move_Evaluation_Results(pPositionNumber);
             }
@@ -616,7 +621,7 @@ namespace TheWeirdEngine
 
                 //Recursive call to the same procedure
                 this.MyGame.MyPosition[pPositionNumber].MovesFromHere[mn].MyResult =
-                          this.EvaluationByCalculation(pPositionNumber + 1, (byte)(NumberOfPliesFromHere - 1), BestFoundAdvantage, true);
+                          this.EvaluationByCalculation(pPositionNumber + 1, (byte)(NumberOfPliesFromHere - 1), newalpha, newbeta);
                 //This also enriches this position resulting from this move
 
                 this.MyGame.CalculationLineMessage = prevCalculationLineMessage;
@@ -643,20 +648,29 @@ namespace TheWeirdEngine
                         output.BestMoveidx = mn;
                         BestFoundAdvantage = this.MyGame.MyPosition[pPositionNumber].MovesFromHere[mn].MyResult.PositionAdvantage;
                     }
-                    if (BestFoundAdvantage > pGuaranteedScorePreviousCaller & pApplyAlphaBetaLogic == true & LegalMoveFound == true)
+                    if (BestFoundAdvantage > newbeta & LegalMoveFound == true)
                     {
                         AlphaBetaStop = true;
                     }
-                } else
+                    if (BestFoundAdvantage > newalpha)
+                    {
+                        newalpha = BestFoundAdvantage;
+                    }
+                }
+                else
                 {
                     if (this.MyGame.MyPosition[pPositionNumber].MovesFromHere[mn].MyResult.PositionAdvantage < BestFoundAdvantage)
                     {
                         output.BestMoveidx = mn;
                         BestFoundAdvantage = this.MyGame.MyPosition[pPositionNumber].MovesFromHere[mn].MyResult.PositionAdvantage;
                     }
-                    if (BestFoundAdvantage < pGuaranteedScorePreviousCaller & pApplyAlphaBetaLogic == true & LegalMoveFound == true)
+                    if (BestFoundAdvantage < newalpha & LegalMoveFound == true)
                     {
                         AlphaBetaStop = true;
+                    }
+                    if (BestFoundAdvantage < newbeta)
+                    {
+                        newbeta = BestFoundAdvantage;
                     }
                 }
 
@@ -1152,7 +1166,6 @@ namespace TheWeirdEngine
             PosEvaluationResult MyStaticEvaluation;
 
             int p;
-            decimal InitialGSPC;
 
             MyStaticEvaluation.MeInCheck = false;
             MyStaticEvaluation.IsStaleMate = false;
@@ -1169,15 +1182,7 @@ namespace TheWeirdEngine
                 this.GenerateRandomPosition();
                 p = this.MyGame.NumberOfPositionsInGame - 1;
                 
-                if (this.MyGame.MyPosition[p].ColourToMove == 1)
-                {
-                    InitialGSPC = 120;
-                } else
-                {
-                    InitialGSPC = -120;
-                }
-                
-                MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, InitialGSPC, true);
+                MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -100, 100);
             }
             MessageBox.Show(PosEvaluationResultAsString(MyStaticEvaluation));
         }
@@ -1186,23 +1191,13 @@ namespace TheWeirdEngine
             PosEvaluationResult MyStaticEvaluation;
                         
             int p;
-            decimal InitialGSPC;
             string s;
 
             p = this.MyGame.NumberOfPositionsInGame - 1;
 
-            if (this.MyGame.MyPosition[p].ColourToMove == 1)
-            {
-                InitialGSPC = 120;
-            }
-            else
-            {
-                InitialGSPC = -120;
-            }
-
             this.MyGame.ExternalAbort = false;
             this.MyGame.CalculationLineMessage = "";
-            MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, InitialGSPC, true);
+            MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -100, 100);
 
             s = "SuggestMove finished - " + this.MoveAsString(this.MyGame.MyPosition[p], MyStaticEvaluation.BestMoveidx)
                     + "|" + PosEvaluationResultAsString(MyStaticEvaluation);
@@ -1215,23 +1210,13 @@ namespace TheWeirdEngine
             PosEvaluationResult MyStaticEvaluation;
 
             int p;
-            decimal InitialGSPC;
             string s;
 
             p = this.MyGame.NumberOfPositionsInGame - 1;
 
-            if (this.MyGame.MyPosition[p].ColourToMove == 1)
-            {
-                InitialGSPC = 120;
-            }
-            else
-            {
-                InitialGSPC = -120;
-            }
-
             this.MyGame.ExternalAbort = false;
             this.MyGame.CalculationLineMessage = "";
-            MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, InitialGSPC, true);
+            MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -100, 100);
 
             s = "SuggestMoveAndDo finished - " + this.MoveAsString(this.MyGame.MyPosition[p], MyStaticEvaluation.BestMoveidx)
                     + "|" + PosEvaluationResultAsString(MyStaticEvaluation);
