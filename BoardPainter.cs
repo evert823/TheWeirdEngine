@@ -261,10 +261,6 @@ namespace TheWeirdEngine
                 s = s + "Black castle right possible\n";
             }
 
-            s = s + "Fifty moves counter " +
-                   this.MyWeirdEngineBackend.MyGame.MyPosition[p].FiftyMovesRulePlyCount.ToString() + "\n";
-            s = s + "Repetition counter " +
-                   this.MyWeirdEngineBackend.MyGame.MyPosition[p].RepetitionCount.ToString() + "\n";
             s = s + "Castle distance " +
                    this.MyWeirdEngineBackend.MyGame.CastleDistance.ToString() + "\n";
 

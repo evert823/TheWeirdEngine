@@ -18,8 +18,6 @@ namespace TheWeirdEngine
         public bool MeInCheck;
         public bool IsStaleMate;
         public bool IsMate;
-        public bool IsDrawByRepetition;
-        public bool IsDrawBy50Moves;
         public bool IsDrawByMaterial;
         public decimal PositionAdvantage;
         public int BestMoveidx;
@@ -101,13 +99,6 @@ namespace TheWeirdEngine
         //(7,7) = h8
 
         public sbyte ColourToMove;//1 White to move -1 Black to move
-
-        public byte FiftyMovesRulePlyCount;
-        //Keeps the number of plies since the last time that a pawn was moved or a piece was taken
-
-        public byte RepetitionCount;
-        //Keeps the total number of times that this position has occurred for threefold repetition rule
-        //So if value is 3 the position can be evaluated Draw and the engine may claim Draw
 
         public bool CastleWhiteRightBlockedPerm;
         public bool CastleWhiteLeftBlockedPerm;
@@ -557,8 +548,6 @@ namespace TheWeirdEngine
             output.MeInCheck = false;
             output.IsStaleMate = false;
             output.IsMate = false;
-            output.IsDrawByRepetition = false;
-            output.IsDrawBy50Moves = false;
             output.IsDrawByMaterial = false;
             output.PositionAdvantage = 0;
             output.BestMoveidx = 0;
@@ -566,24 +555,6 @@ namespace TheWeirdEngine
 
             this.MyGame.MyPosition[pPositionNumber].WhiteIsInCheck = false;
             this.MyGame.MyPosition[pPositionNumber].BlackIsInCheck = false;
-
-            //Detect draw by repetition/50 moves/insufficientmaterial BEGIN
-            if (this.MyGame.MyPosition[pPositionNumber].RepetitionCount >= 3)
-            {
-                output.IsDrawByRepetition = true;
-                output.PositionAdvantage = 0;
-                return output;
-            }
-
-            if (this.MyGame.MyPosition[pPositionNumber].FiftyMovesRulePlyCount >= 101)
-            //101 and not 100, because when a 50th move mates, then the mate stands
-            {
-                output.IsDrawBy50Moves = true;
-                output.PositionAdvantage = 0;
-                return output;
-            }
-            //Code for insufficient material has been removed here
-            //Detect draw by repetition/50 moves/insufficientmaterial END
 
             //When already at deepest calculation level, evaluate the position only
             if (pNumberOfPlies == 0)
@@ -886,8 +857,6 @@ namespace TheWeirdEngine
             output.MeInCheck = false;
             output.IsStaleMate = false;
             output.IsMate = false;
-            output.IsDrawByRepetition = false;
-            output.IsDrawBy50Moves = false;
             output.IsDrawByMaterial = false;
             output.PositionAdvantage = 0;
             output.BestMoveidx = 0;
@@ -927,8 +896,6 @@ namespace TheWeirdEngine
             output.MeInCheck = false;
             output.IsStaleMate = false;
             output.IsMate = false;
-            output.IsDrawByRepetition = false;
-            output.IsDrawBy50Moves = false;
             output.IsDrawByMaterial = false;
             output.PositionAdvantage = 0;
             output.BestMoveidx = 0;
@@ -1015,16 +982,12 @@ namespace TheWeirdEngine
                 }
             }
 
-            //Detect draw by repetition/50 moves/insufficientmaterial BEGIN
-            //Code for 50 moves / repetition has been removed here because this is the first thing that the calculator does
-            //before we come here
             if (this.IsDrawByInsufficientMaterial(pPositionNumber))
             {
                 output.IsDrawByMaterial = true;
                 output.PositionAdvantage = 0;
                 return output;
             }
-            //Detect draw by repetition/50 moves/insufficientmaterial END
 
             //From here, material advantage and positional advantage should be calculated, and it is Work in Progress
             //This should lead to a resulting number between 90 and 1 (depending for the advantage for White)
@@ -1194,8 +1157,6 @@ namespace TheWeirdEngine
             MyStaticEvaluation.MeInCheck = false;
             MyStaticEvaluation.IsStaleMate = false;
             MyStaticEvaluation.IsMate = false;
-            MyStaticEvaluation.IsDrawByRepetition = false;
-            MyStaticEvaluation.IsDrawBy50Moves = false;
             MyStaticEvaluation.IsDrawByMaterial = false;
             MyStaticEvaluation.PositionAdvantage = 0;
             MyStaticEvaluation.BestMoveidx = 0;
@@ -1309,9 +1270,6 @@ namespace TheWeirdEngine
             this.MyGame.MyPosition[pFromPositionNumber].CastleBlackRightBlockedPerm = false;
             this.MyGame.MyPosition[pFromPositionNumber].CastleBlackLeftBlockedPerm = false;
 
-            this.MyGame.MyPosition[pFromPositionNumber].RepetitionCount = 0;
-            this.MyGame.MyPosition[pFromPositionNumber].FiftyMovesRulePlyCount = 0;
-
             this.MyGame.NumberOfPositionsInGame--;
         }
 
@@ -1330,8 +1288,6 @@ namespace TheWeirdEngine
             byte to_i;
             byte to_j;
             bool MoveDone;
-            int p;
-            bool MatchFound;
 
             MoveDone = false;
 
@@ -1455,43 +1411,6 @@ namespace TheWeirdEngine
                 this.MyGame.MyPosition[pFromPositionNumber + 1].CastleBlackRightBlockedPerm = true;
             }
 
-
-            //Update the 50 moves rule ply counter
-            if (this.MyGame.MyPosition[pFromPositionNumber].MySquare[to_i, to_j].PieceTypeColour != 0 |
-                this.MyGame.MyPosition[pFromPositionNumber].MySquare[from_i, from_j].PieceTypeColour == 8 |
-                this.MyGame.MyPosition[pFromPositionNumber].MySquare[from_i, from_j].PieceTypeColour == -8)
-            {
-                this.MyGame.MyPosition[pFromPositionNumber + 1].FiftyMovesRulePlyCount = 0;
-            } else
-            {
-                this.MyGame.MyPosition[pFromPositionNumber + 1].FiftyMovesRulePlyCount =
-                    (byte)(this.MyGame.MyPosition[pFromPositionNumber].FiftyMovesRulePlyCount + 1);
-            }
-
-
-            //Update the 3-fold repetition counter
-            MatchFound = false;
-            p = pFromPositionNumber;
-
-            while (p > 0 & MatchFound == false)
-            {
-                p--;
-                if (PositionsEqual(pFromPositionNumber + 1, p) == true)
-                {
-                    MatchFound = true;
-                }
-            }
-
-            if (MatchFound == true)
-            {
-                this.MyGame.MyPosition[pFromPositionNumber + 1].RepetitionCount =
-                   (byte)(this.MyGame.MyPosition[p].RepetitionCount + 1);
-            }
-            else
-            {
-                this.MyGame.MyPosition[pFromPositionNumber + 1].RepetitionCount = 1;
-            }
-
         }
 
         private void CopyPositionFrom(int pFromPositionNumber)
@@ -1519,60 +1438,6 @@ namespace TheWeirdEngine
             this.MyGame.MyPosition[q].CastleWhiteLeftBlockedPerm = this.MyGame.MyPosition[p].CastleWhiteLeftBlockedPerm;
             this.MyGame.MyPosition[q].CastleBlackRightBlockedPerm = this.MyGame.MyPosition[p].CastleBlackRightBlockedPerm;
             this.MyGame.MyPosition[q].CastleBlackLeftBlockedPerm = this.MyGame.MyPosition[p].CastleBlackLeftBlockedPerm;
-        }
-
-
-        private bool PositionsEqual(int p1, int p2)
-        {
-            //To compare two positions as to decide for draw by 3-fold repetition
-
-            byte i;
-            byte j;
-
-            if (this.MyGame.MyPosition[p1].ColourToMove != this.MyGame.MyPosition[p2].ColourToMove)
-            {
-                return false;
-            }
-
-            if (this.MyGame.MyPosition[p1].CastleWhiteRightBlockedPerm != this.MyGame.MyPosition[p2].CastleWhiteRightBlockedPerm)
-            {
-                return false;
-            }
-            if (this.MyGame.MyPosition[p1].CastleWhiteLeftBlockedPerm != this.MyGame.MyPosition[p2].CastleWhiteLeftBlockedPerm)
-            {
-                return false;
-            }
-            if (this.MyGame.MyPosition[p1].CastleBlackRightBlockedPerm != this.MyGame.MyPosition[p2].CastleBlackRightBlockedPerm)
-            {
-                return false;
-            }
-            if (this.MyGame.MyPosition[p1].CastleBlackLeftBlockedPerm != this.MyGame.MyPosition[p2].CastleBlackLeftBlockedPerm)
-            {
-                return false;
-            }
-            for (i = 0; i < this.MyGame.NumberOfFiles; i++)
-            {
-                for (j = 0; j < this.MyGame.NumberOfRanks; j++)
-                {
-                    if (this.MyGame.MyPosition[p1].MySquare[i, j].PieceTypeColour !=
-                        this.MyGame.MyPosition[p2].MySquare[i, j].PieceTypeColour)
-                    {
-                        return false;
-                    }
-                    if (this.MyGame.MyPosition[p1].MySquare[i, j].EnPassantLeftAllowed !=
-                        this.MyGame.MyPosition[p2].MySquare[i, j].EnPassantLeftAllowed)
-                    {
-                        return false;
-                    }
-                    if (this.MyGame.MyPosition[p1].MySquare[i, j].EnPassantRightAllowed !=
-                        this.MyGame.MyPosition[p2].MySquare[i, j].EnPassantRightAllowed)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
         }
 
         private void DoMoveEnPassant(int pPositionNumber, byte pfrom_i, byte pfrom_j, byte pto_i, byte pto_j)
@@ -1621,8 +1486,6 @@ namespace TheWeirdEngine
                 this.MyGame.MyPosition[pPositionNumber].MovesFromHere[nm].MyResult.MeInCheck = false;
                 this.MyGame.MyPosition[pPositionNumber].MovesFromHere[nm].MyResult.IsStaleMate = false;
                 this.MyGame.MyPosition[pPositionNumber].MovesFromHere[nm].MyResult.IsMate = false;
-                this.MyGame.MyPosition[pPositionNumber].MovesFromHere[nm].MyResult.IsDrawByRepetition = false;
-                this.MyGame.MyPosition[pPositionNumber].MovesFromHere[nm].MyResult.IsDrawBy50Moves = false;
                 this.MyGame.MyPosition[pPositionNumber].MovesFromHere[nm].MyResult.IsDrawByMaterial = false;
                 this.MyGame.MyPosition[pPositionNumber].MovesFromHere[nm].MyResult.PositionAdvantage = 0;
                 this.MyGame.MyPosition[pPositionNumber].MovesFromHere[nm].MyResult.BestMoveidx = -1;
@@ -4342,14 +4205,6 @@ namespace TheWeirdEngine
             {
                 s = s + "|Mate";
             }
-            if (pPosEvaluationResult.IsDrawByRepetition == true)
-            {
-                s = s + "|Draw by repetition";
-            }
-            if (pPosEvaluationResult.IsDrawBy50Moves == true)
-            {
-                s = s + "|Draw by 50 moves rule";
-            }
             if (pPosEvaluationResult.IsDrawByMaterial == true)
             {
                 s = s + "|Draw by insufficient material";
@@ -4593,9 +4448,6 @@ namespace TheWeirdEngine
             if (pPosition.CastleBlackLeftBlockedPerm == true)
             { XEPosition.Add(new XElement("CastleBlackLeftBlockedPerm", "true")); }
 
-            XEPosition.Add(new XElement("FiftyMovesRulePlyCount", pPosition.FiftyMovesRulePlyCount.ToString()));
-            XEPosition.Add(new XElement("RepetitionCount", pPosition.RepetitionCount.ToString()));
-
             return XEPosition;
         }
         private void GetPositionFromXML(XElement parElement, int pPositionNumber)
@@ -4629,14 +4481,6 @@ namespace TheWeirdEngine
                 if (elem.Name == "CastleBlackLeftBlockedPerm")
                 {
                     if (elem.Value == "true") { this.MyGame.MyPosition[pPositionNumber].CastleBlackLeftBlockedPerm = true; }
-                }
-                if (elem.Name == "FiftyMovesRulePlyCount")
-                {
-                    this.MyGame.MyPosition[pPositionNumber].FiftyMovesRulePlyCount = byte.Parse(elem.Value);
-                }
-                if (elem.Name == "RepetitionCount")
-                {
-                    this.MyGame.MyPosition[pPositionNumber].RepetitionCount = byte.Parse(elem.Value);
                 }
             }
 
@@ -4958,8 +4802,6 @@ namespace TheWeirdEngine
             outMove.MyResult.MeInCheck = false;
             outMove.MyResult.IsStaleMate = false;
             outMove.MyResult.IsMate = false;
-            outMove.MyResult.IsDrawByRepetition = false;
-            outMove.MyResult.IsDrawBy50Moves = false;
             outMove.MyResult.IsDrawByMaterial = false;
             outMove.MyResult.PositionAdvantage = 0;
             outMove.MyResult.BestMoveidx = 0;
