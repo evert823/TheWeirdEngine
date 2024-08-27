@@ -1017,98 +1017,6 @@ namespace TheWeirdEngine
         }
 
 
-        private void PutOneRandomPiece(sbyte pPieceTypeColour, int pmin_i, int pmax_i, int pmin_j, int pmax_j)
-        {
-            int i;
-            int j;
-            Random MyRandom;
-
-            int min_i;
-            int max_i;
-            int min_j;
-            int max_j;
-
-            if (pPieceTypeColour == 8 | pPieceTypeColour == -8)
-            {
-                min_j = 1;
-                max_j = this.MyGame.NumberOfRanks - 2;
-            }
-            else
-            {
-                min_j = 0;
-                max_j = this.MyGame.NumberOfRanks - 1;
-            }
-
-            min_i = 0;
-            max_i = this.MyGame.NumberOfFiles - 1;
-
-            //Here min_i, max_i, min_j, max_j have been put to the normal limits
-            //But from outside additional limits have been put
-
-            if (min_i < pmin_i)
-            {
-                min_i = pmin_i;
-            }
-            if (min_j < pmin_j)
-            {
-                min_j = pmin_j;
-            }
-            if (max_i > pmax_i)
-            {
-                max_i = pmax_i;
-            }
-            if (max_j > pmax_j)
-            {
-                max_j = pmax_j;
-            }
-
-            MyRandom = new Random();
-
-            i = MyRandom.Next(min_i, max_i + 1);
-            j = MyRandom.Next(min_j, max_j + 1);
-            while (this.MyGame.MyPosition[0].MySquare[i, j].PieceTypeColour != 0)
-            {
-                i = MyRandom.Next(min_i, max_i + 1);
-                j = MyRandom.Next(min_j, max_j + 1);
-            }
-            this.MyGame.MyPosition[0].MySquare[i, j].PieceTypeColour = pPieceTypeColour;
-            this.MyGame.MyPosition[0].MySquare[i, j].EnPassantLeftAllowed = false;
-            this.MyGame.MyPosition[0].MySquare[i, j].EnPassantRightAllowed = false;
-        }
-        private void GenerateRandomPosition()
-        {
-            Random MyRandom;
-
-            this.ResetGame(8, 8, 1);
-            this.MyGame.CastleDistance = 2;
-
-            MyRandom = new Random();
-            
-            this.MyGame.MyPosition[0].ColourToMove = (sbyte)(MyRandom.Next(0, 2));
-
-            if (this.MyGame.MyPosition[0].ColourToMove == 0)
-            {
-                this.MyGame.MyPosition[0].ColourToMove = -1;
-            }
-            this.MyGame.MyPosition[0].ColourToMove = 1;
-
-            this.MyGame.MyPosition[0].CastleWhiteRightBlockedPerm = true;
-            this.MyGame.MyPosition[0].CastleWhiteLeftBlockedPerm = true;
-            this.MyGame.MyPosition[0].CastleBlackRightBlockedPerm = true;
-            this.MyGame.MyPosition[0].CastleBlackLeftBlockedPerm = true;
-
-            this.MyGame.MyPosition[0].MySquare[0, 4].PieceTypeColour = 5;
-            this.MyGame.MyPosition[0].MySquare[0, 6].PieceTypeColour = -1;
-            this.MyGame.MyPosition[0].MySquare[2, 6].PieceTypeColour = 1;
-            //this.MyGame.MyPosition[0].MySquare[6, 5].PieceTypeColour = 1;
-
-            //this.PutOneRandomPiece(-1, 0, 1, 6, 7);
-            //this.PutOneRandomPiece(1, 0, 3, 4, 7);
-            this.PutOneRandomPiece(4, 0, 3, 4, 7);
-            //this.PutOneRandomPiece(5, 0, 3, 4, 7);
-            this.PutOneRandomPiece(7, 0, 3, 4, 7);
-        }
-
         public void SetInitialStandardBulldog()
         {
             int i;
@@ -1161,31 +1069,6 @@ namespace TheWeirdEngine
         }
 
 
-        public void GenerateRandomMateIn_n()
-        {
-            PosEvaluationResult MyStaticEvaluation;
-
-            int p;
-
-            MyStaticEvaluation.MeInCheck = false;
-            MyStaticEvaluation.IsStaleMate = false;
-            MyStaticEvaluation.IsMate = false;
-            MyStaticEvaluation.IsDrawByMaterial = false;
-            MyStaticEvaluation.PositionAdvantage = 0;
-            MyStaticEvaluation.BestMoveidx = 0;
-
-            this.MyGame.ExternalAbort = false;
-            while (MyStaticEvaluation.PositionAdvantage != 100 - this.NumberOfPliesToCalculate &
-                   MyStaticEvaluation.PositionAdvantage != this.NumberOfPliesToCalculate - 100 &
-                   this.MyGame.ExternalAbort == false)
-            {
-                this.GenerateRandomPosition();
-                p = this.MyGame.NumberOfPositionsInGame - 1;
-                
-                MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -120, 120);
-            }
-            MessageBox.Show(PosEvaluationResultAsString(MyStaticEvaluation));
-        }
         public void SuggestMove()
         {
             PosEvaluationResult MyStaticEvaluation;

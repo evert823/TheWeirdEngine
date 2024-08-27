@@ -54,7 +54,6 @@
             this.loadPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.doMoveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.randomMatePositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.developerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.xMLMoveExampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -66,6 +65,7 @@
             this.txtbEnterPosition = new System.Windows.Forms.TextBox();
             this.lblStatusMessage = new System.Windows.Forms.Label();
             this.btnAbort = new System.Windows.Forms.Button();
+            this.lblShowTimestamp = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -101,7 +101,7 @@
             // lblInformation
             // 
             this.lblInformation.AutoSize = true;
-            this.lblInformation.Location = new System.Drawing.Point(12, 128);
+            this.lblInformation.Location = new System.Drawing.Point(12, 154);
             this.lblInformation.Name = "lblInformation";
             this.lblInformation.Size = new System.Drawing.Size(123, 16);
             this.lblInformation.TabIndex = 9;
@@ -250,23 +250,15 @@
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.randomMatePositionToolStripMenuItem,
             this.developerToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
-            // randomMatePositionToolStripMenuItem
-            // 
-            this.randomMatePositionToolStripMenuItem.Name = "randomMatePositionToolStripMenuItem";
-            this.randomMatePositionToolStripMenuItem.Size = new System.Drawing.Size(244, 26);
-            this.randomMatePositionToolStripMenuItem.Text = "Random mate position";
-            this.randomMatePositionToolStripMenuItem.Click += new System.EventHandler(this.randomMatePositionToolStripMenuItem_Click);
-            // 
             // developerToolStripMenuItem
             // 
             this.developerToolStripMenuItem.Name = "developerToolStripMenuItem";
-            this.developerToolStripMenuItem.Size = new System.Drawing.Size(244, 26);
+            this.developerToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.developerToolStripMenuItem.Text = "Developer";
             this.developerToolStripMenuItem.Click += new System.EventHandler(this.developerToolStripMenuItem_Click);
             // 
@@ -365,12 +357,22 @@
             this.btnAbort.UseVisualStyleBackColor = true;
             this.btnAbort.Click += new System.EventHandler(this.btnAbort_Click);
             // 
+            // lblShowTimestamp
+            // 
+            this.lblShowTimestamp.AutoSize = true;
+            this.lblShowTimestamp.Location = new System.Drawing.Point(12, 119);
+            this.lblShowTimestamp.Name = "lblShowTimestamp";
+            this.lblShowTimestamp.Size = new System.Drawing.Size(110, 16);
+            this.lblShowTimestamp.TabIndex = 21;
+            this.lblShowTimestamp.Text = "timing information";
+            // 
             // formWeirdEngineMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1275, 534);
+            this.Controls.Add(this.lblShowTimestamp);
             this.Controls.Add(this.btnAbort);
             this.Controls.Add(this.lblStatusMessage);
             this.Controls.Add(this.txtbEnterPosition);
@@ -414,7 +416,6 @@
         private System.Windows.Forms.ToolStripMenuItem validateCurrentPositionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem suggestMoveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem randomMatePositionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem developerToolStripMenuItem;
         private System.Windows.Forms.TextBox txtbEnterMove;
         private System.Windows.Forms.Label lblUserMove;
@@ -431,6 +432,7 @@
         private System.Windows.Forms.ToolStripMenuItem suggestMoveAndDoToolStripMenuItem;
         private System.Windows.Forms.Label lblStatusMessage;
         private System.Windows.Forms.Button btnAbort;
+        private System.Windows.Forms.Label lblShowTimestamp;
     }
 }
 

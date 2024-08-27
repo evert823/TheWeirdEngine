@@ -232,7 +232,12 @@ namespace TheWeirdEngine
 
         private void suggestMoveToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            string myts;
+            DateTime localDate;
             this.DisableGUI();
+            localDate = DateTime.Now;
+            myts = localDate.ToString();
+            this.lblShowTimestamp.Text = "Started " + myts;
             if (MyWeirdEngineBackend.ValidateImportedGame() == false)
             {
                 MessageBox.Show("Validation not passed");
@@ -241,16 +246,9 @@ namespace TheWeirdEngine
             {
                 MyWeirdEngineBackend.SuggestMove();
             }
-            this.EnableGUI();
-            this.pictureBox1.Invalidate();
-            this.RefreshInformation();
-        }
-
-        private void randomMatePositionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.DisableGUI();
-            MyWeirdEngineBackend.GenerateRandomMateIn_n();
-            MessageBox.Show("Random mate position has been generated");
+            localDate = DateTime.Now;
+            myts = localDate.ToString();
+            this.lblShowTimestamp.Text += " ended " + myts;
             this.EnableGUI();
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
@@ -388,7 +386,12 @@ namespace TheWeirdEngine
 
         private void suggestMoveAndDoToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            string myts;
+            DateTime localDate;
             this.DisableGUI();
+            localDate = DateTime.Now;
+            myts = localDate.ToString();
+            this.lblShowTimestamp.Text = "Started " + myts;
             if (MyWeirdEngineBackend.ValidateImportedGame() == false)
             {
                 MessageBox.Show("Validation not passed");
@@ -397,6 +400,9 @@ namespace TheWeirdEngine
             {
                 MyWeirdEngineBackend.SuggestMoveAndDo();
             }
+            localDate = DateTime.Now;
+            myts = localDate.ToString();
+            this.lblShowTimestamp.Text += " ended " + myts;
             this.EnableGUI();
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
