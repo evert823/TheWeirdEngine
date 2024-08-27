@@ -1182,7 +1182,7 @@ namespace TheWeirdEngine
                 this.GenerateRandomPosition();
                 p = this.MyGame.NumberOfPositionsInGame - 1;
                 
-                MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -100, 100);
+                MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -120, 120);
             }
             MessageBox.Show(PosEvaluationResultAsString(MyStaticEvaluation));
         }
@@ -1197,7 +1197,7 @@ namespace TheWeirdEngine
 
             this.MyGame.ExternalAbort = false;
             this.MyGame.CalculationLineMessage = "";
-            MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -100, 100);
+            MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -120, 120);
 
             s = "SuggestMove finished - " + this.MoveAsString(this.MyGame.MyPosition[p], MyStaticEvaluation.BestMoveidx)
                     + "|" + PosEvaluationResultAsString(MyStaticEvaluation);
@@ -1216,7 +1216,7 @@ namespace TheWeirdEngine
 
             this.MyGame.ExternalAbort = false;
             this.MyGame.CalculationLineMessage = "";
-            MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -100, 100);
+            MyStaticEvaluation = EvaluationByCalculation(p, this.NumberOfPliesToCalculate, -120, 120);
 
             s = "SuggestMoveAndDo finished - " + this.MoveAsString(this.MyGame.MyPosition[p], MyStaticEvaluation.BestMoveidx)
                     + "|" + PosEvaluationResultAsString(MyStaticEvaluation);
