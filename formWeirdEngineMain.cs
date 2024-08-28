@@ -416,9 +416,13 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
             MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
 
-            MyWeirdEngineJson.LoadPositionJson("mate_in_4_for_white_hard_chesscom");
-            MyWeirdEngineJson.SavePositionAsJson("mate_in_4_for_white_hard_chesscom");
-            
+            MyWeirdEngineJson.LoadPositionJson("testposition");
+            MyWeirdEngineJson.SavePositionAsJson("testposition");
+
+            MyWeirdEngineMoveFinder.LocateKingsRooks(ref this.MyWeirdEngineMoveFinder.mainposition);
+            double a = MyWeirdEngineMoveFinder.StaticEvaluation(ref this.MyWeirdEngineMoveFinder.mainposition);
+            MessageBox.Show(a.ToString());
+
             //MyWeirdEngineJson.LoadPositionFromFEN("8/8/1p2PR2/5K2/1Pk1p1r1/2p2bpP/3P2n1/N4B2 b");
             //MyWeirdEngineJson.SavePositionAsJson("thiscamefromfen");
             //string myfen = MyWeirdEngineJson.PositionAsFEN();

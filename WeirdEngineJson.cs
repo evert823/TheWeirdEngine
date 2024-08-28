@@ -208,7 +208,8 @@ namespace TheWeirdEngine
                 json = r.ReadToEnd();
             }
             jsonchessposition loadedpos = JsonConvert.DeserializeObject<jsonchessposition>(json);
-            this.MyWeirdEngineMoveFinder.ResetBoardsize(loadedpos.boardwidth, loadedpos.boardheight);
+            this.MyWeirdEngineMoveFinder.ResetBoardsize(ref this.MyWeirdEngineMoveFinder.mainposition,
+                                                        loadedpos.boardwidth, loadedpos.boardheight);
             this.MyWeirdEngineMoveFinder.mainposition.colourtomove = loadedpos.colourtomove;
             this.MyWeirdEngineMoveFinder.mainposition.precedingmove = new int[4]
                 { loadedpos.precedingmove.x_from, loadedpos.precedingmove.y_from,
@@ -280,7 +281,7 @@ namespace TheWeirdEngine
         {
             string[] fenparts0 = pfen.Split(' ');
             string[] fenparts = fenparts0[0].Split('/');
-            this.MyWeirdEngineMoveFinder.ResetBoardsize(8, 8);
+            this.MyWeirdEngineMoveFinder.ResetBoardsize(ref this.MyWeirdEngineMoveFinder.mainposition, 8, 8);
 
             if (fenparts0[1].ToLower() == "w")
             {
@@ -290,7 +291,7 @@ namespace TheWeirdEngine
             {
                 this.MyWeirdEngineMoveFinder.mainposition.colourtomove = -1;
             }
-            this.MyWeirdEngineMoveFinder.DisableCastling();
+            this.MyWeirdEngineMoveFinder.DisableCastling(ref this.MyWeirdEngineMoveFinder.mainposition);
             this.MyWeirdEngineMoveFinder.mainposition.precedingmove = null;
             this.MyWeirdEngineMoveFinder.mainposition.precedingmove = new int[4] { -1, -1, -1, -1 };
 
@@ -369,6 +370,51 @@ namespace TheWeirdEngine
                 writer.Close();
             }
             return fen;
+        }
+        public string ShortNotation(chessmove pmove)
+        {
+            if (pmove.IsCastling == true)
+            {
+                if (pmove.coordinates[2] == 2)
+                {
+                    return "0-0-0";
+                }
+                else
+                {
+                    return "0-0";
+                }
+            }
+            string s = this.PieceType2Str(pmove.MovingPiece).Replace("-", "");
+            s += this.Coord2Squarename(pmove.coordinates[0], pmove.coordinates[1]);
+            if (pmove.IsCapture == true)
+            {
+                s += "x";
+            }
+            else
+            {
+                s += "-";
+            }
+            s += this.Coord2Squarename(pmove.coordinates[2], pmove.coordinates[3]);
+            if (pmove.PromoteToPiece != 0)
+            {
+                s += this.PieceType2Str(pmove.PromoteToPiece).Replace("-", "");
+            }
+            if (pmove.IsEnPassant == true)
+            {
+                s += " e.p.";
+            }
+            return s;
+        }
+        public string Coord2Squarename(int pi, int pj)
+        {
+            string myalphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            if (pi >= 26)
+            {
+                return "INVALID file number";
+            }
+            string s = myalphabet.ToLower()[pi].ToString();
+            s += (pj + 1).ToString();
+            return s;
         }
     }
 }
