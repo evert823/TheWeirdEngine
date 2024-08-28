@@ -17,6 +17,8 @@ namespace TheWeirdEngine
         public string ResourcesFolder;
         public WeirdEngineBackend MyWeirdEngineBackend;
         public BoardPainter MyBoardPainter;
+        public WeirdEngineMoveFinder MyWeirdEngineMoveFinder;
+        public WeirdEngineJson MyWeirdEngineJson;
 
         formDeveloper MyformDeveloper;
         public formWeirdEngineMain()
@@ -38,6 +40,8 @@ namespace TheWeirdEngine
             pictureBox1.BackColor = Color.Black;
 
             MyWeirdEngineBackend = new WeirdEngineBackend(10, 8);
+            MyWeirdEngineMoveFinder = new WeirdEngineMoveFinder();
+            MyWeirdEngineJson = new WeirdEngineJson(this.MyWeirdEngineMoveFinder);
             MyWeirdEngineBackend.SetInitialStandardBulldog();
             MyBoardPainter = new BoardPainter(this.MyWeirdEngineBackend, this.pictureBox1);
             this.SelectResourcesFolder();
@@ -52,7 +56,7 @@ namespace TheWeirdEngine
 
         private void SelectResourcesFolder()
         {
-            this.ResourcesFolder = "";
+            this.ResourcesFolder = "Q:\\Persoonlijk\\Wiskunde en programmeren\\C#\\WeirdEngine\\weirdengineresources";
 
             while (File.Exists(this.ResourcesFolder + "\\weirdenginesettings.xml") == false)
             {
@@ -363,16 +367,6 @@ namespace TheWeirdEngine
             this.RefreshInformation();
         }
 
-        private void importFromXMLToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("No such functionality");
-        }
-
-        private void exportToXMLToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("No such functionality");
-        }
-
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string s;
@@ -411,6 +405,25 @@ namespace TheWeirdEngine
         private void btnAbort_Click(object sender, EventArgs e)
         {
             this.MyWeirdEngineBackend.MyGame.ExternalAbort = true;
+        }
+
+        private void testToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Start test new");
+            this.MyWeirdEngineJson.jsonsourcepath = "C:\\Users\\Evert Jan\\Documents\\GitHub\\chesspython\\";
+            this.MyWeirdEngineJson.jsonworkpath = "C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\";
+            string infilename = "maingame";
+            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
+            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
+
+            MyWeirdEngineJson.LoadPositionJson("mate_in_4_for_white_hard_chesscom");
+            MyWeirdEngineJson.SavePositionAsJson("mate_in_4_for_white_hard_chesscom");
+            
+            //MyWeirdEngineJson.LoadPositionFromFEN("8/8/1p2PR2/5K2/1Pk1p1r1/2p2bpP/3P2n1/N4B2 b");
+            //MyWeirdEngineJson.SavePositionAsJson("thiscamefromfen");
+            //string myfen = MyWeirdEngineJson.PositionAsFEN();
+            //MessageBox.Show("FEN : " + myfen);
+            MessageBox.Show("End test new");
         }
     }
 }

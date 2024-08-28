@@ -66,6 +66,8 @@
             this.lblStatusMessage = new System.Windows.Forms.Label();
             this.btnAbort = new System.Windows.Forms.Button();
             this.lblShowTimestamp = new System.Windows.Forms.Label();
+            this.testNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -116,7 +118,8 @@
             this.engineToolStripMenuItem,
             this.editToolStripMenuItem,
             this.toolsToolStripMenuItem,
-            this.helpToolStripMenuItem});
+            this.helpToolStripMenuItem,
+            this.testNewToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1275, 28);
@@ -366,6 +369,21 @@
             this.lblShowTimestamp.TabIndex = 21;
             this.lblShowTimestamp.Text = "timing information";
             // 
+            // testNewToolStripMenuItem
+            // 
+            this.testNewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.testToolStripMenuItem});
+            this.testNewToolStripMenuItem.Name = "testNewToolStripMenuItem";
+            this.testNewToolStripMenuItem.Size = new System.Drawing.Size(79, 24);
+            this.testNewToolStripMenuItem.Text = "TestNew";
+            // 
+            // testToolStripMenuItem
+            // 
+            this.testToolStripMenuItem.Name = "testToolStripMenuItem";
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.testToolStripMenuItem.Text = "Test";
+            this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
+            // 
             // formWeirdEngineMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -433,6 +451,8 @@
         private System.Windows.Forms.Label lblStatusMessage;
         private System.Windows.Forms.Button btnAbort;
         private System.Windows.Forms.Label lblShowTimestamp;
+        private System.Windows.Forms.ToolStripMenuItem testNewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
     }
 }
 
