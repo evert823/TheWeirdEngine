@@ -42,6 +42,10 @@ namespace TheWeirdEngine
             MyWeirdEngineBackend = new WeirdEngineBackend(10, 8);
             MyWeirdEngineMoveFinder = new WeirdEngineMoveFinder();
             MyWeirdEngineJson = new WeirdEngineJson(this.MyWeirdEngineMoveFinder);
+
+            //We want to do some logging from the MoveFinder object using the Json object:
+            MyWeirdEngineMoveFinder.MyWeirdEngineJson = this.MyWeirdEngineJson;//Just a reference
+
             MyWeirdEngineBackend.SetInitialStandardBulldog();
             MyBoardPainter = new BoardPainter(this.MyWeirdEngineBackend, this.pictureBox1);
             this.SelectResourcesFolder();
@@ -416,18 +420,95 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
             MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
 
-            MyWeirdEngineJson.LoadPositionJson("testposition");
+            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions", "testposition");
             MyWeirdEngineJson.SavePositionAsJson("testposition");
 
-            MyWeirdEngineMoveFinder.LocateKingsRooks(ref this.MyWeirdEngineMoveFinder.mainposition);
-            double a = MyWeirdEngineMoveFinder.StaticEvaluation(ref this.MyWeirdEngineMoveFinder.mainposition);
-            MessageBox.Show(a.ToString());
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(10);
+            string s = "posvalue " + a.posvalue.ToString();
+            s += " moveidx " + a.moveidx.ToString();
+            string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.mainposition.movelist[a.moveidx]);
+            s += " ShortNotation " + mvstr;
+            MessageBox.Show(s);
 
             //MyWeirdEngineJson.LoadPositionFromFEN("8/8/1p2PR2/5K2/1Pk1p1r1/2p2bpP/3P2n1/N4B2 b");
             //MyWeirdEngineJson.SavePositionAsJson("thiscamefromfen");
             //string myfen = MyWeirdEngineJson.PositionAsFEN();
             //MessageBox.Show("FEN : " + myfen);
             MessageBox.Show("End test new");
+        }
+
+        private void TestCastle(string ppath, string ppositionfilename)
+        {
+            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\Documents\\GitHub\\chesspython\\unittests", ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
+
+            bool queensidecastling_happened = false;
+            bool kingsidecastling_happened = false;
+
+            for (int movei = 0;movei < MyWeirdEngineMoveFinder.mainposition.movelist_totalfound; movei++)
+            {
+                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.mainposition.movelist[movei]);
+                if (mvstr == "0-0")
+                {
+                    kingsidecastling_happened = true;
+                }
+                if (mvstr == "0-0-0")
+                {
+                    queensidecastling_happened = true;
+                }
+            }
+            if (queensidecastling_happened == false)
+            {
+                MessageBox.Show("Queenside castling expected but did not happen");
+            }
+            if (kingsidecastling_happened == false)
+            {
+                MessageBox.Show("Kingside castling expected but did not happen");
+            }
+
+        }
+        private void TestNoCastle(string ppath, string ppositionfilename)
+        {
+            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\Documents\\GitHub\\chesspython\\unittests", ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
+
+            bool castling_happened = false;
+
+            for (int movei = 0; movei < MyWeirdEngineMoveFinder.mainposition.movelist_totalfound; movei++)
+            {
+                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.mainposition.movelist[movei]);
+                if (mvstr == "0-0")
+                {
+                    castling_happened = true;
+                }
+                if (mvstr == "0-0-0")
+                {
+                    castling_happened = true;
+                }
+            }
+            if (castling_happened == true)
+            {
+                MessageBox.Show("Castling happened but not expected");
+            }
+
+        }
+        private void unittestsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Start unittests");
+
+            string unittestpath = "C:\\Users\\Evert Jan\\Documents\\GitHub\\chesspython\\unittests";
+
+            this.MyWeirdEngineJson.jsonsourcepath = "C:\\Users\\Evert Jan\\Documents\\GitHub\\chesspython\\";
+            this.MyWeirdEngineJson.jsonworkpath = "C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\";
+            string infilename = "maingame";
+            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
+            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
+
+            TestCastle(unittestpath, "01A_castle_white_01");
+
+            MessageBox.Show("All unittests done");
         }
     }
 }

@@ -59,6 +59,8 @@
             this.xMLMoveExampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.xMLPositionExampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtbEnterMove = new System.Windows.Forms.TextBox();
             this.lblUserMove = new System.Windows.Forms.Label();
             this.lblUserPosition = new System.Windows.Forms.Label();
@@ -66,8 +68,7 @@
             this.lblStatusMessage = new System.Windows.Forms.Label();
             this.btnAbort = new System.Windows.Forms.Button();
             this.lblShowTimestamp = new System.Windows.Forms.Label();
-            this.testNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.unittestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -261,7 +262,7 @@
             // developerToolStripMenuItem
             // 
             this.developerToolStripMenuItem.Name = "developerToolStripMenuItem";
-            this.developerToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.developerToolStripMenuItem.Size = new System.Drawing.Size(161, 26);
             this.developerToolStripMenuItem.Text = "Developer";
             this.developerToolStripMenuItem.Click += new System.EventHandler(this.developerToolStripMenuItem_Click);
             // 
@@ -295,6 +296,22 @@
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(240, 26);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // testNewToolStripMenuItem
+            // 
+            this.testNewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.testToolStripMenuItem,
+            this.unittestsToolStripMenuItem});
+            this.testNewToolStripMenuItem.Name = "testNewToolStripMenuItem";
+            this.testNewToolStripMenuItem.Size = new System.Drawing.Size(79, 24);
+            this.testNewToolStripMenuItem.Text = "TestNew";
+            // 
+            // testToolStripMenuItem
+            // 
+            this.testToolStripMenuItem.Name = "testToolStripMenuItem";
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.testToolStripMenuItem.Text = "Test";
+            this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
             // txtbEnterMove
             // 
@@ -369,20 +386,12 @@
             this.lblShowTimestamp.TabIndex = 21;
             this.lblShowTimestamp.Text = "timing information";
             // 
-            // testNewToolStripMenuItem
+            // unittestsToolStripMenuItem
             // 
-            this.testNewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.testToolStripMenuItem});
-            this.testNewToolStripMenuItem.Name = "testNewToolStripMenuItem";
-            this.testNewToolStripMenuItem.Size = new System.Drawing.Size(79, 24);
-            this.testNewToolStripMenuItem.Text = "TestNew";
-            // 
-            // testToolStripMenuItem
-            // 
-            this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.testToolStripMenuItem.Text = "Test";
-            this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
+            this.unittestsToolStripMenuItem.Name = "unittestsToolStripMenuItem";
+            this.unittestsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.unittestsToolStripMenuItem.Text = "Unittests";
+            this.unittestsToolStripMenuItem.Click += new System.EventHandler(this.unittestsToolStripMenuItem_Click);
             // 
             // formWeirdEngineMain
             // 
@@ -453,6 +462,7 @@
         private System.Windows.Forms.Label lblShowTimestamp;
         private System.Windows.Forms.ToolStripMenuItem testNewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem unittestsToolStripMenuItem;
     }
 }
 

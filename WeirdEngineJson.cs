@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -46,9 +47,49 @@ namespace TheWeirdEngine
         public WeirdEngineMoveFinder MyWeirdEngineMoveFinder;
         public string jsonsourcepath;
         public string jsonworkpath;
+        public string logfilename;
         public WeirdEngineJson(WeirdEngineMoveFinder pWeirdEngineMoveFinder)
         {
             this.MyWeirdEngineMoveFinder = pWeirdEngineMoveFinder;
+            this.SetLogfilename();
+        }
+        public void SetLogfilename()
+        {
+            string myts;
+            DateTime localDate;
+            localDate = DateTime.Now;
+            myts = localDate.ToString("yyyy-MM-dd_HH_mm");
+            this.logfilename = "WeirdEngineMoveFinder_log_" + myts + ".log";
+        }
+        public void writelog(string themessage)
+        {
+            string myts;
+            DateTime localDate;
+            localDate = DateTime.Now;
+            myts = localDate.ToString("yyyy-MM-ddTHH:mm:ss");
+
+            using (StreamWriter writer = new StreamWriter(this.jsonworkpath + "log\\" + this.logfilename, append: true))
+            {
+                writer.WriteLine(myts + " " + themessage);
+                writer.Close();
+            }
+        }
+        public string DisplayMovelist(ref chessposition pposition)
+        {
+            string s = "";
+            for (int movei = 0;movei < pposition.movelist_totalfound;movei++)
+            {
+                string mvstr = ShortNotation(pposition.movelist[movei]);
+                if (s == "")
+                {
+                    s += mvstr;
+                }
+                else
+                {
+                    s += "|" + mvstr;
+                }
+            }
+            return s;
         }
         public int Str2PieceType(string psymbol)
         {
@@ -200,10 +241,10 @@ namespace TheWeirdEngine
                 writer.Close();
             }
         }
-        public void LoadPositionJson(string pFileName)
+        public void LoadPositionJson(string ppath, string pFileName)
         {
             string json;
-            using (StreamReader r = new StreamReader(this.jsonworkpath + "positions\\" + pFileName + ".json"))
+            using (StreamReader r = new StreamReader(ppath + "\\" + pFileName + ".json"))
             {
                 json = r.ReadToEnd();
             }
