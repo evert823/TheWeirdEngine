@@ -571,9 +571,11 @@ namespace TheWeirdEngine
             NumberOfPliesFromHere = pNumberOfPlies;
 
             //Enrich this position
-            if (pNumberOfPlies >= 5)
+            int presort_when_n_plies_gt = 4;
+            byte presort_using_n_plies = 3;
+            if (pNumberOfPlies > presort_when_n_plies_gt)
             {
-                dummyoutput = this.EvaluationByCalculation(pPositionNumber, 3, newalpha, newbeta);
+                dummyoutput = this.EvaluationByCalculation(pPositionNumber, presort_using_n_plies, newalpha, newbeta);
                 this.PrioritizeMovesFromHere(pPositionNumber);
                 this.Init_Move_Evaluation_Results(pPositionNumber);
             }

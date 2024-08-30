@@ -93,7 +93,7 @@ namespace TheWeirdEngine
         public chessposition[] positionstack;
         public WeirdEngineMoveFinder()
         {
-            this.presort_when_n_plies_gt = 5;
+            this.presort_when_n_plies_gt = 4;
             this.presort_using_n_plies = 3;
             this.display_when_n_plies_gt = 6;
             this.mainposition = new chessposition();
@@ -1136,6 +1136,8 @@ namespace TheWeirdEngine
                                                                                    presort_using_n_plies);
                     subresults_presort[i].moveidx = i;
                     subresults_presort[i].movevalue = newresponse_presort.posvalue;
+                    //MyWeirdEngineJson.writelog("Value during presoring moveidx " + i.ToString()
+                    //    + " movevalue " + newresponse_presort.posvalue.ToString());
                 }
 
                 if (positionstack[posidx].colourtomove == 1)

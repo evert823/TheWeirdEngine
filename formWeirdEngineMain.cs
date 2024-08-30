@@ -420,10 +420,12 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
             MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
 
-            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions", "testposition");
-            MyWeirdEngineJson.SavePositionAsJson("testposition");
+            string positionname = "mate_in_4_for_black_hard_chesscom";
+            MyWeirdEngineMoveFinder.presort_when_n_plies_gt = 4;
+            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions", positionname);
+            MyWeirdEngineJson.SavePositionAsJson(positionname);
 
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(10);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(8);
             string s = "posvalue " + a.posvalue.ToString();
             s += " moveidx " + a.moveidx.ToString();
             string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.mainposition.movelist[a.moveidx]);
