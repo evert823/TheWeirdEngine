@@ -90,6 +90,7 @@
     <Compile Include="formWeirdEngineMain.Designer.cs">
       <DependentUpon>formWeirdEngineMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="mfunittests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WeirdEngineBackend.cs" />
