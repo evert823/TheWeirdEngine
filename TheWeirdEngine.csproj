@@ -78,12 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoardPainter.cs" />
-    <Compile Include="formDeveloper.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="formDeveloper.Designer.cs">
-      <DependentUpon>formDeveloper.cs</DependentUpon>
-    </Compile>
     <Compile Include="formWeirdEngineMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -93,12 +87,8 @@
     <Compile Include="mfunittests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WeirdEngineBackend.cs" />
     <Compile Include="WeirdEngineJson.cs" />
     <Compile Include="WeirdEngineMoveFinder.cs" />
-    <EmbeddedResource Include="formDeveloper.resx">
-      <DependentUpon>formDeveloper.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="formWeirdEngineMain.resx">
       <DependentUpon>formWeirdEngineMain.cs</DependentUpon>
     </EmbeddedResource>

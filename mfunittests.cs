@@ -348,19 +348,6 @@ namespace TheWeirdEngine
                 AllTestsPassed = false;
             }
         }
-        public void TestTemplate(string ppath, string ppositionfilename)
-        {
-            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
-
-            bool mymovehappened = false;
-            for (int movei = 0; movei < MyWeirdEngineMoveFinder.mainposition.movelist_totalfound; movei++)
-            {
-                int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.mainposition.movelist[movei].MovingPiece);
-
-            }
-        }
         public void RunAllUnittests(string ppath)
         {
             AllTestsPassed = true;

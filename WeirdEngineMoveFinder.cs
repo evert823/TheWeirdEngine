@@ -445,94 +445,186 @@ namespace TheWeirdEngine
                 }
             }
         }
-        public void GetStepLeapAttacks(ref chessposition pposition, int i, int j)
+        public void GetAttacksMoves(ref chessposition pposition, int n_plies)
         {
-            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-            vector[] lookatvectors;//Will behave like a reference to the original vectors
-            if (this.piecetypes[pti].IsDivergent == true)
-            {
-                lookatvectors = this.piecetypes[pti].stepleapcapturevectors;
-            }
-            else
-            {
-                lookatvectors = this.piecetypes[pti].stepleapmovevectors;
-            }
-            int i2;
-            int j2;
-            foreach(vector v in lookatvectors)
-            {
-                i2 = i + v.x;
-                if (pposition.squares[i, j] > 0)
-                {
-                    j2 = j + v.y;
-                }
-                else
-                {
-                    j2 = j - v.y;
-                }
-                if (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight)
-                {
-                    this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
-                }
-            }
-        }
-        public void GetSlideAttacks(ref chessposition pposition, int i, int j)
-        {
-            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-            vector[] lookatvectors;//Will behave like a reference to the original vectors
-            if (this.piecetypes[pti].IsDivergent == true)
-            {
-                lookatvectors = this.piecetypes[pti].slidecapturevectors;
-            }
-            else
-            {
-                lookatvectors = this.piecetypes[pti].slidemovevectors;
-            }
-            int i2;
-            int j2;
-            bool blocked;
-            foreach (vector v in lookatvectors)
-            {
-                i2 = i + v.x;
-                if (pposition.squares[i, j] > 0)
-                {
-                    j2 = j + v.y;
-                }
-                else
-                {
-                    j2 = j - v.y;
-                }
-                blocked = false;
-                while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight & blocked == false)
-                {
-                    this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
-                    if (pposition.squares[i2, j2] != 0)
-                    {
-                        blocked = true;
-                    }
-                    i2 = i2 + v.x;
-                    if (pposition.squares[i, j] > 0)
-                    {
-                        j2 = j2 + v.y;
-                    }
-                    else
-                    {
-                        j2 = j2 - v.y;
-                    }
-                }
-            }
-        }
-        public void ScanAttacked(ref chessposition pposition)
-        {
+            pposition.movelist_totalfound = 0;
             for (int i = 0; i < pposition.boardwidth; i++)
             {
                 for (int j = 0; j < pposition.boardheight; j++)
                 {
                     if (pposition.squares[i, j] != 0)
                     {
-                        this.GetStepLeapAttacks(ref pposition, i, j);
-                        this.GetSlideAttacks(ref pposition, i, j);
+                        this.GetStepLeapAttacksMoves(ref pposition, i, j, n_plies);
+                        this.GetSlideAttacksMoves(ref pposition, i, j, n_plies);
                     }
+                    if (n_plies > 0)
+                    {
+                        if ((pposition.squares[i, j] > 0 & pposition.colourtomove > 0) ||
+                            (pposition.squares[i, j] < 0 & pposition.colourtomove < 0))
+                        {
+                            GetPawn2StepMoves(ref pposition, i, j);
+                            GetPawnEnPassantMoves(ref pposition, i, j);
+                        }
+                    }
+                }
+            }
+            if (n_plies > 0)
+            {
+                GetCastling(ref pposition);
+            }
+        }
+        public void GetStepLeapAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
+                                                     bool getcaptures, bool getnoncaptures, int n_plies)
+        {
+            int i2;
+            int j2;
+            int movei;
+            i2 = i + v.x;
+            if (pposition.squares[i, j] > 0)
+            {
+                j2 = j + v.y;
+            }
+            else
+            {
+                j2 = j - v.y;
+            }
+            if (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight)
+            {
+                if (getcaptures == true)
+                {
+                    this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
+                    if (n_plies > 0)
+                    {
+                        if ((pposition.squares[i2, j2] > 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
+                            (pposition.squares[i2, j2] < 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
+                        {
+                            movei = pposition.movelist_totalfound;
+                            InitializeMove(ref pposition, movei, i, j, i2, j2);
+                            pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
+                            pposition.movelist[movei].IsCapture = true;
+                            GetPromotion(ref pposition, movei);
+                        }
+                    }
+                }
+                if (getnoncaptures == true & n_plies > 0)
+                {
+                    if ((pposition.squares[i2, j2] == 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
+                        (pposition.squares[i2, j2] == 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
+                    {
+                        movei = pposition.movelist_totalfound;
+                        InitializeMove(ref pposition, movei, i, j, i2, j2);
+                        pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
+                        GetPromotion(ref pposition, movei);
+                    }
+                }
+            }
+        }
+        public void GetStepLeapAttacksMoves(ref chessposition pposition, int i, int j, int n_plies)
+        {
+            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+
+            if (this.piecetypes[pti].IsDivergent == false)
+            {
+                foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
+                {
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, true, n_plies);
+                }
+            }
+            else
+            {
+                foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
+                {
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, false, true, n_plies);
+                }
+                foreach (vector v in this.piecetypes[pti].stepleapcapturevectors)
+                {
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, false, n_plies);
+                }
+            }
+        }
+        public void GetSlideAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
+                                                  bool getcaptures, bool getnoncaptures, int n_plies)
+        {
+            int i2;
+            int j2;
+            int movei;
+            bool blocked;
+
+            i2 = i + v.x;
+            if (pposition.squares[i, j] > 0)
+            {
+                j2 = j + v.y;
+            }
+            else
+            {
+                j2 = j - v.y;
+            }
+            blocked = false;
+            while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight & blocked == false)
+            {
+                if (getcaptures == true)
+                {
+                    this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
+                    if (n_plies > 0)
+                    {
+                        if ((pposition.squares[i2, j2] > 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
+                            (pposition.squares[i2, j2] < 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
+                        {
+                            movei = pposition.movelist_totalfound;
+                            InitializeMove(ref pposition, movei, i, j, i2, j2);
+                            pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
+                            pposition.movelist[movei].IsCapture = true;
+                            GetPromotion(ref pposition, movei);
+                            blocked = true;
+                        }
+                    }
+                }
+                if (getnoncaptures == true & n_plies > 0)
+                {
+                    if ((pposition.squares[i2, j2] == 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
+                             (pposition.squares[i2, j2] == 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
+                    {
+                        movei = pposition.movelist_totalfound;
+                        InitializeMove(ref pposition, movei, i, j, i2, j2);
+                        pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
+                        GetPromotion(ref pposition, movei);
+                    }
+                }
+                if (pposition.squares[i2, j2] != 0)
+                {
+                    blocked = true;
+                }
+                i2 = i2 + v.x;
+                if (pposition.squares[i, j] > 0)
+                {
+                    j2 = j2 + v.y;
+                }
+                else
+                {
+                    j2 = j2 - v.y;
+                }
+            }
+        }
+        public void GetSlideAttacksMoves(ref chessposition pposition, int i, int j, int n_plies)
+        {
+            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+
+            if (this.piecetypes[pti].IsDivergent == false)
+            {
+                foreach (vector v in this.piecetypes[pti].slidemovevectors)
+                {
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, n_plies);
+                }
+            }
+            else
+            {
+                foreach (vector v in this.piecetypes[pti].slidemovevectors)
+                {
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, n_plies);
+                }
+                foreach (vector v in this.piecetypes[pti].slidecapturevectors)
+                {
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, n_plies);
                 }
             }
         }
@@ -567,175 +659,6 @@ namespace TheWeirdEngine
             pposition.movelist[movei].othercoordinates[2] = -1;
             pposition.movelist[movei].othercoordinates[3] = -1;
             pposition.movelist[movei].PromoteToPiece = 0;
-        }
-        public void GetStepLeapMoves(ref chessposition pposition, int i, int j)
-        {
-            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-            int i2;
-            int j2;
-            int movei;
-            foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
-            {
-                i2 = i + v.x;
-                if (pposition.squares[i, j] > 0)
-                {
-                    j2 = j + v.y;
-                }
-                else
-                {
-                    j2 = j - v.y;
-                }
-                if (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight)
-                {
-                    if (pposition.squares[i2, j2] == 0)
-                    {
-                        movei = pposition.movelist_totalfound;
-                        InitializeMove(ref pposition, movei, i, j, i2, j2);
-                        pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
-                        GetPromotion(ref pposition, movei);
-                    }
-                }
-            }
-        }
-        public void GetSlideMoves(ref chessposition pposition, int i, int j)
-        {
-            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-            int i2;
-            int j2;
-            int movei;
-            bool blocked;
-            foreach (vector v in this.piecetypes[pti].slidemovevectors)
-            {
-                i2 = i + v.x;
-                if (pposition.squares[i, j] > 0)
-                {
-                    j2 = j + v.y;
-                }
-                else
-                {
-                    j2 = j - v.y;
-                }
-                blocked = false;
-                while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight & blocked == false)
-                {
-                    if (pposition.squares[i2, j2] == 0)
-                    {
-                        movei = pposition.movelist_totalfound;
-                        InitializeMove(ref pposition, movei, i, j, i2, j2);
-                        pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
-                        GetPromotion(ref pposition, movei);
-                    }
-                    else
-                    {
-                        blocked = true;
-                    }
-                    i2 = i2 + v.x;
-                    if (pposition.squares[i, j] > 0)
-                    {
-                        j2 = j2 + v.y;
-                    }
-                    else
-                    {
-                        j2 = j2 - v.y;
-                    }
-                }
-            }
-        }
-        public void GetStepLeapCaptures(ref chessposition pposition, int i, int j)
-        {
-            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-            vector[] lookatvectors;//Will behave like a reference to the original vectors
-            if (this.piecetypes[pti].IsDivergent == true)
-            {
-                lookatvectors = this.piecetypes[pti].stepleapcapturevectors;
-            }
-            else
-            {
-                lookatvectors = this.piecetypes[pti].stepleapmovevectors;
-            }
-            int i2;
-            int j2;
-            int movei;
-            foreach (vector v in lookatvectors)
-            {
-                i2 = i + v.x;
-                if (pposition.squares[i, j] > 0)
-                {
-                    j2 = j + v.y;
-                }
-                else
-                {
-                    j2 = j - v.y;
-                }
-                if (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight)
-                {
-                    if ((pposition.squares[i2, j2] > 0 & pposition.squares[i, j] < 0) ||
-                        (pposition.squares[i2, j2] < 0 & pposition.squares[i, j] > 0))
-                    {
-                        movei = pposition.movelist_totalfound;
-                        InitializeMove(ref pposition, movei, i, j, i2, j2);
-                        pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
-                        pposition.movelist[movei].IsCapture = true;
-                        GetPromotion(ref pposition, movei);
-                    }
-                }
-            }
-        }
-        public void GetSlideCaptures(ref chessposition pposition, int i, int j)
-        {
-            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-            vector[] lookatvectors;//Will behave like a reference to the original vectors
-            if (this.piecetypes[pti].IsDivergent == true)
-            {
-                lookatvectors = this.piecetypes[pti].slidecapturevectors;
-            }
-            else
-            {
-                lookatvectors = this.piecetypes[pti].slidemovevectors;
-            }
-            int i2;
-            int j2;
-            int movei;
-            bool blocked;
-            foreach (vector v in lookatvectors)
-            {
-                i2 = i + v.x;
-                if (pposition.squares[i, j] > 0)
-                {
-                    j2 = j + v.y;
-                }
-                else
-                {
-                    j2 = j - v.y;
-                }
-                blocked = false;
-                while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight & blocked == false)
-                {
-                    if ((pposition.squares[i2, j2] > 0 & pposition.squares[i, j] < 0) ||
-                        (pposition.squares[i2, j2] < 0 & pposition.squares[i, j] > 0))
-                    {
-                        movei = pposition.movelist_totalfound;
-                        InitializeMove(ref pposition, movei, i, j, i2, j2);
-                        pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
-                        pposition.movelist[movei].IsCapture = true;
-                        GetPromotion(ref pposition, movei);
-                        blocked = true;
-                    }
-                    else if (pposition.squares[i2, j2] != 0)
-                    {
-                        blocked = true;
-                    }
-                    i2 = i2 + v.x;
-                    if (pposition.squares[i, j] > 0)
-                    {
-                        j2 = j2 + v.y;
-                    }
-                    else
-                    {
-                        j2 = j2 - v.y;
-                    }
-                }
-            }
         }
         public void GetPromotion(ref chessposition pposition, int movei)
         {
@@ -794,27 +717,6 @@ namespace TheWeirdEngine
                     }
                 }
             }
-        }
-        public void Position2MoveList(ref chessposition pposition)
-        {
-            pposition.movelist_totalfound = 0;
-            for (int i = 0; i < pposition.boardwidth; i++)
-            {
-                for (int j = 0; j < pposition.boardheight; j++)
-                {
-                    if ((pposition.squares[i, j] > 0 & pposition.colourtomove > 0) ||
-                        (pposition.squares[i, j] < 0 & pposition.colourtomove < 0))
-                    {
-                        GetStepLeapMoves(ref pposition, i, j);
-                        GetSlideMoves(ref pposition, i, j);
-                        GetStepLeapCaptures(ref pposition, i, j);
-                        GetSlideCaptures(ref pposition, i, j);
-                        GetPawn2StepMoves(ref pposition, i, j);
-                        GetPawnEnPassantMoves(ref pposition, i, j);
-                    }
-                }
-            }
-            GetCastling(ref pposition);
         }
         public void GetPawn2StepMoves(ref chessposition pposition, int i, int j)
         {
@@ -1083,7 +985,7 @@ namespace TheWeirdEngine
             {
                 return myresult;
             }
-            ScanAttacked(ref positionstack[posidx]);
+            GetAttacksMoves(ref positionstack[posidx], n_plies);
             if (POKingIsInCheck(ref positionstack[posidx]) == true)
             {
                 if (positionstack[posidx].colourtomove == 1)
@@ -1103,9 +1005,10 @@ namespace TheWeirdEngine
                 return myresult;
             }
 
-            Position2MoveList(ref positionstack[posidx]);
             int movecount = positionstack[posidx].movelist_totalfound;
             //this.MyWeirdEngineJson.writelog(this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]));
+            //MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]));
+            //MessageBox.Show(this.MyWeirdEngineJson.DisplayAttacks(ref positionstack[posidx]));
 
             double new_alpha = alpha;
             double new_beta = beta;
@@ -1113,6 +1016,7 @@ namespace TheWeirdEngine
             //presort BEGIN
             if (n_plies > this.presort_when_n_plies_gt)
             {
+                Application.DoEvents();
                 if (n_plies > this.display_when_n_plies_gt)
                 {
                     string s = "List before sorting : ";

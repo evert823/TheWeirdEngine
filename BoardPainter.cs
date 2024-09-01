@@ -16,14 +16,16 @@ namespace TheWeirdEngine
         public const int BoardEdgeWidthHeightBottom = 24;
         public const int BoardEdgeWidthHeightLeft = 22;
         public const int BoardEdgeWidthHeightRight = 6;
+        public bool BoardFromWhitePerspective;
         public string resourcefolder;
         
-        public readonly WeirdEngineBackend MyWeirdEngineBackend;
+        public readonly WeirdEngineMoveFinder MyWeirdEngineMoveFinder;
         public readonly PictureBox PictureBox_Board;
 
-        public BoardPainter(WeirdEngineBackend pWeirdEngineBackend, PictureBox pPictureBox_Board)
+        public BoardPainter(WeirdEngineMoveFinder pWeirdEngineMoveFinder, PictureBox pPictureBox_Board)
         {
-            this.MyWeirdEngineBackend = pWeirdEngineBackend;
+            this.BoardFromWhitePerspective = true;
+            this.MyWeirdEngineMoveFinder = pWeirdEngineMoveFinder;
             this.PictureBox_Board = pPictureBox_Board;
         }
 
@@ -45,30 +47,24 @@ namespace TheWeirdEngine
             PictureBox_Board.DrawToBitmap(MyBitmap, PictureBox_Board.ClientRectangle);
             g = MyBitmap;
             g.Save(pFileName, System.Drawing.Imaging.ImageFormat.Png);
-            this.MyWeirdEngineBackend.MyGame.StatusMessage = "png file created";
         }
 
-        private string BmpFileNameFromPieceTypeColour(sbyte pPieceTypeColour)
+        private string BmpFileNameFromPieceTypeColour(int psquare)
         {
-            switch (pPieceTypeColour)
+            if (psquare == 0)
             {
-                case 0: return "vacant";
-                case 1: return "whiteking";
-                case 2: return "whitequeen";
-                case 3: return "whiterook";
-                case 4: return "whiteknight";
-                case 5: return "whitebishop";
-                case 6: return "whiteguard";
-                case 7: return "whitewitch";
-                case 8: return "whitepawn";
-                case -1: return "blackking";
-                case -2: return "blackqueen";
-                case -3: return "blackrook";
-                case -4: return "blackknight";
-                case -5: return "blackbishop";
-                case -6: return "blackguard";
-                case -7: return "blackwitch";
-                case -8: return "blackpawn";
+                return "vacant";
+            }
+            int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(psquare);
+            string myname = MyWeirdEngineMoveFinder.piecetypes[pti].name;
+
+            if (psquare < 0)
+            {
+                return "black" + myname.ToLower();
+            }
+            if (psquare > 0)
+            {
+                return "white" + myname.ToLower();
             }
             return "";
         }
@@ -84,7 +80,6 @@ namespace TheWeirdEngine
             int draw_x;
             int draw_y;
             string colourpart;
-            int p;
             string s;
 
             Font MyFont;
@@ -93,16 +88,14 @@ namespace TheWeirdEngine
             i_b = 0;
             j_b = 0;
 
-            p = this.MyWeirdEngineBackend.MyGame.ActualCurrentPositionidx;
-
-            this.PictureBox_Board.Width = (SquareWidthHeight * this.MyWeirdEngineBackend.MyGame.NumberOfFiles)
+            this.PictureBox_Board.Width = (SquareWidthHeight * this.MyWeirdEngineMoveFinder.mainposition.boardwidth)
                 + BoardEdgeWidthHeightLeft + BoardEdgeWidthHeightRight;
-            this.PictureBox_Board.Height = (SquareWidthHeight * this.MyWeirdEngineBackend.MyGame.NumberOfRanks)
+            this.PictureBox_Board.Height = (SquareWidthHeight * this.MyWeirdEngineMoveFinder.mainposition.boardheight)
                 + BoardEdgeWidthHeightBottom + BoardEdgeWidthHeightTop;
 
-            for (i = 0; i < this.MyWeirdEngineBackend.MyGame.NumberOfFiles; i++)
+            for (i = 0; i < this.MyWeirdEngineMoveFinder.mainposition.boardwidth; i++)
             {
-                for (j = 0; j < this.MyWeirdEngineBackend.MyGame.NumberOfRanks; j++)
+                for (j = 0; j < this.MyWeirdEngineMoveFinder.mainposition.boardheight; j++)
                 {
                     if ((i + j) % 2 == 0)
                     {
@@ -113,21 +106,21 @@ namespace TheWeirdEngine
                         colourpart = "onblack";
                     }
                     bmp_name = resourcefolder
-                        + BmpFileNameFromPieceTypeColour(this.MyWeirdEngineBackend.MyGame.MyPosition[p].MySquare[i, j].PieceTypeColour)
+                        + BmpFileNameFromPieceTypeColour(this.MyWeirdEngineMoveFinder.mainposition.squares[i, j])
                         + colourpart + ".jpg";
 
                     draw_x = BoardEdgeWidthHeightLeft + (i * SquareWidthHeight);
-                    draw_y = (((this.MyWeirdEngineBackend.MyGame.NumberOfRanks - 1) - j) * SquareWidthHeight) + BoardEdgeWidthHeight;
+                    draw_y = (((this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j) * SquareWidthHeight) + BoardEdgeWidthHeight;
 
-                    if (this.MyWeirdEngineBackend.BoardFromWhitePerspective == false)
+                    if (BoardFromWhitePerspective == false)
                     {
 
-                        i_b = (this.MyWeirdEngineBackend.MyGame.NumberOfFiles - 1) - i;
-                        j_b = (this.MyWeirdEngineBackend.MyGame.NumberOfRanks - 1) - j;
+                        i_b = (this.MyWeirdEngineMoveFinder.mainposition.boardwidth - 1) - i;
+                        j_b = (this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j;
 
 
                         draw_x = BoardEdgeWidthHeightLeft + (i_b * SquareWidthHeight);
-                        draw_y = (((this.MyWeirdEngineBackend.MyGame.NumberOfRanks - 1) - j_b) * SquareWidthHeight) + BoardEdgeWidthHeight;
+                        draw_y = (((this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j_b) * SquareWidthHeight) + BoardEdgeWidthHeight;
                     }
 
                     try
@@ -142,12 +135,12 @@ namespace TheWeirdEngine
             }
 
             MyFont = new Font("Arial", 11);
-            for (i = 0; i < this.MyWeirdEngineBackend.MyGame.NumberOfFiles; i++)
+            for (i = 0; i < this.MyWeirdEngineMoveFinder.mainposition.boardwidth; i++)
             {
 
-                if (this.MyWeirdEngineBackend.BoardFromWhitePerspective == false)
+                if (BoardFromWhitePerspective == false)
                 {
-                    i_b = (this.MyWeirdEngineBackend.MyGame.NumberOfFiles - 1) - i;
+                    i_b = (this.MyWeirdEngineMoveFinder.mainposition.boardwidth - 1) - i;
                 }
                 else
                 {
@@ -155,7 +148,7 @@ namespace TheWeirdEngine
                 }
 
                 draw_x = (int)(BoardEdgeWidthHeightLeft * 0.75) + (SquareWidthHeight / 2) + (i_b * SquareWidthHeight);
-                draw_y = (this.MyWeirdEngineBackend.MyGame.NumberOfRanks * SquareWidthHeight) + BoardEdgeWidthHeightTop + 1;
+                draw_y = (this.MyWeirdEngineMoveFinder.mainposition.boardheight * SquareWidthHeight) + BoardEdgeWidthHeightTop + 1;
                 MyPoint = new Point(draw_x, draw_y);
                 s = "";
 
@@ -177,12 +170,12 @@ namespace TheWeirdEngine
                 g.DrawString(s, MyFont, Brushes.White, MyPoint);
             }
 
-            for (j = 0; j < this.MyWeirdEngineBackend.MyGame.NumberOfRanks; j++)
+            for (j = 0; j < this.MyWeirdEngineMoveFinder.mainposition.boardheight; j++)
             {
 
-                if (this.MyWeirdEngineBackend.BoardFromWhitePerspective == false)
+                if (BoardFromWhitePerspective == false)
                 {
-                    j_b = (this.MyWeirdEngineBackend.MyGame.NumberOfRanks - 1) - j;
+                    j_b = (this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j;
                 }
                 else
                 {
@@ -195,7 +188,7 @@ namespace TheWeirdEngine
                     draw_x = (int)(BoardEdgeWidthHeightLeft * 0.1);
                 }
                 draw_y = BoardEdgeWidthHeightTop + (int)(SquareWidthHeight * 0.4)
-                    + (((this.MyWeirdEngineBackend.MyGame.NumberOfRanks - 1) - j_b) * SquareWidthHeight);
+                    + (((this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j_b) * SquareWidthHeight);
                 MyPoint = new Point(draw_x, draw_y);
                 s = (j + 1).ToString();
                 g.DrawString(s, MyFont, Brushes.White, MyPoint);
@@ -205,15 +198,10 @@ namespace TheWeirdEngine
         public string DisplayInformation()
         {
             string s;
-            int i;
-            int j;
-            int p;
 
             s = "";
 
-            p = this.MyWeirdEngineBackend.MyGame.ActualCurrentPositionidx;
-
-            if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].ColourToMove == 1)
+            if (this.MyWeirdEngineMoveFinder.mainposition.colourtomove == 1)
             {
                 s = s + "White to move\n";
             }
@@ -222,53 +210,10 @@ namespace TheWeirdEngine
                 s = s + "Black to move\n";
             }
 
-
-            for (i = 0; i < this.MyWeirdEngineBackend.MyGame.NumberOfFiles; i++)
-            {
-                j = this.MyWeirdEngineBackend.MyGame.NumberOfRanks - 4;
-                if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].MySquare[i, j].EnPassantLeftAllowed == true)
-                {
-                    s = s + this.MyWeirdEngineBackend.Square_i_jAsText(i, j) + " e.p. left possible\n";
-                }
-                if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].MySquare[i, j].EnPassantRightAllowed == true)
-                {
-                    s = s + this.MyWeirdEngineBackend.Square_i_jAsText(i, j) + " e.p. right possible\n";
-                }
-                j = 3;
-                if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].MySquare[i, j].EnPassantLeftAllowed == true)
-                {
-                    s = s + this.MyWeirdEngineBackend.Square_i_jAsText(i, j) + " e.p. left possible\n";
-                }
-                if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].MySquare[i, j].EnPassantRightAllowed == true)
-                {
-                    s = s + this.MyWeirdEngineBackend.Square_i_jAsText(i, j) + " e.p. right possible\n";
-                }
-            }
-            if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].CastleWhiteLeftBlockedPerm == false)
-            {
-                s = s + "White castle left possible\n";
-            }
-            if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].CastleWhiteRightBlockedPerm == false)
-            {
-                s = s + "White castle right possible\n";
-            }
-            if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].CastleBlackLeftBlockedPerm == false)
-            {
-                s = s + "Black castle left possible\n";
-            }
-            if (this.MyWeirdEngineBackend.MyGame.MyPosition[p].CastleBlackRightBlockedPerm == false)
-            {
-                s = s + "Black castle right possible\n";
-            }
-
-            s = s + "Castle distance " +
-                   this.MyWeirdEngineBackend.MyGame.CastleDistance.ToString() + "\n";
-
-            s = s + "FindOnly1stMate_n_line " +
-                   this.MyWeirdEngineBackend.FindOnly1stMate_n_line.ToString() + "\n";
-
-            s = s + "NumberOfPliesToCalculate " +
-                   this.MyWeirdEngineBackend.NumberOfPliesToCalculate.ToString();
+            s = s + "presort_when_n_plies_gt " + MyWeirdEngineMoveFinder.presort_when_n_plies_gt.ToString() + "\n";
+            s = s + "presort_using_n_plies " + MyWeirdEngineMoveFinder.presort_using_n_plies.ToString() + "\n";
+            s = s + "jsonsourcepath " + MyWeirdEngineMoveFinder.MyWeirdEngineJson.jsonsourcepath + "\n";
+            s = s + "jsonworkpath " + MyWeirdEngineMoveFinder.MyWeirdEngineJson.jsonworkpath + "\n";
 
             return s;
         }

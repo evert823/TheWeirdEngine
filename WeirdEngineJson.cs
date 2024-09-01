@@ -412,6 +412,25 @@ namespace TheWeirdEngine
             }
             return fen;
         }
+        public string DisplayAttacks(ref chessposition pposition)
+        {
+            string AttackedByPMstr = "";
+            string AttackedByPOstr = "";
+            for (int i = 0; i < pposition.boardwidth; i++)
+                for (int j = 0; j < pposition.boardheight; j++)
+                {
+                    if (pposition.squareInfo[i, j].AttackedByPM == true)
+                    {
+                        AttackedByPMstr += "(" + i.ToString() + "," + j.ToString() + ")";
+                    }
+                    if (pposition.squareInfo[i, j].AttackedByPO == true)
+                    {
+                        AttackedByPOstr += "(" + i.ToString() + "," + j.ToString() + ")";
+                    }
+                }
+            string myresult = "Attacked by PM : " + AttackedByPMstr + " Attacked by PO : " + AttackedByPOstr;
+            return myresult;
+        }
         public string ShortNotation(chessmove pmove)
         {
             if (pmove.IsCastling == true)
