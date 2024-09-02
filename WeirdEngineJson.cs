@@ -217,6 +217,7 @@ namespace TheWeirdEngine
             }
             jsonpiecenamelist piecenames = JsonConvert.DeserializeObject<jsonpiecenamelist>(json);
             int n = piecenames.piecetypes.Length;
+            this.MyWeirdEngineMoveFinder.piecetypes = null;
             this.MyWeirdEngineMoveFinder.piecetypes = new chesspiecetype[n];
             for (int i = 0; i < n; i++)
             {

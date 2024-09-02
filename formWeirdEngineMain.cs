@@ -166,6 +166,10 @@ namespace TheWeirdEngine
         {
             mfunittests Mymfunittests;
 
+            string infilename = "unittestgame";
+            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
+            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
+
             this.DisableGUI();
             string unittestpath = this.MyWeirdEngineJson.jsonsourcepath + "unittests";
             Mymfunittests = new mfunittests(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);

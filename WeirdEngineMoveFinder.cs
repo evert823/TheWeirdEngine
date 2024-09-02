@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.ComponentModel.Com2Interop;
 
 namespace TheWeirdEngine
 {
@@ -30,6 +31,8 @@ namespace TheWeirdEngine
     {
         public bool AttackedByPM;
         public bool AttackedByPO;
+        public byte n_adjacent_whitewitches;
+        public byte n_adjacent_blackwitches;
     }
     public struct chesspiecetype
     {
@@ -128,6 +131,8 @@ namespace TheWeirdEngine
                 {
                     pposition.squareInfo[i, j].AttackedByPM = false;
                     pposition.squareInfo[i, j].AttackedByPO = false;
+                    pposition.squareInfo[i, j].n_adjacent_whitewitches = 0;
+                    pposition.squareInfo[i, j].n_adjacent_blackwitches = 0;
                 }
             }
             pposition.whitekingcoord.x = -1;
@@ -348,6 +353,39 @@ namespace TheWeirdEngine
             }
             this.ClearNonPersistent(ref topos);
         }
+        public void SetWitchInfluence(ref chessposition pposition)
+        {
+            for (int i = 0; i < pposition.boardwidth; i++)
+            {
+                for (int j = 0; j < pposition.boardheight; j++)
+                {
+                    if (pposition.squares[i, j] != 0)
+                    {
+                        int pti = pieceTypeIndex(pposition.squares[i, j]);
+                        if (this.piecetypes[pti].name == "Witch")
+                        {
+                            for (int i2 = i - 1; i2 < i + 2; i2++)
+                            {
+                                for (int j2 = j - 1; j2 < j + 2; j2++)
+                                {
+                                    if (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight)
+                                    {
+                                        if (pposition.squares[i, j] > 0)
+                                        {
+                                            pposition.squareInfo[i2, j2].n_adjacent_whitewitches += 1;
+                                        }
+                                        else
+                                        {
+                                            pposition.squareInfo[i2, j2].n_adjacent_blackwitches += 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         public bool WhiteKingIsInCheck(ref chessposition pposition)
         {
             if (pposition.colourtomove == 1)
@@ -543,7 +581,7 @@ namespace TheWeirdEngine
             }
         }
         public void GetSlideAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
-                                                  bool getcaptures, bool getnoncaptures, int n_plies)
+                                                  bool getcaptures, bool getnoncaptures, int n_plies, int pti)
         {
             int i2;
             int j2;
@@ -575,7 +613,6 @@ namespace TheWeirdEngine
                             pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                             pposition.movelist[movei].IsCapture = true;
                             GetPromotion(ref pposition, movei);
-                            blocked = true;
                         }
                     }
                 }
@@ -592,7 +629,41 @@ namespace TheWeirdEngine
                 }
                 if (pposition.squares[i2, j2] != 0)
                 {
-                    blocked = true;
+                    bool IsTransparent = false;
+                    if (pposition.squares[i, j] > 0 & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 0)
+                    {
+                        if (piecetypes[pti].name == "Witch"
+                            & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 1)
+                        {
+                            IsTransparent = true;
+                        }
+                        else
+                        {
+                            if (piecetypes[pti].name != "Witch")
+                            {
+                                IsTransparent = true;
+                            }
+                        }
+                    }
+                    if (pposition.squares[i, j] < 0 & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 0)
+                    {
+                        if (piecetypes[pti].name == "Witch"
+                            & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 1)
+                        {
+                            IsTransparent = true;
+                        }
+                        else
+                        {
+                            if (piecetypes[pti].name != "Witch")
+                            {
+                                IsTransparent = true;
+                            }
+                        }
+                    }
+                    if (IsTransparent == false)
+                    {
+                        blocked = true;
+                    }
                 }
                 i2 = i2 + v.x;
                 if (pposition.squares[i, j] > 0)
@@ -613,18 +684,18 @@ namespace TheWeirdEngine
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, n_plies);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, n_plies, pti);
                 }
             }
             else
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, n_plies);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, n_plies, pti);
                 }
                 foreach (vector v in this.piecetypes[pti].slidecapturevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, n_plies);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, n_plies, pti);
                 }
             }
         }
@@ -985,6 +1056,7 @@ namespace TheWeirdEngine
             {
                 return myresult;
             }
+            SetWitchInfluence(ref positionstack[posidx]);
             GetAttacksMoves(ref positionstack[posidx], n_plies);
             if (POKingIsInCheck(ref positionstack[posidx]) == true)
             {

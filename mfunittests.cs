@@ -417,6 +417,24 @@ namespace TheWeirdEngine
             BaselinePerformance(ppath, "07A_mate_4_white_BN", 8, 5);
             BaselinePerformance(ppath, "07A_mate_4_black_BN", 8, 5);
 
+            TestMove(ppath, "09A_witch_white", "Rook", 3, 1, 3, 3, true);
+            TestMove(ppath, "09A_witch_white", "Rook", 3, 1, 3, 4, true);
+            TestMove(ppath, "09A_witch_white", "Rook", 3, 1, 3, 5, true);
+            TestMove(ppath, "09A_witch_white", "Rook", 3, 1, 6, 2, false);
+            TestMove(ppath, "09A_witch_white", "Rook", 3, 1, 3, 7, true);
+            TestMove(ppath, "09A_witch_white", "Witch", 4, 3, 2, 3, true);
+            TestMove(ppath, "09A_witch_white", "Witch", 4, 3, 3, 3, false);
+            TestMove(ppath, "09A_witch_white", "Witch", 4, 3, 1, 3, false);
+
+            TestMove(ppath, "09A_witch_black", "Rook", 3, 6, 3, 3, true);
+            TestMove(ppath, "09A_witch_black", "Rook", 3, 6, 3, 4, true);
+            TestMove(ppath, "09A_witch_black", "Rook", 3, 6, 3, 5, true);
+            TestMove(ppath, "09A_witch_black", "Rook", 3, 6, 6, 2, false);
+            TestMove(ppath, "09A_witch_black", "Rook", 3, 6, 3, 7, true);
+            TestMove(ppath, "09A_witch_black", "Witch", 4, 4, 2, 4, true);
+            TestMove(ppath, "09A_witch_black", "Witch", 4, 4, 3, 4, false);
+            TestMove(ppath, "09A_witch_black", "Witch", 4, 4, 1, 4, false);
+
             if (AllTestsPassed == true)
             {
                 MessageBox.Show("All unittests passed");
