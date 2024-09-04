@@ -131,14 +131,14 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.SavePositionAsJson(positionname);
 
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
-            //MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.mainposition));
-            //MessageBox.Show(this.MyWeirdEngineJson.DisplayAttacks(ref MyWeirdEngineMoveFinder.mainposition));
+            //MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.positionstack[0]));
+            //MessageBox.Show(this.MyWeirdEngineJson.DisplayAttacks(ref MyWeirdEngineMoveFinder.positionstack[0]));
             string s = "posvalue " + a.posvalue.ToString();
             s += " moveidx " + a.moveidx.ToString();
             string mvstr;
             if (a.moveidx > -1)
             {
-                mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.mainposition.movelist[a.moveidx]);
+                mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx]);
             }
             else
             {

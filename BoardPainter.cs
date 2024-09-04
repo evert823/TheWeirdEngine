@@ -88,14 +88,14 @@ namespace TheWeirdEngine
             i_b = 0;
             j_b = 0;
 
-            this.PictureBox_Board.Width = (SquareWidthHeight * this.MyWeirdEngineMoveFinder.mainposition.boardwidth)
+            this.PictureBox_Board.Width = (SquareWidthHeight * this.MyWeirdEngineMoveFinder.positionstack[0].boardwidth)
                 + BoardEdgeWidthHeightLeft + BoardEdgeWidthHeightRight;
-            this.PictureBox_Board.Height = (SquareWidthHeight * this.MyWeirdEngineMoveFinder.mainposition.boardheight)
+            this.PictureBox_Board.Height = (SquareWidthHeight * this.MyWeirdEngineMoveFinder.positionstack[0].boardheight)
                 + BoardEdgeWidthHeightBottom + BoardEdgeWidthHeightTop;
 
-            for (i = 0; i < this.MyWeirdEngineMoveFinder.mainposition.boardwidth; i++)
+            for (i = 0; i < this.MyWeirdEngineMoveFinder.positionstack[0].boardwidth; i++)
             {
-                for (j = 0; j < this.MyWeirdEngineMoveFinder.mainposition.boardheight; j++)
+                for (j = 0; j < this.MyWeirdEngineMoveFinder.positionstack[0].boardheight; j++)
                 {
                     if ((i + j) % 2 == 0)
                     {
@@ -106,21 +106,21 @@ namespace TheWeirdEngine
                         colourpart = "onblack";
                     }
                     bmp_name = resourcefolder
-                        + BmpFileNameFromPieceTypeColour(this.MyWeirdEngineMoveFinder.mainposition.squares[i, j])
+                        + BmpFileNameFromPieceTypeColour(this.MyWeirdEngineMoveFinder.positionstack[0].squares[i, j])
                         + colourpart + ".jpg";
 
                     draw_x = BoardEdgeWidthHeightLeft + (i * SquareWidthHeight);
-                    draw_y = (((this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j) * SquareWidthHeight) + BoardEdgeWidthHeight;
+                    draw_y = (((this.MyWeirdEngineMoveFinder.positionstack[0].boardheight - 1) - j) * SquareWidthHeight) + BoardEdgeWidthHeight;
 
                     if (BoardFromWhitePerspective == false)
                     {
 
-                        i_b = (this.MyWeirdEngineMoveFinder.mainposition.boardwidth - 1) - i;
-                        j_b = (this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j;
+                        i_b = (this.MyWeirdEngineMoveFinder.positionstack[0].boardwidth - 1) - i;
+                        j_b = (this.MyWeirdEngineMoveFinder.positionstack[0].boardheight - 1) - j;
 
 
                         draw_x = BoardEdgeWidthHeightLeft + (i_b * SquareWidthHeight);
-                        draw_y = (((this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j_b) * SquareWidthHeight) + BoardEdgeWidthHeight;
+                        draw_y = (((this.MyWeirdEngineMoveFinder.positionstack[0].boardheight - 1) - j_b) * SquareWidthHeight) + BoardEdgeWidthHeight;
                     }
 
                     try
@@ -135,12 +135,12 @@ namespace TheWeirdEngine
             }
 
             MyFont = new Font("Arial", 11);
-            for (i = 0; i < this.MyWeirdEngineMoveFinder.mainposition.boardwidth; i++)
+            for (i = 0; i < this.MyWeirdEngineMoveFinder.positionstack[0].boardwidth; i++)
             {
 
                 if (BoardFromWhitePerspective == false)
                 {
-                    i_b = (this.MyWeirdEngineMoveFinder.mainposition.boardwidth - 1) - i;
+                    i_b = (this.MyWeirdEngineMoveFinder.positionstack[0].boardwidth - 1) - i;
                 }
                 else
                 {
@@ -148,7 +148,7 @@ namespace TheWeirdEngine
                 }
 
                 draw_x = (int)(BoardEdgeWidthHeightLeft * 0.75) + (SquareWidthHeight / 2) + (i_b * SquareWidthHeight);
-                draw_y = (this.MyWeirdEngineMoveFinder.mainposition.boardheight * SquareWidthHeight) + BoardEdgeWidthHeightTop + 1;
+                draw_y = (this.MyWeirdEngineMoveFinder.positionstack[0].boardheight * SquareWidthHeight) + BoardEdgeWidthHeightTop + 1;
                 MyPoint = new Point(draw_x, draw_y);
                 s = "";
 
@@ -170,12 +170,12 @@ namespace TheWeirdEngine
                 g.DrawString(s, MyFont, Brushes.White, MyPoint);
             }
 
-            for (j = 0; j < this.MyWeirdEngineMoveFinder.mainposition.boardheight; j++)
+            for (j = 0; j < this.MyWeirdEngineMoveFinder.positionstack[0].boardheight; j++)
             {
 
                 if (BoardFromWhitePerspective == false)
                 {
-                    j_b = (this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j;
+                    j_b = (this.MyWeirdEngineMoveFinder.positionstack[0].boardheight - 1) - j;
                 }
                 else
                 {
@@ -188,7 +188,7 @@ namespace TheWeirdEngine
                     draw_x = (int)(BoardEdgeWidthHeightLeft * 0.1);
                 }
                 draw_y = BoardEdgeWidthHeightTop + (int)(SquareWidthHeight * 0.4)
-                    + (((this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j_b) * SquareWidthHeight);
+                    + (((this.MyWeirdEngineMoveFinder.positionstack[0].boardheight - 1) - j_b) * SquareWidthHeight);
                 MyPoint = new Point(draw_x, draw_y);
                 s = (j + 1).ToString();
                 g.DrawString(s, MyFont, Brushes.White, MyPoint);
@@ -201,7 +201,7 @@ namespace TheWeirdEngine
 
             s = "";
 
-            if (this.MyWeirdEngineMoveFinder.mainposition.colourtomove == 1)
+            if (this.MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
             {
                 s = s + "White to move\n";
             }

@@ -42,6 +42,10 @@ namespace TheWeirdEngine
         public jsoncastlinginfo castlinginfo;
         public string[] squares;
     }
+    public struct jsonchesspositions
+    {
+        public jsonchessposition[] positionslast2prev;
+    }
     public class WeirdEngineJson
     {
         public WeirdEngineMoveFinder MyWeirdEngineMoveFinder;
@@ -242,26 +246,18 @@ namespace TheWeirdEngine
                 writer.Close();
             }
         }
-        public void LoadPositionJson(string ppath, string pFileName)
+        public void jsonchessposition_to_positionstack(jsonchessposition loadedpos, int posidx)
         {
-            string json;
-            using (StreamReader r = new StreamReader(ppath + "\\" + pFileName + ".json"))
-            {
-                json = r.ReadToEnd();
-            }
-            jsonchessposition loadedpos = JsonConvert.DeserializeObject<jsonchessposition>(json);
-            this.MyWeirdEngineMoveFinder.ResetBoardsize(ref this.MyWeirdEngineMoveFinder.mainposition,
-                                                        loadedpos.boardwidth, loadedpos.boardheight);
-            this.MyWeirdEngineMoveFinder.mainposition.colourtomove = loadedpos.colourtomove;
-            this.MyWeirdEngineMoveFinder.mainposition.precedingmove = new int[4]
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove = loadedpos.colourtomove;
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove = new int[4]
                 { loadedpos.precedingmove.x_from, loadedpos.precedingmove.y_from,
                     loadedpos.precedingmove.x_to, loadedpos.precedingmove.y_to };
-            this.MyWeirdEngineMoveFinder.mainposition.whitekinghasmoved = loadedpos.castlinginfo.whitekinghasmoved;
-            this.MyWeirdEngineMoveFinder.mainposition.whitekingsiderookhasmoved = loadedpos.castlinginfo.whitekingsiderookhasmoved;
-            this.MyWeirdEngineMoveFinder.mainposition.whitequeensiderookhasmoved = loadedpos.castlinginfo.whitequeensiderookhasmoved;
-            this.MyWeirdEngineMoveFinder.mainposition.blackkinghasmoved = loadedpos.castlinginfo.blackkinghasmoved;
-            this.MyWeirdEngineMoveFinder.mainposition.blackkingsiderookhasmoved = loadedpos.castlinginfo.blackkingsiderookhasmoved;
-            this.MyWeirdEngineMoveFinder.mainposition.blackqueensiderookhasmoved = loadedpos.castlinginfo.blackqueensiderookhasmoved;
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].whitekinghasmoved = loadedpos.castlinginfo.whitekinghasmoved;
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].whitekingsiderookhasmoved = loadedpos.castlinginfo.whitekingsiderookhasmoved;
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].whitequeensiderookhasmoved = loadedpos.castlinginfo.whitequeensiderookhasmoved;
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkinghasmoved = loadedpos.castlinginfo.blackkinghasmoved;
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkingsiderookhasmoved = loadedpos.castlinginfo.blackkingsiderookhasmoved;
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].blackqueensiderookhasmoved = loadedpos.castlinginfo.blackqueensiderookhasmoved;
             for (int j = 0; j < loadedpos.boardheight; j++)
             {
                 int rj = (loadedpos.boardheight - 1) - j;
@@ -269,27 +265,58 @@ namespace TheWeirdEngine
                 for (int i = 0; i < loadedpos.boardwidth; i++)
                 {
                     string s = mysymbol[i].TrimStart(' ');
-                    this.MyWeirdEngineMoveFinder.mainposition.squares[i, j] = this.Str2PieceType(s);
+                    this.MyWeirdEngineMoveFinder.positionstack[posidx].squares[i, j] = this.Str2PieceType(s);
                 }
             }
         }
-        public void SavePositionAsJson(string pFileName)
+        public void LoadPositionJson(string ppath, string pFileName)
+        {
+            string json;
+            using (StreamReader r = new StreamReader(ppath + "\\" + pFileName + ".json"))
+            {
+                json = r.ReadToEnd();
+            }
+            jsonchesspositions loadedposset;
+            jsonchessposition loadedpos;
+
+            loadedposset = JsonConvert.DeserializeObject<jsonchesspositions>(json);
+            if (loadedposset.positionslast2prev == null)
+            {
+                loadedpos = JsonConvert.DeserializeObject<jsonchessposition>(json);
+            }
+            else
+            {
+                loadedpos = loadedposset.positionslast2prev[0];
+            }
+            this.MyWeirdEngineMoveFinder.init_positionstack(loadedpos.boardwidth, loadedpos.boardheight);
+            jsonchessposition_to_positionstack(loadedpos, 0);
+
+            if (loadedposset.positionslast2prev != null)
+            {
+                if (loadedposset.positionslast2prev.Length > 1)
+                {
+                    jsonchessposition_to_positionstack(loadedposset.positionslast2prev[1],
+                        this.MyWeirdEngineMoveFinder.positionstack.Length - 1);
+                }
+            }
+        }
+        public jsonchessposition positionstack_to_jsonchessposition(int posidx)
         {
             jsonchessposition mypos = new jsonchessposition();
-            mypos.boardwidth = this.MyWeirdEngineMoveFinder.mainposition.boardwidth;
-            mypos.boardheight = this.MyWeirdEngineMoveFinder.mainposition.boardheight;
+            mypos.boardwidth = this.MyWeirdEngineMoveFinder.positionstack[posidx].boardwidth;
+            mypos.boardheight = this.MyWeirdEngineMoveFinder.positionstack[posidx].boardheight;
             mypos.squares = new string[mypos.boardheight];
-            mypos.colourtomove = this.MyWeirdEngineMoveFinder.mainposition.colourtomove;
-            mypos.precedingmove.x_from = this.MyWeirdEngineMoveFinder.mainposition.precedingmove[0];
-            mypos.precedingmove.y_from = this.MyWeirdEngineMoveFinder.mainposition.precedingmove[1];
-            mypos.precedingmove.x_to = this.MyWeirdEngineMoveFinder.mainposition.precedingmove[2];
-            mypos.precedingmove.y_to = this.MyWeirdEngineMoveFinder.mainposition.precedingmove[3];
-            mypos.castlinginfo.whitekinghasmoved = this.MyWeirdEngineMoveFinder.mainposition.whitekinghasmoved;
-            mypos.castlinginfo.whitekingsiderookhasmoved = this.MyWeirdEngineMoveFinder.mainposition.whitekingsiderookhasmoved;
-            mypos.castlinginfo.whitequeensiderookhasmoved = this.MyWeirdEngineMoveFinder.mainposition.whitequeensiderookhasmoved;
-            mypos.castlinginfo.blackkinghasmoved = this.MyWeirdEngineMoveFinder.mainposition.blackkinghasmoved;
-            mypos.castlinginfo.blackkingsiderookhasmoved = this.MyWeirdEngineMoveFinder.mainposition.blackkingsiderookhasmoved;
-            mypos.castlinginfo.blackqueensiderookhasmoved = this.MyWeirdEngineMoveFinder.mainposition.blackqueensiderookhasmoved;
+            mypos.colourtomove = this.MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove;
+            mypos.precedingmove.x_from = this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[0];
+            mypos.precedingmove.y_from = this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[1];
+            mypos.precedingmove.x_to = this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[2];
+            mypos.precedingmove.y_to = this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[3];
+            mypos.castlinginfo.whitekinghasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].whitekinghasmoved;
+            mypos.castlinginfo.whitekingsiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].whitekingsiderookhasmoved;
+            mypos.castlinginfo.whitequeensiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].whitequeensiderookhasmoved;
+            mypos.castlinginfo.blackkinghasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkinghasmoved;
+            mypos.castlinginfo.blackkingsiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkingsiderookhasmoved;
+            mypos.castlinginfo.blackqueensiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackqueensiderookhasmoved;
 
             for (int j = 0; j < mypos.boardheight; j++)
             {
@@ -297,7 +324,7 @@ namespace TheWeirdEngine
                 string myvisualrank = "";
                 for (int i = 0; i < mypos.boardwidth; i++)
                 {
-                    string mysymbol = this.PieceType2Str(this.MyWeirdEngineMoveFinder.mainposition.squares[i, rj]);
+                    string mysymbol = this.PieceType2Str(this.MyWeirdEngineMoveFinder.positionstack[posidx].squares[i, rj]);
                     while (mysymbol.Length < 2)
                     {
                         mysymbol = " " + mysymbol;
@@ -310,8 +337,24 @@ namespace TheWeirdEngine
                 }
                 mypos.squares[j] = myvisualrank;
             }
+            return mypos;
+        }
+        public void SavePositionAsJson(string pFileName)
+        {
+            jsonchessposition mypos = positionstack_to_jsonchessposition(0);
+            string jsonString;
 
-            string jsonString = JsonConvert.SerializeObject(mypos, Formatting.Indented);
+            if (MyWeirdEngineMoveFinder.HasPreviousPosition() == true)
+            {
+                jsonchessposition myprevpos = positionstack_to_jsonchessposition(MyWeirdEngineMoveFinder.positionstack.Length - 1);
+                jsonchesspositions myposall = new jsonchesspositions();
+                myposall.positionslast2prev = new jsonchessposition[2] { mypos, myprevpos };
+                jsonString = JsonConvert.SerializeObject(myposall, Formatting.Indented);
+            }
+            else
+            {
+                jsonString = JsonConvert.SerializeObject(mypos, Formatting.Indented);
+            }
 
             using (StreamWriter writer = new StreamWriter(this.jsonworkpath + "positions_verify\\" + pFileName + ".json"))
             {
@@ -323,25 +366,25 @@ namespace TheWeirdEngine
         {
             string[] fenparts0 = pfen.Split(' ');
             string[] fenparts = fenparts0[0].Split('/');
-            this.MyWeirdEngineMoveFinder.ResetBoardsize(ref this.MyWeirdEngineMoveFinder.mainposition, 8, 8);
+            this.MyWeirdEngineMoveFinder.ResetBoardsize(ref this.MyWeirdEngineMoveFinder.positionstack[0], 8, 8);
 
             if (fenparts0[1].ToLower() == "w")
             {
-                this.MyWeirdEngineMoveFinder.mainposition.colourtomove = 1;
+                this.MyWeirdEngineMoveFinder.positionstack[0].colourtomove = 1;
             }
             else
             {
-                this.MyWeirdEngineMoveFinder.mainposition.colourtomove = -1;
+                this.MyWeirdEngineMoveFinder.positionstack[0].colourtomove = -1;
             }
-            this.MyWeirdEngineMoveFinder.DisableCastling(ref this.MyWeirdEngineMoveFinder.mainposition);
-            this.MyWeirdEngineMoveFinder.mainposition.precedingmove = null;
-            this.MyWeirdEngineMoveFinder.mainposition.precedingmove = new int[4] { -1, -1, -1, -1 };
+            this.MyWeirdEngineMoveFinder.DisableCastling(ref this.MyWeirdEngineMoveFinder.positionstack[0]);
+            this.MyWeirdEngineMoveFinder.positionstack[0].precedingmove = null;
+            this.MyWeirdEngineMoveFinder.positionstack[0].precedingmove = new int[4] { -1, -1, -1, -1 };
 
             int vacantsquares;
 
             for (int j = 0; j < fenparts.Length; j++)
             {
-                int rj = (this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j;
+                int rj = (this.MyWeirdEngineMoveFinder.positionstack[0].boardheight - 1) - j;
                 string fp = fenparts[j];
                 int csqi = 0;
                 for (int ci = 0; ci < fp.Length; ci++)
@@ -352,7 +395,7 @@ namespace TheWeirdEngine
                     }
                     else
                     {
-                        this.MyWeirdEngineMoveFinder.mainposition.squares[csqi, rj] = this.Str2PieceType4FEN(fp[ci].ToString());
+                        this.MyWeirdEngineMoveFinder.positionstack[0].squares[csqi, rj] = this.Str2PieceType4FEN(fp[ci].ToString());
                         csqi += 1;
                     }
                 }
@@ -360,22 +403,22 @@ namespace TheWeirdEngine
         }
         public string PositionAsFEN()
         {
-            string[] fenparts = new string[this.MyWeirdEngineMoveFinder.mainposition.boardheight];
+            string[] fenparts = new string[this.MyWeirdEngineMoveFinder.positionstack[0].boardheight];
             for (int j = 0; j < fenparts.Length; j++)
             {
-                int rj = (this.MyWeirdEngineMoveFinder.mainposition.boardheight - 1) - j;
+                int rj = (this.MyWeirdEngineMoveFinder.positionstack[0].boardheight - 1) - j;
                 int vacantcount = 0;
                 string fenpart = "";
-                for (int i = 0; i < this.MyWeirdEngineMoveFinder.mainposition.boardwidth; i++)
+                for (int i = 0; i < this.MyWeirdEngineMoveFinder.positionstack[0].boardwidth; i++)
                 {
-                    if (this.MyWeirdEngineMoveFinder.mainposition.squares[i, rj] != 0)
+                    if (this.MyWeirdEngineMoveFinder.positionstack[0].squares[i, rj] != 0)
                     {
                         if (vacantcount != 0)
                         {
                             fenpart += vacantcount.ToString();
                             vacantcount = 0;
                         }
-                        string mysymbol = this.PieceType2Str4FEN(this.MyWeirdEngineMoveFinder.mainposition.squares[i, rj]);
+                        string mysymbol = this.PieceType2Str4FEN(this.MyWeirdEngineMoveFinder.positionstack[0].squares[i, rj]);
                         fenpart += mysymbol;
                     }
                     else
@@ -398,7 +441,7 @@ namespace TheWeirdEngine
                     fen += "/";
                 }
             }
-            if (this.MyWeirdEngineMoveFinder.mainposition.colourtomove == 1)
+            if (this.MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
             {
                 fen += " w";
             }

@@ -32,9 +32,9 @@ namespace TheWeirdEngine
             bool queensidecastling_happened = false;
             bool kingsidecastling_happened = false;
 
-            for (int movei = 0; movei < MyWeirdEngineMoveFinder.mainposition.movelist_totalfound; movei++)
+            for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
             {
-                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.mainposition.movelist[movei]);
+                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei]);
                 if (mvstr == "0-0")
                 {
                     kingsidecastling_happened = true;
@@ -64,9 +64,9 @@ namespace TheWeirdEngine
 
             bool castling_happened = false;
 
-            for (int movei = 0; movei < MyWeirdEngineMoveFinder.mainposition.movelist_totalfound; movei++)
+            for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
             {
-                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.mainposition.movelist[movei]);
+                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei]);
                 if (mvstr == "0-0")
                 {
                     castling_happened = true;
@@ -92,15 +92,15 @@ namespace TheWeirdEngine
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             bool mymovehappened = false;
-            for (int movei = 0; movei < MyWeirdEngineMoveFinder.mainposition.movelist_totalfound; movei++)
+            for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
             {
-                int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.mainposition.movelist[movei].MovingPiece);
+                int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].MovingPiece);
                 if (MyWeirdEngineMoveFinder.piecetypes[pti].name == expectedmovingpiecename)
                 {
-                    if (MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[0] == pi1 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[1] == pj1 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[2] == pi2 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[3] == pj2)
+                    if (MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[0] == pi1 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[1] == pj1 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[2] == pi2 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[3] == pj2)
                     {
                         mymovehappened = true;
                     }
@@ -129,15 +129,15 @@ namespace TheWeirdEngine
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             bool mymovehappened = false;
-            for (int movei = 0; movei < MyWeirdEngineMoveFinder.mainposition.movelist_totalfound; movei++)
+            for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
             {
-                int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.mainposition.movelist[movei].MovingPiece);
+                int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].MovingPiece);
                 if (MyWeirdEngineMoveFinder.piecetypes[pti].name == "Pawn")
                 {
-                    if (MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[0] == pi1 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[1] == pj1 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[2] == pi2 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[3] == pj2)
+                    if (MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[0] == pi1 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[1] == pj1 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[2] == pi2 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[3] == pj2)
                     {
                         mymovehappened = true;
                     }
@@ -162,19 +162,19 @@ namespace TheWeirdEngine
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             bool mymovehappened = false;
-            for (int movei = 0; movei < MyWeirdEngineMoveFinder.mainposition.movelist_totalfound; movei++)
+            for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
             {
-                int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.mainposition.movelist[movei].MovingPiece);
+                int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].MovingPiece);
                 if (MyWeirdEngineMoveFinder.piecetypes[pti].name == "Pawn")
                 {
-                    if (MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[0] == pi1 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[1] == pj1 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[2] == pi2 &
-                        MyWeirdEngineMoveFinder.mainposition.movelist[movei].coordinates[3] == pj2)
+                    if (MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[0] == pi1 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[1] == pj1 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[2] == pi2 &
+                        MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].coordinates[3] == pj2)
                     {
-                        if (MyWeirdEngineMoveFinder.mainposition.movelist[movei].PromoteToPiece != 0)
+                        if (MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].PromoteToPiece != 0)
                         {
-                            int ptp = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.mainposition.movelist[movei].PromoteToPiece);
+                            int ptp = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].PromoteToPiece);
                             if (MyWeirdEngineMoveFinder.piecetypes[ptp].name == "Hunter")
                             {
                                 mymovehappened = true;
@@ -200,7 +200,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
-            if (MyWeirdEngineMoveFinder.PMKingIsInCheck(ref MyWeirdEngineMoveFinder.mainposition) == true)
+            if (MyWeirdEngineMoveFinder.PMKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
             {
                 //nothing
             }
@@ -232,11 +232,11 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
-            if (a.posvalue == 100 & MyWeirdEngineMoveFinder.mainposition.colourtomove == -1)
+            if (a.posvalue == 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
             {
                 //nothing
             }
-            else if (a.posvalue == -100 & MyWeirdEngineMoveFinder.mainposition.colourtomove == 1)
+            else if (a.posvalue == -100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
             {
                 //nothing
             }
@@ -274,10 +274,10 @@ namespace TheWeirdEngine
 
             if (pi1 != -1)
             {
-                if (MyWeirdEngineMoveFinder.mainposition.movelist[a.moveidx].coordinates[0] == pi1 &
-                    MyWeirdEngineMoveFinder.mainposition.movelist[a.moveidx].coordinates[1] == pj1 &
-                    MyWeirdEngineMoveFinder.mainposition.movelist[a.moveidx].coordinates[2] == pi2 &
-                    MyWeirdEngineMoveFinder.mainposition.movelist[a.moveidx].coordinates[3] == pj2)
+                if (MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].coordinates[0] == pi1 &
+                    MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].coordinates[1] == pj1 &
+                    MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].coordinates[2] == pi2 &
+                    MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].coordinates[3] == pj2)
                 {
                     //nothing
                 }
@@ -287,11 +287,11 @@ namespace TheWeirdEngine
                     AllTestsPassed = false;
                 }
             }
-            if (a.posvalue == 100 & MyWeirdEngineMoveFinder.mainposition.colourtomove == 1)
+            if (a.posvalue == 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
             {
                 //nothing
             }
-            else if (a.posvalue == -100 & MyWeirdEngineMoveFinder.mainposition.colourtomove == -1)
+            else if (a.posvalue == -100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
             {
                 //nothing
             }

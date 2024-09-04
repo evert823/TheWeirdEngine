@@ -85,6 +85,8 @@ namespace TheWeirdEngine
     {
         public const int movelist_allocated = 500;
         public const int positionstack_size = 25;
+        public const int defaultboardwidth = 8;
+        public const int defaultboardheight = 8;
 
         public WeirdEngineJson MyWeirdEngineJson;//reference to Json object that can do some logging
 
@@ -92,15 +94,13 @@ namespace TheWeirdEngine
         public int presort_using_n_plies;
         public int display_when_n_plies_gt;
         public chesspiecetype[] piecetypes;
-        public chessposition mainposition;
         public chessposition[] positionstack;
         public WeirdEngineMoveFinder()
         {
             this.presort_when_n_plies_gt = 4;
             this.presort_using_n_plies = 3;
             this.display_when_n_plies_gt = 6;
-            this.mainposition = new chessposition();
-            this.AllocateMovelist(ref this.mainposition);
+            this.init_positionstack(defaultboardwidth, defaultboardheight);
         }
         public void ResetBoardsize(ref chessposition pposition, int pboardwidth, int pboardheight)
         {
@@ -113,6 +113,23 @@ namespace TheWeirdEngine
             pposition.precedingmove = null;
             pposition.precedingmove = new int[4] { -1, -1, -1, -1 };
             this.ClearNonPersistent(ref pposition);
+        }
+        public bool HasPreviousPosition()
+        {
+            int posidx = this.positionstack.Length - 1;
+            if (posidx < positionstack_size - 1)
+            {
+                return false;
+            }
+            for (int i = 0;i < positionstack[posidx].boardwidth; i++)
+                for (int j = 0; j < positionstack[posidx].boardheight; j++)
+                {
+                    if (positionstack[posidx].squares[i, j] != 0)
+                    {
+                        return true;
+                    }
+                }
+            return false;
         }
         public void DisableCastling(ref chessposition pposition)
         {
@@ -314,21 +331,14 @@ namespace TheWeirdEngine
             }
             return materialbalance * 10;
         }
-        public void init_positionstack()
+        public void init_positionstack(int pboardwidth, int pboardheight)
         {
             this.positionstack = null;
             this.positionstack = new chessposition[positionstack_size];
             for (int pi = 0; pi < positionstack_size; pi++)
             {
-                this.ResetBoardsize(ref this.positionstack[pi],
-                                    this.mainposition.boardwidth,
-                                    this.mainposition.boardheight);
+                this.ResetBoardsize(ref this.positionstack[pi], pboardwidth, pboardheight);
                 this.AllocateMovelist(ref this.positionstack[pi]);
-            }
-            this.SynchronizePosition(ref this.mainposition, ref this.positionstack[0]);
-            for (int ci = 0;ci < 4; ci++)
-            {
-                this.positionstack[0].precedingmove[ci] = this.mainposition.precedingmove[ci];
             }
         }
         public void SynchronizePosition(ref chessposition frompos, ref chessposition topos)
@@ -1023,24 +1033,8 @@ namespace TheWeirdEngine
         public calculationresponse Calculation_n_plies(int n_plies)
         {
             this.MyWeirdEngineJson.SetLogfilename();
-            this.init_positionstack();
             calculationresponse myresult = this.Calculation_n_plies_internal(0, -100, 100, n_plies);
 
-            for (int i = 0; i < mainposition.boardwidth; i++)
-            {
-                for (int j = 0; j < mainposition.boardheight; j++)
-                {
-                    mainposition.squareInfo[i, j] = positionstack[0].squareInfo[i, j];
-                }
-            }
-            mainposition.whitekingcoord = positionstack[0].whitekingcoord;
-            mainposition.blackkingcoord = positionstack[0].blackkingcoord;
-            mainposition.movelist_totalfound = positionstack[0].movelist_totalfound;
-
-            for (int movei = 0; movei < positionstack[0].movelist_totalfound; movei++)
-            {
-                SynchronizeChessmove(positionstack[0].movelist[movei], ref mainposition.movelist[movei]);
-            }
             return myresult;
         }
         public calculationresponse Calculation_n_plies_internal(int posidx, double alpha, double beta, int n_plies)
