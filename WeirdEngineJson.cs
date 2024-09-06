@@ -246,12 +246,16 @@ namespace TheWeirdEngine
                 writer.Close();
             }
         }
-        public void jsonchessposition_to_positionstack(jsonchessposition loadedpos, int posidx)
+        public void jsonchessposition_to_positionstack(jsonchessposition loadedpos, int posidx, bool hasprecedingmove)
         {
             this.MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove = loadedpos.colourtomove;
-            this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove = new int[4]
-                { loadedpos.precedingmove.x_from, loadedpos.precedingmove.y_from,
-                    loadedpos.precedingmove.x_to, loadedpos.precedingmove.y_to };
+            if (hasprecedingmove == true)
+            {
+                this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[0] = loadedpos.precedingmove.x_from;
+                this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[1] = loadedpos.precedingmove.y_from;
+                this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[2] = loadedpos.precedingmove.x_to;
+                this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[3] = loadedpos.precedingmove.y_to;
+            }
             this.MyWeirdEngineMoveFinder.positionstack[posidx].whitekinghasmoved = loadedpos.castlinginfo.whitekinghasmoved;
             this.MyWeirdEngineMoveFinder.positionstack[posidx].whitekingsiderookhasmoved = loadedpos.castlinginfo.whitekingsiderookhasmoved;
             this.MyWeirdEngineMoveFinder.positionstack[posidx].whitequeensiderookhasmoved = loadedpos.castlinginfo.whitequeensiderookhasmoved;
@@ -271,6 +275,7 @@ namespace TheWeirdEngine
         }
         public void LoadPositionJson(string ppath, string pFileName)
         {
+            bool hasprecedingmove = true;
             string json;
             using (StreamReader r = new StreamReader(ppath + "\\" + pFileName + ".json"))
             {
@@ -278,6 +283,22 @@ namespace TheWeirdEngine
             }
             jsonchesspositions loadedposset;
             jsonchessposition loadedpos;
+
+            dynamic dummy = JsonConvert.DeserializeObject(json);
+            if (dummy.positionslast2prev == null)
+            {
+                if (dummy.precedingmove == null)
+                {
+                    hasprecedingmove = false;
+                }
+            }
+            else
+            {
+                if (dummy.positionslast2prev[0].precedingmove == null)
+                {
+                    hasprecedingmove = false;
+                }
+            }
 
             loadedposset = JsonConvert.DeserializeObject<jsonchesspositions>(json);
             if (loadedposset.positionslast2prev == null)
@@ -289,14 +310,14 @@ namespace TheWeirdEngine
                 loadedpos = loadedposset.positionslast2prev[0];
             }
             this.MyWeirdEngineMoveFinder.init_positionstack(loadedpos.boardwidth, loadedpos.boardheight);
-            jsonchessposition_to_positionstack(loadedpos, 0);
+            jsonchessposition_to_positionstack(loadedpos, 0, hasprecedingmove);
 
             if (loadedposset.positionslast2prev != null)
             {
                 if (loadedposset.positionslast2prev.Length > 1)
                 {
                     jsonchessposition_to_positionstack(loadedposset.positionslast2prev[1],
-                        this.MyWeirdEngineMoveFinder.positionstack.Length - 1);
+                        this.MyWeirdEngineMoveFinder.positionstack.Length - 1, hasprecedingmove);
                 }
             }
         }

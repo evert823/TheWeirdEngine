@@ -79,6 +79,7 @@ namespace TheWeirdEngine
         public vector blackqueensiderookcoord;
         public int movelist_totalfound;
         public chessmove[] movelist;
+        public bool POKingInCheckTimeThief;
     }
 
     public class WeirdEngineMoveFinder
@@ -165,6 +166,7 @@ namespace TheWeirdEngine
             pposition.blackqueensiderookcoord.x = -1;
             pposition.blackqueensiderookcoord.y = -1;
             pposition.movelist_totalfound = 0;
+            pposition.POKingInCheckTimeThief = false;
         }
         public void AllocateMovelist(ref chessposition pposition)
         {
@@ -411,6 +413,10 @@ namespace TheWeirdEngine
                 {
                     return true;
                 }
+                if (pposition.POKingInCheckTimeThief == true)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -419,6 +425,10 @@ namespace TheWeirdEngine
             if (pposition.colourtomove == 1)
             {
                 if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPM)
+                {
+                    return true;
+                }
+                if (pposition.POKingInCheckTimeThief == true)
                 {
                     return true;
                 }
@@ -466,6 +476,10 @@ namespace TheWeirdEngine
                     return true;
                 }
             }
+            if (pposition.POKingInCheckTimeThief == true)
+            {
+                return true;
+            }
             return false;
         }
         public void MarkAttacked(ref chessposition pposition, int x, int y, int pmovingpiece)
@@ -493,9 +507,10 @@ namespace TheWeirdEngine
                 }
             }
         }
-        public void GetAttacksMoves(ref chessposition pposition, int n_plies)
+        public void GetAttacksMoves(ref chessposition pposition, int n_plies, int prevposidx)
         {
             pposition.movelist_totalfound = 0;
+            pposition.POKingInCheckTimeThief = false;
             for (int i = 0; i < pposition.boardwidth; i++)
             {
                 for (int j = 0; j < pposition.boardheight; j++)
@@ -513,6 +528,11 @@ namespace TheWeirdEngine
                             GetPawn2StepMoves(ref pposition, i, j);
                             GetPawnEnPassantMoves(ref pposition, i, j);
                         }
+                    }
+                    if ((pposition.squares[i, j] > 0 & pposition.colourtomove > 0) ||
+                        (pposition.squares[i, j] < 0 & pposition.colourtomove < 0))
+                    {
+                        GetTimeThiefCapture(ref pposition, i, j, prevposidx, n_plies);
                     }
                 }
             }
@@ -590,6 +610,106 @@ namespace TheWeirdEngine
                 }
             }
         }
+        public bool SquareIsTransparent(ref chessposition pposition, int i, int j, int i2, int j2, int pti)
+        {
+            bool IsTransparent = false;
+            if (pposition.squares[i, j] > 0 & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 0)
+            {
+                if (piecetypes[pti].name == "Witch"
+                    & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 1)
+                {
+                    IsTransparent = true;
+                }
+                else
+                {
+                    if (piecetypes[pti].name != "Witch")
+                    {
+                        IsTransparent = true;
+                    }
+                }
+            }
+            if (pposition.squares[i, j] < 0 & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 0)
+            {
+                if (piecetypes[pti].name == "Witch"
+                    & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 1)
+                {
+                    IsTransparent = true;
+                }
+                else
+                {
+                    if (piecetypes[pti].name != "Witch")
+                    {
+                        IsTransparent = true;
+                    }
+                }
+            }
+            return IsTransparent;
+        }
+        public bool SquareStepLeapAttackedFromSquare(ref chessposition pposition, int i, int j, int i3, int j3,
+                                                     vector v)
+        {
+            //Establish if [i3,j3] is attacked from [i,j] using StepLeap vector v yes or no
+            int i2;
+            int j2;
+            i2 = i + v.x;
+            if (pposition.squares[i, j] > 0)
+            {
+                j2 = j + v.y;
+            }
+            else
+            {
+                j2 = j - v.y;
+            }
+            if (i2 == i3 & j2 == j3)
+            {
+                return true;
+            }
+            return false;
+        }
+        public bool SquareSlideAttackedFromSquare(ref chessposition pposition, int i, int j, int i3, int j3,
+                                                  vector v, int pti)
+        {
+            //Establish if [i3,j3] is attacked from [i,j] using Slide vector v yes or no
+            int i2;
+            int j2;
+            bool blocked;
+
+            i2 = i + v.x;
+            if (pposition.squares[i, j] > 0)
+            {
+                j2 = j + v.y;
+            }
+            else
+            {
+                j2 = j - v.y;
+            }
+            blocked = false;
+            while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight & blocked == false)
+            {
+                if (i2 == i3 & j2 == j3)
+                {
+                    return true;
+                }
+                if (pposition.squares[i2, j2] != 0)
+                {
+                    bool IsTransparent = SquareIsTransparent(ref pposition, i, j, i2, j2, pti);
+                    if (IsTransparent == false)
+                    {
+                        blocked = true;
+                    }
+                }
+                i2 = i2 + v.x;
+                if (pposition.squares[i, j] > 0)
+                {
+                    j2 = j2 + v.y;
+                }
+                else
+                {
+                    j2 = j2 - v.y;
+                }
+            }
+            return false;
+        }
         public void GetSlideAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
                                                   bool getcaptures, bool getnoncaptures, int n_plies, int pti)
         {
@@ -639,37 +759,7 @@ namespace TheWeirdEngine
                 }
                 if (pposition.squares[i2, j2] != 0)
                 {
-                    bool IsTransparent = false;
-                    if (pposition.squares[i, j] > 0 & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 0)
-                    {
-                        if (piecetypes[pti].name == "Witch"
-                            & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 1)
-                        {
-                            IsTransparent = true;
-                        }
-                        else
-                        {
-                            if (piecetypes[pti].name != "Witch")
-                            {
-                                IsTransparent = true;
-                            }
-                        }
-                    }
-                    if (pposition.squares[i, j] < 0 & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 0)
-                    {
-                        if (piecetypes[pti].name == "Witch"
-                            & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 1)
-                        {
-                            IsTransparent = true;
-                        }
-                        else
-                        {
-                            if (piecetypes[pti].name != "Witch")
-                            {
-                                IsTransparent = true;
-                            }
-                        }
-                    }
+                    bool IsTransparent = SquareIsTransparent(ref pposition, i, j, i2, j2, pti);
                     if (IsTransparent == false)
                     {
                         blocked = true;
@@ -794,6 +884,51 @@ namespace TheWeirdEngine
                         {
                             pposition.movelist[movei2].PromoteToPiece = pi + 1;
                         }
+                        pposition.movelist_totalfound += 1;
+                    }
+                }
+            }
+        }
+        public void GetTimeThiefCapture(ref chessposition pposition, int i, int j, int prevposidx, int n_plies)
+        {
+            int movei;
+            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+            if (this.piecetypes[pti].name != "TimeThief")
+            {
+                return;
+            }
+            if (pposition.precedingmove[0] == -1)
+            {
+                return;
+            }
+            if (prevposidx < 0)
+            {
+                return;
+            }
+            int i2 = pposition.precedingmove[0];
+            int j2 = pposition.precedingmove[1];
+            //we assume that TimeThief-capture is following the TimeThief's own slidemovevectors
+            //if not then we must change this code and extend the json structure
+            foreach (vector v in this.piecetypes[pti].slidemovevectors)
+            {
+                if (SquareSlideAttackedFromSquare(ref positionstack[prevposidx], i, j, i2, j2, v, pti) == true)
+                {
+                    int i3 = pposition.precedingmove[2];
+                    int j3 = pposition.precedingmove[3];
+                    int pti3 = this.pieceTypeIndex(pposition.squares[i3, j3]);
+                    if (this.piecetypes[pti3].name == "King")
+                    {
+                        //King moved out of attack range of TimeThief
+                        //That is equivalent with moving into check, and here we must detect this
+                        pposition.POKingInCheckTimeThief = true;
+                    }
+
+                    if (n_plies > 0)
+                    {
+                        movei = pposition.movelist_totalfound;
+                        InitializeMove(ref pposition, movei, i, j, i2, j2);
+                        pposition.movelist[movei].IsCapture = true;
+                        pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                         pposition.movelist_totalfound += 1;
                     }
                 }
@@ -1051,7 +1186,17 @@ namespace TheWeirdEngine
                 return myresult;
             }
             SetWitchInfluence(ref positionstack[posidx]);
-            GetAttacksMoves(ref positionstack[posidx], n_plies);
+
+            int prevposidx = posidx - 1;
+            if (prevposidx == -1)
+            {
+                if (HasPreviousPosition())
+                {
+                    prevposidx = positionstack.Length - 1;
+                }
+            }
+            GetAttacksMoves(ref positionstack[posidx], n_plies, prevposidx);
+
             if (POKingIsInCheck(ref positionstack[posidx]) == true)
             {
                 if (positionstack[posidx].colourtomove == 1)
@@ -1101,7 +1246,7 @@ namespace TheWeirdEngine
 
                 for (int i = 0; i < movecount; i++)
                 {
-                    int newposidx = ExecuteMove(posidx, movelist2[i]);
+                    int newposidx = ExecuteMove(posidx, movelist2[i], prevposidx);
                     calculationresponse newresponse_presort = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
                                                                                    presort_using_n_plies);
                     subresults_presort[i].moveidx = i;
@@ -1154,7 +1299,7 @@ namespace TheWeirdEngine
                     MyWeirdEngineJson.writelog("n_plies " + n_plies.ToString() + " checking move "
                         + mvstr + " alpha " + new_alpha.ToString() + " beta " + new_beta.ToString());
                 }
-                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i]);
+                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
                 calculationresponse newresponse = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
                                                                                n_plies - 1);
                 if (newresponse.POKingIsInCheck == false)
@@ -1224,11 +1369,19 @@ namespace TheWeirdEngine
             myresult.moveidx = bestmoveidx;
             return myresult;
         }
-        public int ExecuteMove(int posidx, chessmove pmove)
+        public int ExecuteMove(int posidx, chessmove pmove, int prevposidx)
         {
             int newposidx = posidx + 1;
+            int pti = pieceTypeIndex(pmove.MovingPiece);
 
-            SynchronizePosition(ref positionstack[posidx], ref positionstack[newposidx]);
+            if (this.piecetypes[pti].name == "TimeThief" & prevposidx >= 0)
+            {
+                SynchronizePosition(ref positionstack[prevposidx], ref positionstack[newposidx]);
+            }
+            else
+            {
+                SynchronizePosition(ref positionstack[posidx], ref positionstack[newposidx]);
+            }
 
             int i1 = pmove.coordinates[0];
             int j1 = pmove.coordinates[1];
@@ -1253,8 +1406,6 @@ namespace TheWeirdEngine
             this.positionstack[newposidx].squares[i1, j1] = 0;
 
             //Set castling info for new position BEGIN
-            int pti = pieceTypeIndex(pmove.MovingPiece);
-
             if (this.piecetypes[pti].name == "King" & this.piecetypes[pti].IsRoyal == true)
             {
                 if (positionstack[posidx].colourtomove == 1)
