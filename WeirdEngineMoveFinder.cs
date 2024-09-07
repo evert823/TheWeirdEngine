@@ -1302,6 +1302,12 @@ namespace TheWeirdEngine
                 int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
                 calculationresponse newresponse = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
                                                                                n_plies - 1);
+                //if (n_plies > this.display_when_n_plies_gt)
+                //{
+                //    string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[i]);
+                //    MyWeirdEngineJson.writelog("n_plies " + n_plies.ToString() + " DONE checking move "
+                //        + mvstr + " posvalue " + newresponse.posvalue.ToString());
+                //}
                 if (newresponse.POKingIsInCheck == false)
                 {
                     noescapecheck = false;
@@ -1374,7 +1380,7 @@ namespace TheWeirdEngine
             int newposidx = posidx + 1;
             int pti = pieceTypeIndex(pmove.MovingPiece);
 
-            if (this.piecetypes[pti].name == "TimeThief" & prevposidx >= 0)
+            if (this.piecetypes[pti].name == "TimeThief" & prevposidx >= 0 & pmove.IsCapture == true)
             {
                 SynchronizePosition(ref positionstack[prevposidx], ref positionstack[newposidx]);
             }
