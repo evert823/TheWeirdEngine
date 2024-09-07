@@ -1168,6 +1168,12 @@ namespace TheWeirdEngine
         public calculationresponse Calculation_n_plies(int n_plies)
         {
             this.MyWeirdEngineJson.SetLogfilename();
+
+            if (HasPreviousPosition() == true)
+            {
+                SetWitchInfluence(ref positionstack[positionstack.Length - 1]);
+            }
+
             calculationresponse myresult = this.Calculation_n_plies_internal(0, -100, 100, n_plies);
 
             return myresult;

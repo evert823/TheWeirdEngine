@@ -119,8 +119,8 @@ namespace TheWeirdEngine
 
         private void suggestMoveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             this.DisableGUI();
+            //this.MyWeirdEngineMoveFinder.display_when_n_plies_gt = 1;
             string[] calculaterequest = this.txtbEnterMove.Lines[0].ToString().Split('/');
             string positionname = calculaterequest[0];
             int n_plies = int.Parse(calculaterequest[1]);

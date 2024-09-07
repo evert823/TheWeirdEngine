@@ -194,6 +194,22 @@ namespace TheWeirdEngine
                 AllTestsPassed = false;
             }
         }
+        public void TestSelfCheck(string ppath, string ppositionfilename)
+        {
+            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(0);
+
+            if (MyWeirdEngineMoveFinder.POKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            {
+                //nothing
+            }
+            else
+            {
+                MessageBox.Show(ppositionfilename + " Check expected but there was no check.");
+                AllTestsPassed = false;
+            }
+        }
         public void TestCheck(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
@@ -244,6 +260,27 @@ namespace TheWeirdEngine
             {
                 MessageBox.Show(ppositionfilename + " Mate expected but there was no mate.");
                 AllTestsPassed = false;
+            }
+        }
+        public void TestNoMate(string ppath, string ppositionfilename)
+        {
+            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
+
+            if (a.posvalue == 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
+            {
+                MessageBox.Show(ppositionfilename + " No mate expected but there was mate.");
+                AllTestsPassed = false;
+            }
+            else if (a.posvalue == -100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
+            {
+                MessageBox.Show(ppositionfilename + " No mate expected but there was mate.");
+                AllTestsPassed = false;
+            }
+            else
+            {
+                //nothing
             }
         }
         public void TestMate_n(string ppath, string ppositionfilename, int mate_in_n, int pi1, int pj1, int pi2, int pj2)
@@ -434,6 +471,21 @@ namespace TheWeirdEngine
             TestMove(ppath, "09A_witch_black", "Witch", 4, 4, 2, 4, true);
             TestMove(ppath, "09A_witch_black", "Witch", 4, 4, 3, 4, false);
             TestMove(ppath, "09A_witch_black", "Witch", 4, 4, 1, 4, false);
+
+            TestStalemate(ppath, "10A_timethief_stalemate_white");
+            TestStalemate(ppath, "10A_timethief_stalemate_black");
+            TestSelfCheck(ppath, "10A_timethief_check_white");
+            TestSelfCheck(ppath, "10A_timethief_check_black");
+            TestNoMate(ppath, "10B_timethief_capture_black");
+            TestNoMate(ppath, "10B_timethief_capture_white");
+            TestNoMate(ppath, "10B_timethief_king_takes_black");
+            TestNoMate(ppath, "10B_timethief_king_takes_white");
+            TestMate_n(ppath, "10C_timethief_mate_1_black", 1, 3, 6, 6, 3);
+            TestMate_n(ppath, "10C_timethief_mate_1_white", 1, 3, 1, 6, 4);
+            TestMate_n(ppath, "10D_timethief_mate_2_black", 2, 4, 5, 8, 1);
+            TestMate_n(ppath, "10D_timethief_mate_2_white", 2, 4, 2, 8, 6);
+            TestMate_n(ppath, "10E_timethief_mate_3_black", 3, 6, 2, 5, 0);
+            TestMate_n(ppath, "10E_timethief_mate_3_white", 3, 6, 5, 5, 7);
 
             if (AllTestsPassed == true)
             {
