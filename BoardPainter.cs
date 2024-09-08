@@ -212,6 +212,7 @@ namespace TheWeirdEngine
 
             s = s + "presort_when_n_plies_gt " + MyWeirdEngineMoveFinder.presort_when_n_plies_gt.ToString() + "\n";
             s = s + "presort_using_n_plies " + MyWeirdEngineMoveFinder.presort_using_n_plies.ToString() + "\n";
+            s = s + "display_when_n_plies_gt " + MyWeirdEngineMoveFinder.display_when_n_plies_gt.ToString() + "\n";
             s = s + "jsonsourcepath " + MyWeirdEngineMoveFinder.MyWeirdEngineJson.jsonsourcepath + "\n";
             s = s + "jsonworkpath " + MyWeirdEngineMoveFinder.MyWeirdEngineJson.jsonworkpath + "\n";
 

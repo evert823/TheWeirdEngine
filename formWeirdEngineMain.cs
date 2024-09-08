@@ -78,11 +78,13 @@ namespace TheWeirdEngine
         {
             this.menuStrip1.Enabled = false;
             this.txtbEnterMove.Enabled = false;
+            this.btnAbort.Enabled = true;
         }
         private void EnableGUI()
         {
             this.menuStrip1.Enabled = true;
             this.txtbEnterMove.Enabled = true;
+            this.btnAbort.Enabled = false;
         }
 
         private void RefreshInformation()
@@ -191,7 +193,34 @@ namespace TheWeirdEngine
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
             this.EnableGUI();
+        }
 
+        private void changeFromJsonToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MyWeirdEngineJson.LoadEngineSettingsFromJson("enginesettings");
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
+        }
+
+        private void btnAbort_Click(object sender, EventArgs e)
+        {
+            MyWeirdEngineMoveFinder.externalabort = true;
+        }
+
+        private void manyNonTrivialToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PositionGenerator MyPositionGenerator;
+            MyPositionGenerator = new PositionGenerator(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
+
+            string infilename = "maingame";
+            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
+            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
+
+            this.DisableGUI();
+            MyPositionGenerator.genmany();
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
+            this.EnableGUI();
         }
     }
 }

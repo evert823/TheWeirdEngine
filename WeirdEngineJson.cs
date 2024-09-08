@@ -46,6 +46,12 @@ namespace TheWeirdEngine
     {
         public jsonchessposition[] positionslast2prev;
     }
+    public struct jsonenginesettings
+    {
+        public int presort_when_n_plies_gt;
+        public int presort_using_n_plies;
+        public int display_when_n_plies_gt;
+    }
     public class WeirdEngineJson
     {
         public WeirdEngineMoveFinder MyWeirdEngineMoveFinder;
@@ -156,6 +162,19 @@ namespace TheWeirdEngine
                 return this.MyWeirdEngineMoveFinder.piecetypes[i].symbol.ToLower();
             }
             return ".";
+        }
+        public void LoadEngineSettingsFromJson(string pFileName)
+        {
+            string json;
+            using (StreamReader r = new StreamReader(this.jsonsourcepath + "enginesettings\\" + pFileName + ".json"))
+            {
+                json = r.ReadToEnd();
+            }
+            jsonenginesettings a = JsonConvert.DeserializeObject<jsonenginesettings>(json);
+
+            this.MyWeirdEngineMoveFinder.presort_when_n_plies_gt = a.presort_when_n_plies_gt;
+            this.MyWeirdEngineMoveFinder.presort_using_n_plies = a.presort_using_n_plies;
+            this.MyWeirdEngineMoveFinder.display_when_n_plies_gt = a.display_when_n_plies_gt;
         }
         public void LoadPieceFromJson(string pFileName, int seq)
         {
@@ -484,11 +503,11 @@ namespace TheWeirdEngine
             for (int i = 0; i < pposition.boardwidth; i++)
                 for (int j = 0; j < pposition.boardheight; j++)
                 {
-                    if (pposition.squareInfo[i, j].AttackedByPM == true)
+                    if (pposition.squareInfo[i, j].AttackedByPM > 0)
                     {
                         AttackedByPMstr += "(" + i.ToString() + "," + j.ToString() + ")";
                     }
-                    if (pposition.squareInfo[i, j].AttackedByPO == true)
+                    if (pposition.squareInfo[i, j].AttackedByPO > 0)
                     {
                         AttackedByPOstr += "(" + i.ToString() + "," + j.ToString() + ")";
                     }

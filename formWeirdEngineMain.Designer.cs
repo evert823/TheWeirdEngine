@@ -38,17 +38,20 @@
             this.saveBoardAsImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showResourcesLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.changeFromJsonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.engineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.suggestMoveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.unittestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.positionGeneratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scenario1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtbEnterMove = new System.Windows.Forms.TextBox();
             this.lblUserMove = new System.Windows.Forms.Label();
             this.lblStatusMessage = new System.Windows.Forms.Label();
-            this.positionGeneratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.scenario1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnAbort = new System.Windows.Forms.Button();
+            this.manyNonTrivialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -110,7 +113,8 @@
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.showResourcesLocationToolStripMenuItem});
+            this.showResourcesLocationToolStripMenuItem,
+            this.changeFromJsonToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(76, 24);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -121,6 +125,13 @@
             this.showResourcesLocationToolStripMenuItem.Size = new System.Drawing.Size(256, 26);
             this.showResourcesLocationToolStripMenuItem.Text = "Show Resources location";
             this.showResourcesLocationToolStripMenuItem.Click += new System.EventHandler(this.showResourcesLocationToolStripMenuItem_Click);
+            // 
+            // changeFromJsonToolStripMenuItem
+            // 
+            this.changeFromJsonToolStripMenuItem.Name = "changeFromJsonToolStripMenuItem";
+            this.changeFromJsonToolStripMenuItem.Size = new System.Drawing.Size(256, 26);
+            this.changeFromJsonToolStripMenuItem.Text = "Change from Json";
+            this.changeFromJsonToolStripMenuItem.Click += new System.EventHandler(this.changeFromJsonToolStripMenuItem_Click);
             // 
             // engineToolStripMenuItem
             // 
@@ -163,9 +174,25 @@
             // unittestsToolStripMenuItem
             // 
             this.unittestsToolStripMenuItem.Name = "unittestsToolStripMenuItem";
-            this.unittestsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.unittestsToolStripMenuItem.Size = new System.Drawing.Size(149, 26);
             this.unittestsToolStripMenuItem.Text = "Unittests";
             this.unittestsToolStripMenuItem.Click += new System.EventHandler(this.unittestsToolStripMenuItem_Click);
+            // 
+            // positionGeneratorToolStripMenuItem
+            // 
+            this.positionGeneratorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.scenario1ToolStripMenuItem,
+            this.manyNonTrivialToolStripMenuItem});
+            this.positionGeneratorToolStripMenuItem.Name = "positionGeneratorToolStripMenuItem";
+            this.positionGeneratorToolStripMenuItem.Size = new System.Drawing.Size(141, 24);
+            this.positionGeneratorToolStripMenuItem.Text = "PositionGenerator";
+            // 
+            // scenario1ToolStripMenuItem
+            // 
+            this.scenario1ToolStripMenuItem.Name = "scenario1ToolStripMenuItem";
+            this.scenario1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.scenario1ToolStripMenuItem.Text = "Scenario1";
+            this.scenario1ToolStripMenuItem.Click += new System.EventHandler(this.scenario1ToolStripMenuItem_Click);
             // 
             // txtbEnterMove
             // 
@@ -198,20 +225,23 @@
             this.lblStatusMessage.TabIndex = 19;
             this.lblStatusMessage.Text = "Specify settings location";
             // 
-            // positionGeneratorToolStripMenuItem
+            // btnAbort
             // 
-            this.positionGeneratorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.scenario1ToolStripMenuItem});
-            this.positionGeneratorToolStripMenuItem.Name = "positionGeneratorToolStripMenuItem";
-            this.positionGeneratorToolStripMenuItem.Size = new System.Drawing.Size(141, 24);
-            this.positionGeneratorToolStripMenuItem.Text = "PositionGenerator";
+            this.btnAbort.Enabled = false;
+            this.btnAbort.Location = new System.Drawing.Point(15, 499);
+            this.btnAbort.Name = "btnAbort";
+            this.btnAbort.Size = new System.Drawing.Size(75, 23);
+            this.btnAbort.TabIndex = 20;
+            this.btnAbort.Text = "ABORT";
+            this.btnAbort.UseVisualStyleBackColor = true;
+            this.btnAbort.Click += new System.EventHandler(this.btnAbort_Click);
             // 
-            // scenario1ToolStripMenuItem
+            // manyNonTrivialToolStripMenuItem
             // 
-            this.scenario1ToolStripMenuItem.Name = "scenario1ToolStripMenuItem";
-            this.scenario1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.scenario1ToolStripMenuItem.Text = "Scenario1";
-            this.scenario1ToolStripMenuItem.Click += new System.EventHandler(this.scenario1ToolStripMenuItem_Click);
+            this.manyNonTrivialToolStripMenuItem.Name = "manyNonTrivialToolStripMenuItem";
+            this.manyNonTrivialToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.manyNonTrivialToolStripMenuItem.Text = "Many non trivial";
+            this.manyNonTrivialToolStripMenuItem.Click += new System.EventHandler(this.manyNonTrivialToolStripMenuItem_Click);
             // 
             // formWeirdEngineMain
             // 
@@ -219,6 +249,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1275, 534);
+            this.Controls.Add(this.btnAbort);
             this.Controls.Add(this.lblStatusMessage);
             this.Controls.Add(this.lblUserMove);
             this.Controls.Add(this.txtbEnterMove);
@@ -259,6 +290,9 @@
         private System.Windows.Forms.ToolStripMenuItem unittestsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem positionGeneratorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem scenario1ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem changeFromJsonToolStripMenuItem;
+        private System.Windows.Forms.Button btnAbort;
+        private System.Windows.Forms.ToolStripMenuItem manyNonTrivialToolStripMenuItem;
     }
 }
 

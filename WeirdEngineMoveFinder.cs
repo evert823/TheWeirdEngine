@@ -29,8 +29,8 @@ namespace TheWeirdEngine
     }
     public struct squareInfoItem
     {
-        public bool AttackedByPM;
-        public bool AttackedByPO;
+        public int AttackedByPM;
+        public int AttackedByPO;
         public byte n_adjacent_whitewitches;
         public byte n_adjacent_blackwitches;
     }
@@ -94,6 +94,7 @@ namespace TheWeirdEngine
         public int presort_when_n_plies_gt;
         public int presort_using_n_plies;
         public int display_when_n_plies_gt;
+        public bool externalabort;
         public chesspiecetype[] piecetypes;
         public chessposition[] positionstack;
         public WeirdEngineMoveFinder()
@@ -101,6 +102,7 @@ namespace TheWeirdEngine
             this.presort_when_n_plies_gt = 4;
             this.presort_using_n_plies = 3;
             this.display_when_n_plies_gt = 6;
+            this.externalabort = false;
             this.init_positionstack(defaultboardwidth, defaultboardheight);
         }
         public void ResetBoardsize(ref chessposition pposition, int pboardwidth, int pboardheight)
@@ -147,8 +149,8 @@ namespace TheWeirdEngine
             {
                 for (int j = 0; j < pposition.boardheight;j++)
                 {
-                    pposition.squareInfo[i, j].AttackedByPM = false;
-                    pposition.squareInfo[i, j].AttackedByPO = false;
+                    pposition.squareInfo[i, j].AttackedByPM = 0;
+                    pposition.squareInfo[i, j].AttackedByPO = 0;
                     pposition.squareInfo[i, j].n_adjacent_whitewitches = 0;
                     pposition.squareInfo[i, j].n_adjacent_blackwitches = 0;
                 }
@@ -167,6 +169,11 @@ namespace TheWeirdEngine
             pposition.blackqueensiderookcoord.y = -1;
             pposition.movelist_totalfound = 0;
             pposition.POKingInCheckTimeThief = false;
+
+            pposition.precedingmove[0] = -1;
+            pposition.precedingmove[1] = -1;
+            pposition.precedingmove[2] = -1;
+            pposition.precedingmove[3] = -1;
         }
         public void AllocateMovelist(ref chessposition pposition)
         {
@@ -281,7 +288,7 @@ namespace TheWeirdEngine
             }
 
         }
-        public double StaticEvaluation(ref chessposition pposition)
+        public double CheckKingsPresent(ref chessposition pposition)
         {
             if (pposition.whitekingcoord.x == -1 & pposition.blackkingcoord.x == -1)
             {
@@ -295,7 +302,10 @@ namespace TheWeirdEngine
             {
                 return 100.0;
             }
-
+            return 0.0;
+        }
+        public double EvaluationByMaterial(ref chessposition pposition)
+        {
             double materialbalance = 0.0;
 
             for (int i = 0; i < pposition.boardwidth; i++)
@@ -332,6 +342,44 @@ namespace TheWeirdEngine
                 return -80.0;
             }
             return materialbalance * 10;
+        }
+        public double EvaluationByAttack(ref chessposition pposition)
+        {
+            int AttackedByWhitetotal = 0;
+            int AttackedByBlacktotal = 0;
+
+            for (int i = 0; i < pposition.boardwidth; i++)
+            {
+                for (int j = 0; j < pposition.boardheight; j++)
+                {
+                    if (pposition.colourtomove == 1)
+                    {
+                        AttackedByWhitetotal += pposition.squareInfo[i, j].AttackedByPM;
+                        AttackedByBlacktotal += pposition.squareInfo[i, j].AttackedByPO;
+                    }
+                    else
+                    {
+                        AttackedByWhitetotal += pposition.squareInfo[i, j].AttackedByPO;
+                        AttackedByBlacktotal += pposition.squareInfo[i, j].AttackedByPM;
+                    }
+                }
+            }
+            double resultev = (AttackedByWhitetotal - AttackedByBlacktotal) / 2.0;
+            if (resultev > 80)
+            {
+                return 80.0;
+            }
+            if (resultev < -80)
+            {
+                return -80.0;
+            }
+            return resultev;
+        }
+        public double StaticEvaluation(ref chessposition pposition)
+        {
+            //double myev = EvaluationByMaterial(ref pposition);
+            double myev = EvaluationByAttack(ref pposition);
+            return myev;
         }
         public void init_positionstack(int pboardwidth, int pboardheight)
         {
@@ -402,14 +450,14 @@ namespace TheWeirdEngine
         {
             if (pposition.colourtomove == 1)
             {
-                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPO)
+                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPO > 0)
                 {
                     return true;
                 }
             }
             else
             {
-                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPM)
+                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPM > 0)
                 {
                     return true;
                 }
@@ -424,7 +472,7 @@ namespace TheWeirdEngine
         {
             if (pposition.colourtomove == 1)
             {
-                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPM)
+                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPM > 0)
                 {
                     return true;
                 }
@@ -435,7 +483,7 @@ namespace TheWeirdEngine
             }
             else
             {
-                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPO)
+                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPO > 0)
                 {
                     return true;
                 }
@@ -446,14 +494,14 @@ namespace TheWeirdEngine
         {
             if (pposition.colourtomove == 1)
             {
-                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPO)
+                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPO > 0)
                 {
                     return true;
                 }
             }
             else
             {
-                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPO)
+                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPO > 0)
                 {
                     return true;
                 }
@@ -464,14 +512,14 @@ namespace TheWeirdEngine
         {
             if (pposition.colourtomove == 1)
             {
-                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPM)
+                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPM > 0)
                 {
                     return true;
                 }
             }
             else
             {
-                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPM)
+                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPM > 0)
                 {
                     return true;
                 }
@@ -488,22 +536,22 @@ namespace TheWeirdEngine
             {
                 if (pposition.colourtomove == 1)
                 {
-                    pposition.squareInfo[x, y].AttackedByPM = true;
+                    pposition.squareInfo[x, y].AttackedByPM +=1;
                 }
                 else
                 {
-                    pposition.squareInfo[x, y].AttackedByPO = true;
+                    pposition.squareInfo[x, y].AttackedByPO +=1;
                 }
             }
             else
             {
                 if (pposition.colourtomove == 1)
                 {
-                    pposition.squareInfo[x, y].AttackedByPO = true;
+                    pposition.squareInfo[x, y].AttackedByPO += 1;
                 }
                 else
                 {
-                    pposition.squareInfo[x, y].AttackedByPM = true;
+                    pposition.squareInfo[x, y].AttackedByPM += 1;
                 }
             }
         }
@@ -1111,7 +1159,7 @@ namespace TheWeirdEngine
                         { queensidepossible = false; }
                     }
                     if (((i >= i_k & i <= i_k_new) || (i <= i_k & i >= i_k_new))
-                        & pposition.squareInfo[i, j].AttackedByPO == true)
+                        & pposition.squareInfo[i, j].AttackedByPO > 0)
                     {
                         queensidepossible = false;
                     }
@@ -1146,7 +1194,7 @@ namespace TheWeirdEngine
                         { kingsidepossible = false; }
                     }
                     if (((i >= i_k & i <= i_k_new) || (i <= i_k & i >= i_k_new))
-                        & pposition.squareInfo[i, j].AttackedByPO == true)
+                        & pposition.squareInfo[i, j].AttackedByPO > 0)
                     {
                         kingsidepossible = false;
                     }
@@ -1174,6 +1222,7 @@ namespace TheWeirdEngine
                 SetWitchInfluence(ref positionstack[positionstack.Length - 1]);
             }
 
+            this.externalabort = false;
             calculationresponse myresult = this.Calculation_n_plies_internal(0, -100, 100, n_plies);
 
             return myresult;
@@ -1186,7 +1235,7 @@ namespace TheWeirdEngine
             myresult.POKingIsInCheck = false;
 
             this.LocateKingsRooks(ref positionstack[posidx]);
-            myresult.posvalue = StaticEvaluation(ref positionstack[posidx]);
+            myresult.posvalue = CheckKingsPresent(ref positionstack[posidx]);
             if (myresult.posvalue == 100 || myresult.posvalue == -100)
             {
                 return myresult;
@@ -1219,6 +1268,7 @@ namespace TheWeirdEngine
 
             if (n_plies == 0)
             {
+                myresult.posvalue = StaticEvaluation(ref positionstack[posidx]);
                 return myresult;
             }
 
@@ -1234,6 +1284,10 @@ namespace TheWeirdEngine
             if (n_plies > this.presort_when_n_plies_gt)
             {
                 Application.DoEvents();
+                if (this.externalabort == true)
+                {
+                    return myresult;
+                }
                 if (n_plies > this.display_when_n_plies_gt)
                 {
                     string s = "List before sorting : ";
@@ -1299,21 +1353,16 @@ namespace TheWeirdEngine
 
             for (int i = 0; i < movecount; i++)
             {
-                if (n_plies > this.display_when_n_plies_gt)
-                {
-                    string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[i]);
-                    MyWeirdEngineJson.writelog("n_plies " + n_plies.ToString() + " checking move "
-                        + mvstr + " alpha " + new_alpha.ToString() + " beta " + new_beta.ToString());
-                }
                 int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
                 calculationresponse newresponse = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
                                                                                n_plies - 1);
-                //if (n_plies > this.display_when_n_plies_gt)
-                //{
-                //    string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[i]);
-                //    MyWeirdEngineJson.writelog("n_plies " + n_plies.ToString() + " DONE checking move "
-                //        + mvstr + " posvalue " + newresponse.posvalue.ToString());
-                //}
+                if (n_plies > this.display_when_n_plies_gt)
+                {
+                    string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[i]);
+                    MyWeirdEngineJson.writelog("n_plies " + n_plies.ToString() + " DONE checking move "
+                        + mvstr + " alpha " + new_alpha.ToString() + " beta " + new_beta.ToString()
+                        + " posvalue " + newresponse.posvalue.ToString());
+                }
                 if (newresponse.POKingIsInCheck == false)
                 {
                     noescapecheck = false;
@@ -1462,7 +1511,10 @@ namespace TheWeirdEngine
                 int io2 = pmove.othercoordinates[2];
                 int jo2 = pmove.othercoordinates[3];
                 int otherpiece = this.positionstack[newposidx].squares[io1, jo1];
-                positionstack[newposidx].squares[io1, jo1] = 0;
+                if (io1 != i2)
+                {
+                    positionstack[newposidx].squares[io1, jo1] = 0;
+                }
                 positionstack[newposidx].squares[io2, jo2] = otherpiece;
             }
 
