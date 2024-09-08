@@ -45,7 +45,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
             MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
             MyWeirdEngineJson.LoadPositionJson(MyWeirdEngineJson.jsonsourcepath + "positions", "bulldogmainposition");
-            MyWeirdEngineJson.SavePositionAsJson("bulldogmainposition");
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", "bulldogmainposition");
 
             MyBoardPainter = new BoardPainter(this.MyWeirdEngineMoveFinder, this.pictureBox1);
             this.SelectResourcesFolder();
@@ -128,7 +128,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions", positionname);
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
-            MyWeirdEngineJson.SavePositionAsJson(positionname);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", positionname);
 
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
             //MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.positionstack[0]));
@@ -160,7 +160,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions", positionname);
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
-            MyWeirdEngineJson.SavePositionAsJson(positionname);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", positionname);
         }
         private void unittestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -175,6 +175,23 @@ namespace TheWeirdEngine
             Mymfunittests = new mfunittests(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
             Mymfunittests.RunAllUnittests(unittestpath);
             this.EnableGUI();
+        }
+
+        private void scenario1ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PositionGenerator MyPositionGenerator;
+            MyPositionGenerator = new PositionGenerator(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
+
+            string infilename = "maingame";
+            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
+            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
+
+            this.DisableGUI();
+            MyPositionGenerator.genmain();
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
+            this.EnableGUI();
+
         }
     }
 }

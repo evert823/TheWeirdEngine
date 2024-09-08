@@ -47,6 +47,8 @@
             this.txtbEnterMove = new System.Windows.Forms.TextBox();
             this.lblUserMove = new System.Windows.Forms.Label();
             this.lblStatusMessage = new System.Windows.Forms.Label();
+            this.positionGeneratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scenario1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -82,10 +84,11 @@
             this.settingsToolStripMenuItem,
             this.engineToolStripMenuItem,
             this.editToolStripMenuItem,
-            this.testNewToolStripMenuItem});
+            this.testNewToolStripMenuItem,
+            this.positionGeneratorToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1275, 30);
+            this.menuStrip1.Size = new System.Drawing.Size(1275, 28);
             this.menuStrip1.TabIndex = 14;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -94,7 +97,7 @@
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.saveBoardAsImageToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 26);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // saveBoardAsImageToolStripMenuItem
@@ -109,7 +112,7 @@
             this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.showResourcesLocationToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(76, 26);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(76, 24);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // showResourcesLocationToolStripMenuItem
@@ -124,7 +127,7 @@
             this.engineToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.suggestMoveToolStripMenuItem});
             this.engineToolStripMenuItem.Name = "engineToolStripMenuItem";
-            this.engineToolStripMenuItem.Size = new System.Drawing.Size(68, 26);
+            this.engineToolStripMenuItem.Size = new System.Drawing.Size(68, 24);
             this.engineToolStripMenuItem.Text = "Engine";
             // 
             // suggestMoveToolStripMenuItem
@@ -139,7 +142,7 @@
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadPositionToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 26);
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
             this.editToolStripMenuItem.Text = "Edit";
             // 
             // loadPositionToolStripMenuItem
@@ -154,13 +157,13 @@
             this.testNewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.unittestsToolStripMenuItem});
             this.testNewToolStripMenuItem.Name = "testNewToolStripMenuItem";
-            this.testNewToolStripMenuItem.Size = new System.Drawing.Size(79, 26);
+            this.testNewToolStripMenuItem.Size = new System.Drawing.Size(79, 24);
             this.testNewToolStripMenuItem.Text = "TestNew";
             // 
             // unittestsToolStripMenuItem
             // 
             this.unittestsToolStripMenuItem.Name = "unittestsToolStripMenuItem";
-            this.unittestsToolStripMenuItem.Size = new System.Drawing.Size(149, 26);
+            this.unittestsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.unittestsToolStripMenuItem.Text = "Unittests";
             this.unittestsToolStripMenuItem.Click += new System.EventHandler(this.unittestsToolStripMenuItem_Click);
             // 
@@ -194,6 +197,21 @@
             this.lblStatusMessage.Size = new System.Drawing.Size(151, 16);
             this.lblStatusMessage.TabIndex = 19;
             this.lblStatusMessage.Text = "Specify settings location";
+            // 
+            // positionGeneratorToolStripMenuItem
+            // 
+            this.positionGeneratorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.scenario1ToolStripMenuItem});
+            this.positionGeneratorToolStripMenuItem.Name = "positionGeneratorToolStripMenuItem";
+            this.positionGeneratorToolStripMenuItem.Size = new System.Drawing.Size(141, 24);
+            this.positionGeneratorToolStripMenuItem.Text = "PositionGenerator";
+            // 
+            // scenario1ToolStripMenuItem
+            // 
+            this.scenario1ToolStripMenuItem.Name = "scenario1ToolStripMenuItem";
+            this.scenario1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.scenario1ToolStripMenuItem.Text = "Scenario1";
+            this.scenario1ToolStripMenuItem.Click += new System.EventHandler(this.scenario1ToolStripMenuItem_Click);
             // 
             // formWeirdEngineMain
             // 
@@ -239,6 +257,8 @@
         private System.Windows.Forms.Label lblStatusMessage;
         private System.Windows.Forms.ToolStripMenuItem testNewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem unittestsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem positionGeneratorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem scenario1ToolStripMenuItem;
     }
 }
 

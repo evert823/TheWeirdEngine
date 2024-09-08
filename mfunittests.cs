@@ -26,7 +26,7 @@ namespace TheWeirdEngine
         public void TestCastle(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             bool queensidecastling_happened = false;
@@ -59,7 +59,7 @@ namespace TheWeirdEngine
         public void TestNoCastle(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             bool castling_happened = false;
@@ -88,7 +88,7 @@ namespace TheWeirdEngine
                                                                      bool IsExpected)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             bool mymovehappened = false;
@@ -125,7 +125,7 @@ namespace TheWeirdEngine
         public void TestPawn(string ppath, string ppositionfilename, int pi1, int pj1, int pi2, int pj2)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             bool mymovehappened = false;
@@ -158,7 +158,7 @@ namespace TheWeirdEngine
         public void TestPawnPromote(string ppath, string ppositionfilename, int pi1, int pj1, int pi2, int pj2)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             bool mymovehappened = false;
@@ -197,7 +197,7 @@ namespace TheWeirdEngine
         public void TestSelfCheck(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(0);
 
             if (MyWeirdEngineMoveFinder.POKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
@@ -213,7 +213,7 @@ namespace TheWeirdEngine
         public void TestCheck(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             if (MyWeirdEngineMoveFinder.PMKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
@@ -229,7 +229,7 @@ namespace TheWeirdEngine
         public void TestStalemate(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             if (a.posvalue == 0)
@@ -245,7 +245,7 @@ namespace TheWeirdEngine
         public void TestMate(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             if (a.posvalue == 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
@@ -265,7 +265,7 @@ namespace TheWeirdEngine
         public void TestNoMate(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
 
             if (a.posvalue == 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
@@ -296,7 +296,7 @@ namespace TheWeirdEngine
             }
 
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             
             DateTime startdatetime = DateTime.Now;
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
@@ -351,7 +351,7 @@ namespace TheWeirdEngine
             }
 
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
 
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
 
@@ -368,7 +368,7 @@ namespace TheWeirdEngine
         public void BaselinePerformance(string ppath, string ppositionfilename, int n_plies, int baseline_seconds)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
-            MyWeirdEngineJson.SavePositionAsJson(ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
 
             DateTime startdatetime = DateTime.Now;
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);

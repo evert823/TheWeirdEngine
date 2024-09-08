@@ -360,7 +360,7 @@ namespace TheWeirdEngine
             }
             return mypos;
         }
-        public void SavePositionAsJson(string pFileName)
+        public void SavePositionAsJson(string ppath, string pFileName)
         {
             jsonchessposition mypos = positionstack_to_jsonchessposition(0);
             string jsonString;
@@ -377,7 +377,7 @@ namespace TheWeirdEngine
                 jsonString = JsonConvert.SerializeObject(mypos, Formatting.Indented);
             }
 
-            using (StreamWriter writer = new StreamWriter(this.jsonworkpath + "positions_verify\\" + pFileName + ".json"))
+            using (StreamWriter writer = new StreamWriter(ppath + pFileName + ".json"))
             {
                 writer.WriteLine(jsonString);
                 writer.Close();
