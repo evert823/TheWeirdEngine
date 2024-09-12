@@ -40,6 +40,8 @@ namespace TheWeirdEngine
         public int colourtomove;
         public jsonmovecoord precedingmove;
         public jsoncastlinginfo castlinginfo;
+        public string WhiteJokerImitatesPieceName;
+        public string BlackJokerImitatesPieceName;
         public string[] squares;
     }
     public struct jsonchesspositions
@@ -100,6 +102,26 @@ namespace TheWeirdEngine
                 }
             }
             return s;
+        }
+        public int Name2pti(string piecename)
+        {
+            int n = this.MyWeirdEngineMoveFinder.piecetypes.Length;
+            for (int i = 0; i < n; i++)
+            {
+                if (this.MyWeirdEngineMoveFinder.piecetypes[i].name == piecename)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        public string pti2Name(int pti)
+        {
+            if (pti > -1)
+            {
+                return this.MyWeirdEngineMoveFinder.piecetypes[pti].name;
+            }
+            return "";
         }
         public int Str2PieceType(string psymbol)
         {
@@ -281,6 +303,8 @@ namespace TheWeirdEngine
             this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkinghasmoved = loadedpos.castlinginfo.blackkinghasmoved;
             this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkingsiderookhasmoved = loadedpos.castlinginfo.blackkingsiderookhasmoved;
             this.MyWeirdEngineMoveFinder.positionstack[posidx].blackqueensiderookhasmoved = loadedpos.castlinginfo.blackqueensiderookhasmoved;
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].WhiteJokerSubstitute_pti = Name2pti(loadedpos.WhiteJokerImitatesPieceName);
+            this.MyWeirdEngineMoveFinder.positionstack[posidx].BlackJokerSubstitute_pti = Name2pti(loadedpos.BlackJokerImitatesPieceName);
             for (int j = 0; j < loadedpos.boardheight; j++)
             {
                 int rj = (loadedpos.boardheight - 1) - j;
@@ -357,6 +381,8 @@ namespace TheWeirdEngine
             mypos.castlinginfo.blackkinghasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkinghasmoved;
             mypos.castlinginfo.blackkingsiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkingsiderookhasmoved;
             mypos.castlinginfo.blackqueensiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackqueensiderookhasmoved;
+            mypos.WhiteJokerImitatesPieceName = pti2Name(this.MyWeirdEngineMoveFinder.positionstack[posidx].WhiteJokerSubstitute_pti);
+            mypos.BlackJokerImitatesPieceName = pti2Name(this.MyWeirdEngineMoveFinder.positionstack[posidx].BlackJokerSubstitute_pti);
 
             for (int j = 0; j < mypos.boardheight; j++)
             {

@@ -69,6 +69,8 @@ namespace TheWeirdEngine
         public bool blackkinghasmoved;
         public bool blackkingsiderookhasmoved;
         public bool blackqueensiderookhasmoved;
+        public int WhiteJokerSubstitute_pti;
+        public int BlackJokerSubstitute_pti;
         public int[,] squares;//python square[j][i] becomes C# square[i, j]
         public squareInfoItem[,] squareInfo;
         public vector whitekingcoord;
@@ -635,9 +637,32 @@ namespace TheWeirdEngine
                 }
             }
         }
+        public int jokersubspti(ref chessposition pposition, int i, int j, int pti)
+        {
+            if (pposition.squares[i, j] > 0)
+            {
+                if (pposition.WhiteJokerSubstitute_pti > -1)
+                {
+                    return pposition.WhiteJokerSubstitute_pti;
+                }
+            }
+            else
+            {
+                if (pposition.BlackJokerSubstitute_pti > -1)
+                {
+                    return pposition.BlackJokerSubstitute_pti;
+                }
+            }
+            return pti;
+        }
         public void GetStepLeapAttacksMoves(ref chessposition pposition, int i, int j, int n_plies)
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+            int pti_self = pti;
+            if (this.piecetypes[pti].name == "Joker")
+            {
+                pti = jokersubspti(ref pposition, i, j, pti);
+            }
 
             if (this.piecetypes[pti].IsDivergent == false)
             {
@@ -827,23 +852,28 @@ namespace TheWeirdEngine
         public void GetSlideAttacksMoves(ref chessposition pposition, int i, int j, int n_plies)
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+            int pti_self = pti;
+            if (this.piecetypes[pti].name == "Joker")
+            {
+                pti = jokersubspti(ref pposition, i, j, pti);
+            }
 
             if (this.piecetypes[pti].IsDivergent == false)
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, n_plies, pti);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, n_plies, pti_self);
                 }
             }
             else
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, n_plies, pti);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, n_plies, pti_self);
                 }
                 foreach (vector v in this.piecetypes[pti].slidecapturevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, n_plies, pti);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, n_plies, pti_self);
                 }
             }
         }
@@ -985,6 +1015,12 @@ namespace TheWeirdEngine
         public void GetPawn2StepMoves(ref chessposition pposition, int i, int j)
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+
+            if (this.piecetypes[pti].name == "Joker")
+            {
+                pti = jokersubspti(ref pposition, i, j, pti);
+            }
+
             if (this.piecetypes[pti].name != "Pawn")
             {
                 return;
@@ -1025,6 +1061,12 @@ namespace TheWeirdEngine
         public void GetPawnEnPassantMoves(ref chessposition pposition, int i, int j)
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+
+            if (this.piecetypes[pti].name == "Joker")
+            {
+                pti = jokersubspti(ref pposition, i, j, pti);
+            }
+
             if (this.piecetypes[pti].name != "Pawn")
             {
                 return;
@@ -1038,6 +1080,12 @@ namespace TheWeirdEngine
             int x_to = pposition.precedingmove[2];
             int y_to = pposition.precedingmove[3];
             int ptm = this.pieceTypeIndex(pposition.squares[x_to, y_to]);
+
+            if (this.piecetypes[ptm].name == "Joker")
+            {
+                ptm = jokersubspti(ref pposition, x_to, y_to, ptm);
+            }
+
             int movei;
 
             if (this.piecetypes[ptm].name != "Pawn")
@@ -1526,6 +1574,40 @@ namespace TheWeirdEngine
             {
                 positionstack[newposidx].colourtomove = 1;
             }
+
+            //JokerInfo begin
+            if (positionstack[posidx].colourtomove == 1)
+            {
+                if (piecetypes[pti].name == "Joker")
+                {
+                    positionstack[newposidx].BlackJokerSubstitute_pti = positionstack[posidx].WhiteJokerSubstitute_pti;
+                }
+                else if (pmove.PromoteToPiece != 0)
+                {
+                    positionstack[newposidx].BlackJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
+                }
+                else
+                {
+                    positionstack[newposidx].BlackJokerSubstitute_pti = pti;
+                }
+            }
+            else
+            {
+                if (piecetypes[pti].name == "Joker")
+                {
+                    positionstack[newposidx].WhiteJokerSubstitute_pti = positionstack[posidx].BlackJokerSubstitute_pti;
+                }
+                else if (pmove.PromoteToPiece != 0)
+                {
+                    positionstack[newposidx].WhiteJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
+                }
+                else
+                {
+                    positionstack[newposidx].WhiteJokerSubstitute_pti = pti;
+                }
+            }
+            //JokerInfo end
+
 
             return newposidx;
         }

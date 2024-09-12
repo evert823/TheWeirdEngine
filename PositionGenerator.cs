@@ -89,18 +89,20 @@ namespace TheWeirdEngine
             PutOnePiece("-B", 0, 7, 2, 7);
             PutOnePiece("-R", 0, 7, 2, 7);
 
-            PutOnePiece("N", 0, 7, 2, 7);
-            PutOnePiece("-B", 0, 7, 2, 7);
+            PutOnePiece("J", 0, 7, 2, 7);
+            PutOnePiece("A", 0, 7, 2, 7);
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
         }
-        public void genone_KNBW_K()
+        public void genone_puzzle()
         {
             ClearMainPosition(8, 8);
             PutOnePiece("-K", 0, 3, 4, 7);
             PutOnePiece("K", 2, 4, 3, 7);
             PutOnePiece("N", 0, 4, 2, 6);
             PutOnePiece("B", 0, 7, 0, 7);
-            PutOnePiece("W", 0, 7, 0, 7);
+            PutOnePiece("R", 0, 7, 0, 7);
+            PutOnePiece("J", 0, 7, 0, 7);
+            PutOnePiece("-J", 0, 7, 0, 7);
             //MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = 1;
         }
@@ -113,18 +115,27 @@ namespace TheWeirdEngine
                 postrivial = IsTrivial(3);
             }
         }
-        public void gengreat()
+        public void gennontrivial_puzzle()
+        {
+            bool postrivial = true;
+            while (postrivial == true)
+            {
+                genone_puzzle();
+                postrivial = IsTrivial(3);
+            }
+        }
+        public void gengreat_puzzle()
         {
             bool posgreat = false;
             while (posgreat == false)
             {
-                gennontrivial();
-                posgreat = IsTrivial(10);
+                gennontrivial_puzzle();
+                posgreat = IsTrivial(5);
             }
         }
         public void genmain()
         {
-            gengreat();
+            gengreat_puzzle();
             MessageBox.Show("DONE generating great position!!");
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\", "frompositiongenerator");
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions\\", "frompositiongenerator");
