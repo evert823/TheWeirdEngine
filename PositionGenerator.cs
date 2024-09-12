@@ -16,6 +16,7 @@ namespace TheWeirdEngine
     {
         public WeirdEngineMoveFinder MyWeirdEngineMoveFinder;
         public WeirdEngineJson MyWeirdEngineJson;
+        public string[] str_othervalues;
         Random myrandom;
         public PositionGenerator(WeirdEngineMoveFinder pWeirdEngineMoveFinder, WeirdEngineJson pWeirdEngineJson)
         {
@@ -88,8 +89,8 @@ namespace TheWeirdEngine
             PutOnePiece("-B", 0, 7, 2, 7);
             PutOnePiece("-R", 0, 7, 2, 7);
 
-            PutOnePiece("T", 0, 7, 2, 7);
-            PutOnePiece("-G", 0, 7, 2, 7);
+            PutOnePiece("N", 0, 7, 2, 7);
+            PutOnePiece("-B", 0, 7, 2, 7);
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
         }
         public void genone_KNBW_K()
@@ -131,16 +132,24 @@ namespace TheWeirdEngine
         public void genmany()
         {
             double totvalue = 0;
-            int totalnumber = 100;
+
+            int n_plies;
+            int totalnumber;
+            int.TryParse(str_othervalues[0], out n_plies);
+            int.TryParse(str_othervalues[1], out totalnumber);
+            MessageBox.Show("n_plies : " + n_plies.ToString());
+            MessageBox.Show("totalnumber : " + totalnumber.ToString());
+
             for (int i = 0; i < totalnumber; i++)
             {
                 gennontrivial();
+                calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
                 MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\",
                                                      "rnd_pos_" + i.ToString());
-                calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(6);
                 totvalue += a.posvalue;
             }
-            MessageBox.Show("totvalue : " + totvalue.ToString());
+            MyWeirdEngineJson.writelog("totvalue : " + totvalue.ToString());
+            //MessageBox.Show("totvalue : " + totvalue.ToString());
         }
 
     }

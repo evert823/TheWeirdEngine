@@ -78,12 +78,14 @@ namespace TheWeirdEngine
         {
             this.menuStrip1.Enabled = false;
             this.txtbEnterMove.Enabled = false;
+            this.txtbOtherValues.Enabled = false;
             this.btnAbort.Enabled = true;
         }
         private void EnableGUI()
         {
             this.menuStrip1.Enabled = true;
             this.txtbEnterMove.Enabled = true;
+            this.txtbOtherValues.Enabled = true;
             this.btnAbort.Enabled = false;
         }
 
@@ -211,6 +213,8 @@ namespace TheWeirdEngine
         {
             PositionGenerator MyPositionGenerator;
             MyPositionGenerator = new PositionGenerator(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
+
+            MyPositionGenerator.str_othervalues = this.txtbOtherValues.Lines[0].ToString().Split('/');
 
             string infilename = "maingame";
             MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);

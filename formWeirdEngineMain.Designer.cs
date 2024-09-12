@@ -47,11 +47,13 @@
             this.unittestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.positionGeneratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scenario1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.manyNonTrivialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtbEnterMove = new System.Windows.Forms.TextBox();
             this.lblUserMove = new System.Windows.Forms.Label();
             this.lblStatusMessage = new System.Windows.Forms.Label();
             this.btnAbort = new System.Windows.Forms.Button();
-            this.manyNonTrivialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.txtbOtherValues = new System.Windows.Forms.TextBox();
+            this.lblOtherValues = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -91,7 +93,7 @@
             this.positionGeneratorToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1275, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1275, 30);
             this.menuStrip1.TabIndex = 14;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -100,7 +102,7 @@
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.saveBoardAsImageToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 26);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // saveBoardAsImageToolStripMenuItem
@@ -116,7 +118,7 @@
             this.showResourcesLocationToolStripMenuItem,
             this.changeFromJsonToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(76, 24);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(76, 26);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // showResourcesLocationToolStripMenuItem
@@ -138,7 +140,7 @@
             this.engineToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.suggestMoveToolStripMenuItem});
             this.engineToolStripMenuItem.Name = "engineToolStripMenuItem";
-            this.engineToolStripMenuItem.Size = new System.Drawing.Size(68, 24);
+            this.engineToolStripMenuItem.Size = new System.Drawing.Size(68, 26);
             this.engineToolStripMenuItem.Text = "Engine";
             // 
             // suggestMoveToolStripMenuItem
@@ -153,7 +155,7 @@
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadPositionToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 26);
             this.editToolStripMenuItem.Text = "Edit";
             // 
             // loadPositionToolStripMenuItem
@@ -168,7 +170,7 @@
             this.testNewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.unittestsToolStripMenuItem});
             this.testNewToolStripMenuItem.Name = "testNewToolStripMenuItem";
-            this.testNewToolStripMenuItem.Size = new System.Drawing.Size(79, 24);
+            this.testNewToolStripMenuItem.Size = new System.Drawing.Size(79, 26);
             this.testNewToolStripMenuItem.Text = "TestNew";
             // 
             // unittestsToolStripMenuItem
@@ -184,22 +186,29 @@
             this.scenario1ToolStripMenuItem,
             this.manyNonTrivialToolStripMenuItem});
             this.positionGeneratorToolStripMenuItem.Name = "positionGeneratorToolStripMenuItem";
-            this.positionGeneratorToolStripMenuItem.Size = new System.Drawing.Size(141, 24);
+            this.positionGeneratorToolStripMenuItem.Size = new System.Drawing.Size(141, 26);
             this.positionGeneratorToolStripMenuItem.Text = "PositionGenerator";
             // 
             // scenario1ToolStripMenuItem
             // 
             this.scenario1ToolStripMenuItem.Name = "scenario1ToolStripMenuItem";
-            this.scenario1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.scenario1ToolStripMenuItem.Size = new System.Drawing.Size(198, 26);
             this.scenario1ToolStripMenuItem.Text = "Scenario1";
             this.scenario1ToolStripMenuItem.Click += new System.EventHandler(this.scenario1ToolStripMenuItem_Click);
+            // 
+            // manyNonTrivialToolStripMenuItem
+            // 
+            this.manyNonTrivialToolStripMenuItem.Name = "manyNonTrivialToolStripMenuItem";
+            this.manyNonTrivialToolStripMenuItem.Size = new System.Drawing.Size(198, 26);
+            this.manyNonTrivialToolStripMenuItem.Text = "Many non trivial";
+            this.manyNonTrivialToolStripMenuItem.Click += new System.EventHandler(this.manyNonTrivialToolStripMenuItem_Click);
             // 
             // txtbEnterMove
             // 
             this.txtbEnterMove.AcceptsReturn = true;
             this.txtbEnterMove.AcceptsTab = true;
             this.txtbEnterMove.Font = new System.Drawing.Font("Courier New", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtbEnterMove.Location = new System.Drawing.Point(189, 384);
+            this.txtbEnterMove.Location = new System.Drawing.Point(88, 382);
             this.txtbEnterMove.Multiline = true;
             this.txtbEnterMove.Name = "txtbEnterMove";
             this.txtbEnterMove.Size = new System.Drawing.Size(464, 49);
@@ -228,7 +237,7 @@
             // btnAbort
             // 
             this.btnAbort.Enabled = false;
-            this.btnAbort.Location = new System.Drawing.Point(15, 499);
+            this.btnAbort.Location = new System.Drawing.Point(15, 469);
             this.btnAbort.Name = "btnAbort";
             this.btnAbort.Size = new System.Drawing.Size(75, 23);
             this.btnAbort.TabIndex = 20;
@@ -236,19 +245,32 @@
             this.btnAbort.UseVisualStyleBackColor = true;
             this.btnAbort.Click += new System.EventHandler(this.btnAbort_Click);
             // 
-            // manyNonTrivialToolStripMenuItem
+            // txtbOtherValues
             // 
-            this.manyNonTrivialToolStripMenuItem.Name = "manyNonTrivialToolStripMenuItem";
-            this.manyNonTrivialToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.manyNonTrivialToolStripMenuItem.Text = "Many non trivial";
-            this.manyNonTrivialToolStripMenuItem.Click += new System.EventHandler(this.manyNonTrivialToolStripMenuItem_Click);
+            this.txtbOtherValues.Location = new System.Drawing.Point(88, 553);
+            this.txtbOtherValues.Multiline = true;
+            this.txtbOtherValues.Name = "txtbOtherValues";
+            this.txtbOtherValues.Size = new System.Drawing.Size(464, 39);
+            this.txtbOtherValues.TabIndex = 21;
+            this.txtbOtherValues.Text = "7/100";
+            // 
+            // lblOtherValues
+            // 
+            this.lblOtherValues.AutoSize = true;
+            this.lblOtherValues.Location = new System.Drawing.Point(23, 523);
+            this.lblOtherValues.Name = "lblOtherValues";
+            this.lblOtherValues.Size = new System.Drawing.Size(82, 16);
+            this.lblOtherValues.TabIndex = 22;
+            this.lblOtherValues.Text = "Other values";
             // 
             // formWeirdEngineMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(1275, 534);
+            this.ClientSize = new System.Drawing.Size(1275, 619);
+            this.Controls.Add(this.lblOtherValues);
+            this.Controls.Add(this.txtbOtherValues);
             this.Controls.Add(this.btnAbort);
             this.Controls.Add(this.lblStatusMessage);
             this.Controls.Add(this.lblUserMove);
@@ -293,6 +315,8 @@
         private System.Windows.Forms.ToolStripMenuItem changeFromJsonToolStripMenuItem;
         private System.Windows.Forms.Button btnAbort;
         private System.Windows.Forms.ToolStripMenuItem manyNonTrivialToolStripMenuItem;
+        private System.Windows.Forms.TextBox txtbOtherValues;
+        private System.Windows.Forms.Label lblOtherValues;
     }
 }
 
