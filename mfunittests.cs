@@ -194,6 +194,26 @@ namespace TheWeirdEngine
                 AllTestsPassed = false;
             }
         }
+        public void TestNoPromote(string ppath, string ppositionfilename)
+        {
+            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
+
+            bool promotehappened = false;
+            for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
+            {
+                if (MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].PromoteToPiece != 0)
+                {
+                    promotehappened = true;
+                }
+            }
+            if (promotehappened == true)
+            {
+                MessageBox.Show(ppositionfilename + " promotion did happen but was not expected");
+                AllTestsPassed = false;
+            }
+        }
         public void TestSelfCheck(string ppath, string ppositionfilename)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
@@ -281,6 +301,18 @@ namespace TheWeirdEngine
             else
             {
                 //nothing
+            }
+        }
+        public void TestNoMate_n(string ppath, string ppositionfilename, int n_plies)
+        {
+            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
+
+            if (a.posvalue == 100 || a.posvalue == -100 )
+            {
+                MessageBox.Show(ppositionfilename + " No mate expected but there was mate.");
+                AllTestsPassed = false;
             }
         }
         public void TestMate_n(string ppath, string ppositionfilename, int mate_in_n, int pi1, int pj1, int pi2, int pj2)
@@ -486,6 +518,39 @@ namespace TheWeirdEngine
             TestMate_n(ppath, "10D_timethief_mate_2_white", 2, 4, 2, 8, 6);
             TestMate_n(ppath, "10E_timethief_mate_3_black", 3, 6, 2, 5, 0);
             TestMate_n(ppath, "10E_timethief_mate_3_white", 3, 6, 5, 5, 7);
+
+            TestMove(ppath, "11A_Joker_pawn_ep_1", "Joker", 4, 4, 3, 5, true);
+            TestMove(ppath, "11A_Joker_pawn_ep_2", "Joker", 4, 4, 3, 5, true);
+            TestMove(ppath, "11A_Joker_pawn_ep_3", "Pawn", 4, 4, 3, 5, true);
+            TestMove(ppath, "11A_Joker_pawn_ep_4", "Joker", 4, 3, 3, 2, true);
+            TestMove(ppath, "11A_Joker_pawn_ep_5", "Joker", 4, 3, 3, 2, true);
+            TestMove(ppath, "11A_Joker_pawn_ep_6", "Pawn", 4, 3, 3, 2, true);
+            TestMove(ppath, "11B_Joker_pawn_2move_1", "Joker", 3, 1, 3, 3, true);
+            TestMove(ppath, "11B_Joker_pawn_2move_2", "Joker", 3, 6, 3, 4, true);
+
+            TestNoPromote(ppath, "11C_Joker_pawn_nopromote_1");
+            TestNoPromote(ppath, "11C_Joker_pawn_nopromote_2");
+            TestNoMate_n(ppath, "11D_Joker_after_promote_1", 2);
+            TestNoMate_n(ppath, "11D_Joker_after_promote_2", 2);
+            TestMate_n(ppath, "11D_Joker_imitating_Joker_1", 1, 3, 0, 3, 7);
+            TestMate_n(ppath, "11D_Joker_imitating_Joker_2", 1, 3, 7, 3, 0);
+            TestMate_n(ppath, "11E_Joker_Hunter_1", 1, 4, 6, 5, 6);
+            TestMate_n(ppath, "11E_Joker_Hunter_2", 1, 4, 1, 5, 1);
+
+            if (AllTestsPassed == true)
+            {
+                MessageBox.Show("All unittests passed");
+            }
+            else
+            {
+                MessageBox.Show("Some unittests failed");
+            }
+        }
+        public void RunNewUnittests(string ppath)
+        {
+            AllTestsPassed = true;
+            MessageBox.Show("Start with running new unittests");
+
 
             if (AllTestsPassed == true)
             {
