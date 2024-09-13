@@ -209,7 +209,6 @@ namespace TheWeirdEngine
 
             this.MyWeirdEngineMoveFinder.piecetypes[seq].symbol = a.symbol;
             this.MyWeirdEngineMoveFinder.piecetypes[seq].name = a.name;
-            this.MyWeirdEngineMoveFinder.piecetypes[seq].IsRoyal = a.IsRoyal;
             this.MyWeirdEngineMoveFinder.piecetypes[seq].IsDivergent = a.IsDivergent;
             if (a.stepleapmovevectors != null)
             {

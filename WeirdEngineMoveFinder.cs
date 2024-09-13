@@ -34,11 +34,23 @@ namespace TheWeirdEngine
         public byte n_adjacent_whitewitches;
         public byte n_adjacent_blackwitches;
     }
+    public enum SpecialPiece
+    {
+        //Any piece that has special functionality assigned to it, so that we can flag it during the calculations
+        normalpiece,
+        King,
+        Rook,
+        Pawn,
+        Amazon,
+        Witch,
+        TimeThief,
+        Joker
+    }
     public struct chesspiecetype
     {
         public string symbol;
         public string name;
-        public bool IsRoyal;
+        public SpecialPiece SpecialPiece_ind;
         public bool IsDivergent;
         public vector[] stepleapmovevectors;
         public vector[] slidemovevectors;
@@ -96,6 +108,7 @@ namespace TheWeirdEngine
         public int presort_when_n_plies_gt;
         public int presort_using_n_plies;
         public int display_when_n_plies_gt;
+        public int nodecount;
         public bool externalabort;
         public chesspiecetype[] piecetypes;
         public chessposition[] positionstack;
@@ -106,6 +119,21 @@ namespace TheWeirdEngine
             this.display_when_n_plies_gt = 7;
             this.externalabort = false;
             this.init_positionstack(defaultboardwidth, defaultboardheight);
+        }
+        public void Set_SpecialPiece_ind()
+        {
+            //Any piece that has special functionality assigned to it, so that we can flag it during the calculations
+            for (int pti = 0; pti < piecetypes.Length; pti++)
+            {
+                if (this.piecetypes[pti].name == "King") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.King; }
+                else if (this.piecetypes[pti].name == "Rook") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Rook; }
+                else if (this.piecetypes[pti].name == "Pawn") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Pawn; }
+                else if (this.piecetypes[pti].name == "Amazon") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Amazon; }
+                else if (this.piecetypes[pti].name == "Witch") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Witch; }
+                else if (this.piecetypes[pti].name == "TimeThief") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.TimeThief; }
+                else if (this.piecetypes[pti].name == "Joker") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Joker; }
+                else { piecetypes[pti].SpecialPiece_ind = SpecialPiece.normalpiece; }
+            }
         }
         public void ResetBoardsize(ref chessposition pposition, int pboardwidth, int pboardheight)
         {
@@ -244,7 +272,7 @@ namespace TheWeirdEngine
                     if (pposition.squares[i, j] != 0)
                     {
                         int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-                        if (this.piecetypes[pti].name == "King" & this.piecetypes[pti].IsRoyal == true)
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.King)
                         {
                             if (pposition.squares[i, j] > 0)
                             {
@@ -257,7 +285,7 @@ namespace TheWeirdEngine
                                 pposition.blackkingcoord.y = j;
                             }
                         }
-                        if (this.piecetypes[pti].name == "Rook")
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Rook)
                         {
                             if (pposition.squares[i, j] > 0)
                             {
@@ -319,7 +347,7 @@ namespace TheWeirdEngine
                     if (pposition.squares[i, j] != 0)
                     {
                         int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-                        if (this.piecetypes[pti].name == "King" & this.piecetypes[pti].IsRoyal == true)
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.King)
                         {
                             //no action
                         }
@@ -436,7 +464,7 @@ namespace TheWeirdEngine
                     if (pposition.squares[i, j] != 0)
                     {
                         int pti = pieceTypeIndex(pposition.squares[i, j]);
-                        if (this.piecetypes[pti].name == "Witch")
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Witch)
                         {
                             for (int i2 = i - 1; i2 < i + 2; i2++)
                             {
@@ -649,7 +677,7 @@ namespace TheWeirdEngine
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
             int pti_self = pti;
-            if (this.piecetypes[pti].name == "Joker")
+            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
             {
                 pti = jokersubspti(ref pposition, i, j, pti);
             }
@@ -678,14 +706,14 @@ namespace TheWeirdEngine
             bool IsTransparent = false;
             if (pposition.squares[i, j] > 0 & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 0)
             {
-                if (piecetypes[pti].name == "Witch"
+                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Witch
                     & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 1)
                 {
                     IsTransparent = true;
                 }
                 else
                 {
-                    if (piecetypes[pti].name != "Witch")
+                    if (piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch)
                     {
                         IsTransparent = true;
                     }
@@ -693,14 +721,14 @@ namespace TheWeirdEngine
             }
             if (pposition.squares[i, j] < 0 & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 0)
             {
-                if (piecetypes[pti].name == "Witch"
+                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Witch
                     & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 1)
                 {
                     IsTransparent = true;
                 }
                 else
                 {
-                    if (piecetypes[pti].name != "Witch")
+                    if (piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch)
                     {
                         IsTransparent = true;
                     }
@@ -843,7 +871,7 @@ namespace TheWeirdEngine
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
             int pti_self = pti;
-            if (this.piecetypes[pti].name == "Joker")
+            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
             {
                 pti = jokersubspti(ref pposition, i, j, pti);
             }
@@ -905,7 +933,7 @@ namespace TheWeirdEngine
             bool includenonpromote = false;
             int pti = this.pieceTypeIndex(pposition.movelist[movei].MovingPiece);
             
-            if (this.piecetypes[pti].name == "Pawn")
+            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Pawn)
             {
                 if (pposition.movelist[movei].MovingPiece > 0 &
                     pposition.movelist[movei].coordinates[3] == pposition.boardheight - 1)
@@ -938,8 +966,8 @@ namespace TheWeirdEngine
                 for (int pi = 0; pi < this.piecetypes.Length; pi++)
                 {
                     if (pi == pti) { }//nothing
-                    else if (this.piecetypes[pi].name == "King" & this.piecetypes[pi].IsRoyal == true) { }//nothing
-                    else if (this.piecetypes[pi].name == "Amazon") { }//nothing
+                    else if (this.piecetypes[pi].SpecialPiece_ind == SpecialPiece.King) { }//nothing
+                    else if (this.piecetypes[pi].SpecialPiece_ind == SpecialPiece.Amazon) { }//nothing
                     else
                     {
                         int movei2 = pposition.movelist_totalfound;
@@ -961,7 +989,7 @@ namespace TheWeirdEngine
         {
             int movei;
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-            if (this.piecetypes[pti].name != "TimeThief")
+            if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.TimeThief)
             {
                 return;
             }
@@ -984,7 +1012,7 @@ namespace TheWeirdEngine
                     int i3 = pposition.precedingmove[2];
                     int j3 = pposition.precedingmove[3];
                     int pti3 = this.pieceTypeIndex(pposition.squares[i3, j3]);
-                    if (this.piecetypes[pti3].name == "King")
+                    if (this.piecetypes[pti3].SpecialPiece_ind == SpecialPiece.King)
                     {
                         //King moved out of attack range of TimeThief
                         //That is equivalent with moving into check, and here we must detect this
@@ -1006,12 +1034,12 @@ namespace TheWeirdEngine
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
 
-            if (this.piecetypes[pti].name == "Joker")
+            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
             {
                 pti = jokersubspti(ref pposition, i, j, pti);
             }
 
-            if (this.piecetypes[pti].name != "Pawn")
+            if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.Pawn)
             {
                 return;
             }
@@ -1052,12 +1080,12 @@ namespace TheWeirdEngine
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
 
-            if (this.piecetypes[pti].name == "Joker")
+            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
             {
                 pti = jokersubspti(ref pposition, i, j, pti);
             }
 
-            if (this.piecetypes[pti].name != "Pawn")
+            if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.Pawn)
             {
                 return;
             }
@@ -1071,14 +1099,14 @@ namespace TheWeirdEngine
             int y_to = pposition.precedingmove[3];
             int ptm = this.pieceTypeIndex(pposition.squares[x_to, y_to]);
 
-            if (this.piecetypes[ptm].name == "Joker")
+            if (this.piecetypes[ptm].SpecialPiece_ind == SpecialPiece.Joker)
             {
                 ptm = jokersubspti(ref pposition, x_to, y_to, ptm);
             }
 
             int movei;
 
-            if (this.piecetypes[ptm].name != "Pawn")
+            if (this.piecetypes[ptm].SpecialPiece_ind != SpecialPiece.Pawn)
             {
                 return;
             }
@@ -1253,6 +1281,7 @@ namespace TheWeirdEngine
         }
         public calculationresponse Calculation_n_plies(int n_plies)
         {
+            this.Set_SpecialPiece_ind();
             this.MyWeirdEngineJson.SetLogfilename();
 
             if (HasPreviousPosition() == true)
@@ -1260,13 +1289,16 @@ namespace TheWeirdEngine
                 SetWitchInfluence(ref positionstack[positionstack.Length - 1]);
             }
 
+            this.nodecount = 0;
             this.externalabort = false;
             calculationresponse myresult = this.Calculation_n_plies_internal(0, -100, 100, n_plies);
 
+            MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
             return myresult;
         }
         public calculationresponse Calculation_n_plies_internal(int posidx, double alpha, double beta, int n_plies)
         {
+            this.nodecount += 1;
             calculationresponse myresult;
             myresult.posvalue = 0.0;
             myresult.moveidx = -1;
@@ -1473,7 +1505,7 @@ namespace TheWeirdEngine
             int newposidx = posidx + 1;
             int pti = pieceTypeIndex(pmove.MovingPiece);
 
-            if (this.piecetypes[pti].name == "TimeThief" & prevposidx >= 0 & pmove.IsCapture == true)
+            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & prevposidx >= 0 & pmove.IsCapture == true)
             {
                 SynchronizePosition(ref positionstack[prevposidx], ref positionstack[newposidx]);
             }
@@ -1505,7 +1537,7 @@ namespace TheWeirdEngine
             this.positionstack[newposidx].squares[i1, j1] = 0;
 
             //Set castling info for new position BEGIN
-            if (this.piecetypes[pti].name == "King" & this.piecetypes[pti].IsRoyal == true)
+            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.King)
             {
                 if (positionstack[posidx].colourtomove == 1)
                 {
@@ -1516,7 +1548,7 @@ namespace TheWeirdEngine
                     positionstack[newposidx].blackkinghasmoved = true;
                 }
             }
-            else if (this.piecetypes[pti].name == "Rook")
+            else if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Rook)
             {
                 if (this.positionstack[posidx].colourtomove == 1)
                 {
@@ -1568,7 +1600,7 @@ namespace TheWeirdEngine
             //JokerInfo begin
             if (positionstack[posidx].colourtomove == 1)
             {
-                if (piecetypes[pti].name == "Joker")
+                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
                 {
                     positionstack[newposidx].BlackJokerSubstitute_pti = positionstack[posidx].WhiteJokerSubstitute_pti;
                 }
@@ -1583,7 +1615,7 @@ namespace TheWeirdEngine
             }
             else
             {
-                if (piecetypes[pti].name == "Joker")
+                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
                 {
                     positionstack[newposidx].WhiteJokerSubstitute_pti = positionstack[posidx].BlackJokerSubstitute_pti;
                 }
