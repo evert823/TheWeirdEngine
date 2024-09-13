@@ -178,6 +178,8 @@ namespace TheWeirdEngine
             string unittestpath = this.MyWeirdEngineJson.jsonsourcepath + "unittests";
             Mymfunittests = new mfunittests(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
             Mymfunittests.RunAllUnittests(unittestpath);
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
             this.EnableGUI();
         }
 
@@ -239,6 +241,8 @@ namespace TheWeirdEngine
             string unittestpath = this.MyWeirdEngineJson.jsonsourcepath + "unittests";
             Mymfunittests = new mfunittests(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
             Mymfunittests.RunNewUnittests(unittestpath);
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
             this.EnableGUI();
         }
 
@@ -257,6 +261,30 @@ namespace TheWeirdEngine
 
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
             MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.positionstack[0]));
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
+            this.EnableGUI();
+        }
+
+        private void loadFENToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.DisableGUI();
+            string a = txtbOtherValues.Lines[0].ToString();
+            MessageBox.Show("Loading FEN and saving to Json : " + a);
+            MyWeirdEngineJson.LoadPositionFromFEN(a);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions\\", "fromfen");
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
+            this.EnableGUI();
+        }
+
+        private void getFENToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.DisableGUI();
+            string myfen = MyWeirdEngineJson.PositionAsFEN();
+            txtbOtherValues.AppendText("\r\n" + myfen + "\r\n");
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
             this.EnableGUI();
         }
     }

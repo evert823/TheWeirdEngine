@@ -103,7 +103,7 @@ namespace TheWeirdEngine
         {
             this.presort_when_n_plies_gt = 4;
             this.presort_using_n_plies = 3;
-            this.display_when_n_plies_gt = 6;
+            this.display_when_n_plies_gt = 7;
             this.externalabort = false;
             this.init_positionstack(defaultboardwidth, defaultboardheight);
         }
@@ -169,6 +169,8 @@ namespace TheWeirdEngine
             pposition.blackkingsiderookcoord.y = -1;
             pposition.blackqueensiderookcoord.x = -1;
             pposition.blackqueensiderookcoord.y = -1;
+            pposition.WhiteJokerSubstitute_pti = -1;
+            pposition.BlackJokerSubstitute_pti = -1;
             pposition.movelist_totalfound = 0;
             pposition.POKingInCheckTimeThief = false;
 
@@ -367,6 +369,16 @@ namespace TheWeirdEngine
                 }
             }
             double resultev = (AttackedByWhitetotal - AttackedByBlacktotal) / 2.0;
+
+            if (WhiteKingIsInCheck(ref pposition))
+            {
+                resultev -= 5;
+            }
+            if (BlackKingIsInCheck(ref pposition))
+            {
+                resultev += 5;
+            }
+
             if (resultev > 80)
             {
                 return 80.0;
@@ -452,45 +464,23 @@ namespace TheWeirdEngine
         {
             if (pposition.colourtomove == 1)
             {
-                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPO > 0)
-                {
-                    return true;
-                }
+                return PMKingIsInCheck(ref pposition);
             }
             else
             {
-                if (pposition.squareInfo[pposition.whitekingcoord.x, pposition.whitekingcoord.y].AttackedByPM > 0)
-                {
-                    return true;
-                }
-                if (pposition.POKingInCheckTimeThief == true)
-                {
-                    return true;
-                }
+                return POKingIsInCheck(ref pposition);
             }
-            return false;
         }
         public bool BlackKingIsInCheck(ref chessposition pposition)
         {
             if (pposition.colourtomove == 1)
             {
-                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPM > 0)
-                {
-                    return true;
-                }
-                if (pposition.POKingInCheckTimeThief == true)
-                {
-                    return true;
-                }
+                return POKingIsInCheck(ref pposition);
             }
             else
             {
-                if (pposition.squareInfo[pposition.blackkingcoord.x, pposition.blackkingcoord.y].AttackedByPO > 0)
-                {
-                    return true;
-                }
+                return PMKingIsInCheck(ref pposition);
             }
-            return false;
         }
         public bool PMKingIsInCheck(ref chessposition pposition)
         {

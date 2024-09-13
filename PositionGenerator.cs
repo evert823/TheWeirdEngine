@@ -63,6 +63,16 @@ namespace TheWeirdEngine
             }
             return false;
         }
+        public bool IsMate(int n_plies)
+        {
+            calculationresponse a;
+            a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
+            if (a.posvalue == 100 || a.posvalue == -100)
+            {
+                return true;
+            }
+            return false;
+        }
         public void genone()
         {
             ClearMainPosition(8, 8);
@@ -89,20 +99,22 @@ namespace TheWeirdEngine
             PutOnePiece("-B", 0, 7, 2, 7);
             PutOnePiece("-R", 0, 7, 2, 7);
 
-            PutOnePiece("J", 0, 7, 2, 7);
+            PutOnePiece("-J", 0, 7, 2, 7);
             PutOnePiece("A", 0, 7, 2, 7);
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
         }
         public void genone_puzzle()
         {
             ClearMainPosition(8, 8);
-            PutOnePiece("-K", 0, 3, 4, 7);
-            PutOnePiece("K", 2, 4, 3, 7);
-            PutOnePiece("N", 0, 4, 2, 6);
-            PutOnePiece("B", 0, 7, 0, 7);
+            PutOnePiece("-K", 0, 3, 6, 7);
+            PutOnePiece("K", 1, 5, 5, 7);
+            PutOnePiece("-p", 0, 5, 4, 6);
+            PutOnePiece("-p", 0, 5, 4, 6);
+            PutOnePiece("-N", 0, 6, 3, 7);
+            PutOnePiece("-B", 0, 6, 3, 7);
             PutOnePiece("R", 0, 7, 0, 7);
-            PutOnePiece("J", 0, 7, 0, 7);
-            PutOnePiece("-J", 0, 7, 0, 7);
+            PutOnePiece("H", 0, 7, 0, 7);
+            PutOnePiece("J", 1, 5, 5, 7);
             //MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = 1;
         }
@@ -121,7 +133,7 @@ namespace TheWeirdEngine
             while (postrivial == true)
             {
                 genone_puzzle();
-                postrivial = IsTrivial(3);
+                postrivial = IsTrivial(6);
             }
         }
         public void gengreat_puzzle()
@@ -130,7 +142,7 @@ namespace TheWeirdEngine
             while (posgreat == false)
             {
                 gennontrivial_puzzle();
-                posgreat = IsTrivial(5);
+                posgreat = IsMate(8);
             }
         }
         public void genmain()
