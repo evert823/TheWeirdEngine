@@ -309,7 +309,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
 
-            if (a.posvalue == 100 || a.posvalue == -100 )
+            if (a.posvalue >= 100 - (n_plies * 0.1) || a.posvalue <= (n_plies * 0.1) - 100)
             {
                 MessageBox.Show(ppositionfilename + " No mate expected but there was mate.");
                 AllTestsPassed = false;
@@ -356,11 +356,11 @@ namespace TheWeirdEngine
                     AllTestsPassed = false;
                 }
             }
-            if (a.posvalue == 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
+            if (a.posvalue >= 100 - (n_plies * 0.1) & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
             {
                 //nothing
             }
-            else if (a.posvalue == -100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
+            else if (a.posvalue <= (n_plies * 0.1) - 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
             {
                 //nothing
             }

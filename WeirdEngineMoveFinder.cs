@@ -106,6 +106,7 @@ namespace TheWeirdEngine
         public WeirdEngineJson MyWeirdEngineJson;//reference to Json object that can do some logging
 
         public int presort_when_n_plies_gt;
+        public bool setting_SearchForFastestMate;
         public int presort_using_n_plies;
         public int display_when_n_plies_gt;
         public int nodecount;
@@ -115,6 +116,7 @@ namespace TheWeirdEngine
         public WeirdEngineMoveFinder()
         {
             this.presort_when_n_plies_gt = 4;
+            this.setting_SearchForFastestMate = true;
             this.presort_using_n_plies = 3;
             this.display_when_n_plies_gt = 7;
             this.externalabort = false;
@@ -420,6 +422,7 @@ namespace TheWeirdEngine
         }
         public double StaticEvaluation(ref chessposition pposition)
         {
+            //Minimum/maximum score for 'soft' results should be -80/80 respectively !!!
             //double myev = EvaluationByMaterial(ref pposition);
             double myev = EvaluationByAttack(ref pposition);
             return myev;
@@ -1292,12 +1295,14 @@ namespace TheWeirdEngine
 
             this.nodecount = 0;
             this.externalabort = false;
-            calculationresponse myresult = this.Calculation_n_plies_internal(0, -100, 100, n_plies);
+            calculationresponse myresult = this.Calculation_n_plies_internal(0, -100, 100, n_plies,
+                                                                             this.setting_SearchForFastestMate);
 
             MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
             return myresult;
         }
-        public calculationresponse Calculation_n_plies_internal(int posidx, double alpha, double beta, int n_plies)
+        public calculationresponse Calculation_n_plies_internal(int posidx, double alpha, double beta,
+                                                                int n_plies, bool SearchForFastestMate)
         {
             this.nodecount += 1;
             calculationresponse myresult;
@@ -1379,7 +1384,7 @@ namespace TheWeirdEngine
                 {
                     int newposidx = ExecuteMove(posidx, movelist2[i], prevposidx);
                     calculationresponse newresponse_presort = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
-                                                                                   presort_using_n_plies);
+                                                                                   presort_using_n_plies, false);
                     subresults_presort[i].moveidx = i;
                     subresults_presort[i].movevalue = newresponse_presort.posvalue;
                     //MyWeirdEngineJson.writelog("Value during presoring moveidx " + i.ToString()
@@ -1426,7 +1431,7 @@ namespace TheWeirdEngine
             {
                 int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
                 calculationresponse newresponse = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
-                                                                               n_plies - 1);
+                                                                               n_plies - 1, SearchForFastestMate);
                 if (n_plies > this.display_when_n_plies_gt)
                 {
                     string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[i]);
@@ -1498,6 +1503,30 @@ namespace TheWeirdEngine
             }
 
             myresult.posvalue = bestmovevalue;
+
+            //Mate      (in 0 plies) requires 1 ply score +/-100
+            //Mate in 1 (in 1 ply) requires 2 plies score +/-99.9
+            //Mate      (in 2 plies) requires 3 plies score +/-99.8
+            //Mate in 2 (in 3 plies) requires 4 plies score +/-99.7
+            //Mate      (in 4 plies) requires 5 plies score +/-99.6
+            //Mate in 3 (in 5 plies) requires 6 plies score +/-99.5
+            //Mate      (in 6 plies) requires 7 plies score +/-99.4
+            //Mate in 4 (in 7 plies) requires 8 plies score +/-99.3
+            //etc
+            //-80 and 80 are the lower/upper limits for soft evaluation results
+            if (SearchForFastestMate == true)
+            {
+                //This comes with SLOWNESS!!!! because now it keeps looking for a faster forced mate
+                if (myresult.posvalue > 80)
+                {
+                    myresult.posvalue -= 0.1;
+                }
+                if (myresult.posvalue < -80)
+                {
+                    myresult.posvalue += 0.1;
+                }
+            }
+
             myresult.moveidx = bestmoveidx;
             return myresult;
         }

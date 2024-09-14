@@ -67,7 +67,7 @@ namespace TheWeirdEngine
         {
             calculationresponse a;
             a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
-            if (a.posvalue == 100 || a.posvalue == -100)
+            if (a.posvalue >= (100 - (n_plies * 0.1)) || a.posvalue <= ((n_plies * 0.1) - 100))
             {
                 return true;
             }

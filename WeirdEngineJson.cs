@@ -51,6 +51,7 @@ namespace TheWeirdEngine
     public struct jsonenginesettings
     {
         public int presort_when_n_plies_gt;
+        public bool setting_SearchForFastestMate;
         public int presort_using_n_plies;
         public int display_when_n_plies_gt;
     }
@@ -195,6 +196,7 @@ namespace TheWeirdEngine
             jsonenginesettings a = JsonConvert.DeserializeObject<jsonenginesettings>(json);
 
             this.MyWeirdEngineMoveFinder.presort_when_n_plies_gt = a.presort_when_n_plies_gt;
+            this.MyWeirdEngineMoveFinder.setting_SearchForFastestMate = a.setting_SearchForFastestMate;
             this.MyWeirdEngineMoveFinder.presort_using_n_plies = a.presort_using_n_plies;
             this.MyWeirdEngineMoveFinder.display_when_n_plies_gt = a.display_when_n_plies_gt;
         }
