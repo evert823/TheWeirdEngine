@@ -398,14 +398,15 @@ namespace TheWeirdEngine
             }
             double resultev = (AttackedByWhitetotal - AttackedByBlacktotal) / 2.0;
 
-            if (WhiteKingIsInCheck(ref pposition))
-            {
-                resultev -= 5;
-            }
-            if (BlackKingIsInCheck(ref pposition))
-            {
-                resultev += 5;
-            }
+            //Assigning points for giving check did not help at all!!!
+            //if (WhiteKingIsInCheck(ref pposition))
+            //{
+            //    resultev -= 5;
+            //}
+            //if (BlackKingIsInCheck(ref pposition))
+            //{
+            //    resultev += 5;
+            //}
 
             if (resultev > 80)
             {

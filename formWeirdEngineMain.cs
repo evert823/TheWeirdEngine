@@ -261,6 +261,24 @@ namespace TheWeirdEngine
 
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
             MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.positionstack[0]));
+            string s = "Check info :";
+            if (MyWeirdEngineMoveFinder.WhiteKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            {
+                s += " white in check";
+            }
+            if (MyWeirdEngineMoveFinder.BlackKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            {
+                s += " black in check";
+            }
+            if (MyWeirdEngineMoveFinder.PMKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            {
+                s += " PM in check";
+            }
+            if (MyWeirdEngineMoveFinder.POKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            {
+                s += " PO in check";
+            }
+            MessageBox.Show(s);
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
             this.EnableGUI();
