@@ -420,6 +420,7 @@ namespace TheWeirdEngine
         public void RunAllUnittests(string ppath)
         {
             AllTestsPassed = true;
+            MyWeirdEngineMoveFinder.setting_SearchForFastestMate = true;
             MessageBox.Show("Start with running all unittests");
 
             TestCastle(ppath, "01A_castle_white_01");
@@ -477,12 +478,31 @@ namespace TheWeirdEngine
             TestMate_n(ppath, "06C_mate_2_white_02", 2, 7, 1, 1, 7);
             TestMate_n(ppath, "06C_mate_2_black_01", 2, 7, 6, 1, 0);
             TestMate_n(ppath, "06C_mate_2_black_02", 2, 0, 6, 6, 0);
+            MyWeirdEngineMoveFinder.setting_SearchForFastestMate = false;
+            TestMate_n(ppath, "06D_huntermate_3_white", 3, 2, 4, 1, 4);
+            TestMate_n(ppath, "06D_huntermate_3_black", 3, 2, 3, 1, 3);
+            MyWeirdEngineMoveFinder.setting_SearchForFastestMate = true;
             TestMate_n(ppath, "06D_huntermate_3_white", 3, 2, 4, 1, 4);
             TestMate_n(ppath, "06D_huntermate_3_black", 3, 2, 3, 1, 3);
 
             TestStalemate_n(ppath, "08A_stalemate_2_white", 2);
             TestStalemate_n(ppath, "08A_stalemate_2_black", 2);
 
+            TestStalemate_n(ppath, "08B_insufficient_material_1", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_2", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_3", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_4", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_5", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_6", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_7", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_8", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_9a", 14);
+            TestStalemate_n(ppath, "08B_insufficient_material_9b", 14);
+
+            MyWeirdEngineMoveFinder.setting_SearchForFastestMate = false;
+            BaselinePerformance(ppath, "07A_mate_4_white_BN", 8, 3);
+            BaselinePerformance(ppath, "07A_mate_4_black_BN", 8, 3);
+            MyWeirdEngineMoveFinder.setting_SearchForFastestMate = true;
             BaselinePerformance(ppath, "07A_mate_4_white_BN", 8, 5);
             BaselinePerformance(ppath, "07A_mate_4_black_BN", 8, 5);
 
@@ -550,7 +570,6 @@ namespace TheWeirdEngine
         {
             AllTestsPassed = true;
             MessageBox.Show("Start with running new unittests");
-
 
             if (AllTestsPassed == true)
             {

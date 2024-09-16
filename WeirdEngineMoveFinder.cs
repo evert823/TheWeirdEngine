@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -337,6 +338,89 @@ namespace TheWeirdEngine
                 return 100.0;
             }
             return 0.0;
+        }
+        public bool DrawByMaterial(ref chessposition pposition)
+        {
+            //NOT FINISHED for now good enough to handle KBN vs K
+            bool whitesquare;
+            int whitenumberofknights = 0;
+            int whitenumberofbishopsonwhite = 0;
+            int whitenumberofbishopsonblack = 0;
+            int blacknumberofknights = 0;
+            int blacknumberofbishopsonwhite = 0;
+            int blacknumberofbishopsonblack = 0;
+
+            for (int i = 0; i < pposition.boardwidth; i++)
+            {
+                for (int j = 0; j < pposition.boardheight; j++)
+                {
+                    if ((i + j) % 2 == 0) { whitesquare = false; }
+                    else { whitesquare = true; }
+
+                    if (pposition.squares[i, j] != 0)
+                    {
+                        int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+
+                        if (pposition.squares[i, j] > 0)
+                        {
+                            if (this.piecetypes[pti].name == "Knight") { whitenumberofknights += 1; }
+                            else if (this.piecetypes[pti].name == "Bishop")
+                            {
+                                if (whitesquare) { whitenumberofbishopsonwhite += 1; }
+                                else { whitenumberofbishopsonblack += 1; }
+                            }
+                            else if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.King)
+                            { 
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            if (this.piecetypes[pti].name == "Knight") { blacknumberofknights += 1; }
+                            else if (this.piecetypes[pti].name == "Bishop")
+                            {
+                                if (whitesquare) { blacknumberofbishopsonwhite += 1; }
+                                else { blacknumberofbishopsonblack += 1; }
+                            }
+                            else if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.King)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            //Now we're left with just knights and bishops
+            bool lonewhiteking = false;
+            bool loneblackking = false;
+            if (whitenumberofknights == 0 & whitenumberofbishopsonwhite == 0 & whitenumberofbishopsonblack == 0)
+            {
+                lonewhiteking = true;
+            }
+            if (blacknumberofknights == 0 & blacknumberofbishopsonwhite == 0 & blacknumberofbishopsonblack == 0)
+            {
+                loneblackking = true;
+            }
+            if (lonewhiteking == true & loneblackking == true) { return true; }
+            if (lonewhiteking == false & loneblackking == false) { return false; }
+
+            //Now exactly one of the players has lone King
+            if (whitenumberofknights > 1 || blacknumberofknights > 1) { return false;  }
+            if (whitenumberofbishopsonblack > 0 & whitenumberofbishopsonwhite > 0) { return false; }
+            if (blacknumberofbishopsonblack > 0 & blacknumberofbishopsonwhite > 0) { return false; }
+            //Now the other player has at most one Knight, and Bishop(s) on just one of the colours
+
+            if (lonewhiteking == true)
+            {
+                if (blacknumberofknights == 0) { return true ; }
+                if (blacknumberofbishopsonblack == 0 & blacknumberofbishopsonwhite == 0) { return true; }
+            }
+            if (loneblackking == true)
+            {
+                if (whitenumberofknights == 0) { return true; }
+                if (whitenumberofbishopsonblack == 0 & whitenumberofbishopsonwhite == 0) { return true; }
+            }
+            return false;
         }
         public double EvaluationByMaterial(ref chessposition pposition)
         {
@@ -1316,6 +1400,7 @@ namespace TheWeirdEngine
             {
                 return myresult;
             }
+
             SetWitchInfluence(ref positionstack[posidx]);
 
             int prevposidx = posidx - 1;
@@ -1339,6 +1424,12 @@ namespace TheWeirdEngine
                     myresult.posvalue = -100;
                 }
                 myresult.POKingIsInCheck = true;
+                return myresult;
+            }
+
+            if (DrawByMaterial(ref positionstack[posidx]) == true)
+            {
+                myresult.posvalue = 0.0;
                 return myresult;
             }
 
