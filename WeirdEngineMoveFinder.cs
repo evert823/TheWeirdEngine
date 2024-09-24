@@ -94,6 +94,7 @@ namespace TheWeirdEngine
         public vector blackqueensiderookcoord;
         public int movelist_totalfound;
         public chessmove[] movelist;
+        public int[] moveprioindex;
         public bool POKingInCheckTimeThief;
     }
 
@@ -214,6 +215,7 @@ namespace TheWeirdEngine
         {
             pposition.movelist = null;
             pposition.movelist = new chessmove[movelist_allocated];
+            pposition.moveprioindex = new int[movelist_allocated];
             for (int mi = 0; mi < movelist_allocated; mi++)
             {
                 pposition.movelist[mi].MovingPiece = 0;
@@ -663,6 +665,13 @@ namespace TheWeirdEngine
                 }
             }
         }
+        public void Default_moveprioindex(ref chessposition pposition)
+        {
+            for (int i = 0; i < pposition.movelist_totalfound; i++)
+            {
+                pposition.moveprioindex[i] = i;
+            }
+        }
         public void GetAttacksMoves(ref chessposition pposition, int n_plies, int prevposidx)
         {
             pposition.movelist_totalfound = 0;
@@ -696,6 +705,7 @@ namespace TheWeirdEngine
             {
                 GetCastling(ref pposition);
             }
+            Default_moveprioindex(ref pposition);
         }
         public void GetStepLeapAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
                                                      bool getcaptures, bool getnoncaptures, int n_plies)
@@ -1385,6 +1395,37 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
             return myresult;
         }
+        public void reprioritize_movelist(int posidx, double alpha, double beta, int prevposidx)
+        {
+            int movecount = positionstack[posidx].movelist_totalfound;
+            movePrioItem[] subresults_presort = new movePrioItem[movecount];
+
+            for (int i = 0; i < movecount; i++)
+            {
+                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
+                calculationresponse newresponse_presort = Calculation_n_plies_internal(newposidx, alpha, beta,
+                                                                               presort_using_n_plies, false);
+                subresults_presort[i].moveidx = i;
+                subresults_presort[i].movevalue = newresponse_presort.posvalue;
+                //MyWeirdEngineJson.writelog("Value during presoring moveidx " + i.ToString()
+                //    + " movevalue " + newresponse_presort.posvalue.ToString());
+            }
+
+            if (positionstack[posidx].colourtomove == 1)
+            {
+                //order list by movevalue descending so best move for white first
+                Array.Sort<movePrioItem>(subresults_presort, (x, y) => y.movevalue.CompareTo(x.movevalue));
+            }
+            else
+            {
+                //order list by movevalue ascending so best move for black first
+                Array.Sort<movePrioItem>(subresults_presort, (x, y) => x.movevalue.CompareTo(y.movevalue));
+            }
+            for (int movei = 0; movei < movecount; movei++)
+            {
+                positionstack[posidx].moveprioindex[movei] = subresults_presort[movei].moveidx;
+            }
+        }
         public calculationresponse Calculation_n_plies_internal(int posidx, double alpha, double beta,
                                                                 int n_plies, bool SearchForFastestMate)
         {
@@ -1462,40 +1503,8 @@ namespace TheWeirdEngine
                     this.MyWeirdEngineJson.writelog(s);
                 }
 
-                chessmove[] movelist2 = new chessmove[movecount];
-                for (int movei = 0; movei < movecount; movei++)
-                {
-                    movelist2[movei].coordinates = new int[4];
-                    movelist2[movei].othercoordinates = new int[4];
-                    SynchronizeChessmove(positionstack[posidx].movelist[movei], ref movelist2[movei]);
-                }
-                movePrioItem[] subresults_presort = new movePrioItem[movecount];
+                reprioritize_movelist(posidx, new_alpha, new_beta, prevposidx);
 
-                for (int i = 0; i < movecount; i++)
-                {
-                    int newposidx = ExecuteMove(posidx, movelist2[i], prevposidx);
-                    calculationresponse newresponse_presort = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
-                                                                                   presort_using_n_plies, false);
-                    subresults_presort[i].moveidx = i;
-                    subresults_presort[i].movevalue = newresponse_presort.posvalue;
-                    //MyWeirdEngineJson.writelog("Value during presoring moveidx " + i.ToString()
-                    //    + " movevalue " + newresponse_presort.posvalue.ToString());
-                }
-
-                if (positionstack[posidx].colourtomove == 1)
-                {
-                    //order list by movevalue descending so best move for white first
-                    Array.Sort<movePrioItem>(subresults_presort, (x, y) => y.movevalue.CompareTo(x.movevalue));
-                }
-                else
-                {
-                    //order list by movevalue ascending so best move for black first
-                    Array.Sort<movePrioItem>(subresults_presort, (x, y) => x.movevalue.CompareTo(y.movevalue));
-                }
-                for (int movei = 0; movei < movecount; movei++)
-                {
-                    SynchronizeChessmove(movelist2[subresults_presort[movei].moveidx], ref positionstack[posidx].movelist[movei]);
-                }
                 if (n_plies > this.display_when_n_plies_gt)
                 {
                     string s = "List after sorting : ";
@@ -1505,7 +1514,6 @@ namespace TheWeirdEngine
             }
             //presort END
 
-            movePrioItem[] subresults = new movePrioItem[movecount];
             int bestmoveidx = -1;
             double bestmovevalue = 0;
             if (positionstack[posidx].colourtomove == 1)
@@ -1520,12 +1528,12 @@ namespace TheWeirdEngine
 
             for (int i = 0; i < movecount; i++)
             {
-                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
+                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], prevposidx);
                 calculationresponse newresponse = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
                                                                                n_plies - 1, SearchForFastestMate);
                 if (n_plies > this.display_when_n_plies_gt)
                 {
-                    string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[i]);
+                    string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]]);
                     MyWeirdEngineJson.writelog("n_plies " + n_plies.ToString() + " DONE checking move "
                         + mvstr + " alpha " + new_alpha.ToString() + " beta " + new_beta.ToString()
                         + " posvalue " + newresponse.posvalue.ToString());
@@ -1534,15 +1542,13 @@ namespace TheWeirdEngine
                 {
                     noescapecheck = false;
                 }
-                subresults[i].moveidx = i;
-                subresults[i].movevalue = newresponse.posvalue;
 
                 if (this.positionstack[posidx].colourtomove == 1)
                 {
                     if (newresponse.posvalue > bestmovevalue )
                     {
                         bestmovevalue = newresponse.posvalue;
-                        bestmoveidx = i;
+                        bestmoveidx = positionstack[posidx].moveprioindex[i];
                     }
                     if (new_alpha < newresponse.posvalue)
                     {
@@ -1558,7 +1564,7 @@ namespace TheWeirdEngine
                     if (newresponse.posvalue < bestmovevalue)
                     {
                         bestmovevalue = newresponse.posvalue;
-                        bestmoveidx = i;
+                        bestmoveidx = positionstack[posidx].moveprioindex[i];
                     }
                     if (new_beta > newresponse.posvalue)
                     {

@@ -92,7 +92,7 @@ namespace TheWeirdEngine
             string s = "";
             for (int movei = 0;movei < pposition.movelist_totalfound;movei++)
             {
-                string mvstr = ShortNotation(pposition.movelist[movei]);
+                string mvstr = ShortNotation(pposition.movelist[pposition.moveprioindex[movei]]);
                 if (s == "")
                 {
                     s += mvstr;
