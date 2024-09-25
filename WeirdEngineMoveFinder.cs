@@ -107,20 +107,20 @@ namespace TheWeirdEngine
 
         public WeirdEngineJson MyWeirdEngineJson;//reference to Json object that can do some logging
 
-        public int presort_when_n_plies_gt;
+        public int presort_when_depth_gt;
         public bool setting_SearchForFastestMate;
-        public int presort_using_n_plies;
-        public int display_when_n_plies_gt;
+        public int presort_using_depth;
+        public int display_when_depth_gt;
         public int nodecount;
         public bool externalabort;
         public chesspiecetype[] piecetypes;
         public chessposition[] positionstack;
         public WeirdEngineMoveFinder()
         {
-            this.presort_when_n_plies_gt = 4;
+            this.presort_when_depth_gt = 4;
             this.setting_SearchForFastestMate = true;
-            this.presort_using_n_plies = 3;
-            this.display_when_n_plies_gt = 7;
+            this.presort_using_depth = 3;
+            this.display_when_depth_gt = 7;
             this.externalabort = false;
             this.init_positionstack(defaultboardwidth, defaultboardheight);
         }
@@ -672,7 +672,7 @@ namespace TheWeirdEngine
                 pposition.moveprioindex[i] = i;
             }
         }
-        public void GetAttacksMoves(ref chessposition pposition, int n_plies, int prevposidx)
+        public void GetAttacksMoves(ref chessposition pposition, int depth, int prevposidx)
         {
             pposition.movelist_totalfound = 0;
             pposition.POKingInCheckTimeThief = false;
@@ -682,10 +682,10 @@ namespace TheWeirdEngine
                 {
                     if (pposition.squares[i, j] != 0)
                     {
-                        this.GetStepLeapAttacksMoves(ref pposition, i, j, n_plies);
-                        this.GetSlideAttacksMoves(ref pposition, i, j, n_plies);
+                        this.GetStepLeapAttacksMoves(ref pposition, i, j, depth);
+                        this.GetSlideAttacksMoves(ref pposition, i, j, depth);
                     }
-                    if (n_plies > 0)
+                    if (depth > 0)
                     {
                         if ((pposition.squares[i, j] > 0 & pposition.colourtomove > 0) ||
                             (pposition.squares[i, j] < 0 & pposition.colourtomove < 0))
@@ -697,18 +697,18 @@ namespace TheWeirdEngine
                     if ((pposition.squares[i, j] > 0 & pposition.colourtomove > 0) ||
                         (pposition.squares[i, j] < 0 & pposition.colourtomove < 0))
                     {
-                        GetTimeThiefCapture(ref pposition, i, j, prevposidx, n_plies);
+                        GetTimeThiefCapture(ref pposition, i, j, prevposidx, depth);
                     }
                 }
             }
-            if (n_plies > 0)
+            if (depth > 0)
             {
                 GetCastling(ref pposition);
             }
             Default_moveprioindex(ref pposition);
         }
         public void GetStepLeapAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
-                                                     bool getcaptures, bool getnoncaptures, int n_plies)
+                                                     bool getcaptures, bool getnoncaptures, int depth)
         {
             int i2;
             int j2;
@@ -727,7 +727,7 @@ namespace TheWeirdEngine
                 if (getcaptures == true)
                 {
                     this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
-                    if (n_plies > 0)
+                    if (depth > 0)
                     {
                         if ((pposition.squares[i2, j2] > 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
                             (pposition.squares[i2, j2] < 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
@@ -740,7 +740,7 @@ namespace TheWeirdEngine
                         }
                     }
                 }
-                if (getnoncaptures == true & n_plies > 0)
+                if (getnoncaptures == true & depth > 0)
                 {
                     if ((pposition.squares[i2, j2] == 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
                         (pposition.squares[i2, j2] == 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
@@ -771,7 +771,7 @@ namespace TheWeirdEngine
             }
             return pti;
         }
-        public void GetStepLeapAttacksMoves(ref chessposition pposition, int i, int j, int n_plies)
+        public void GetStepLeapAttacksMoves(ref chessposition pposition, int i, int j, int depth)
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
             int pti_self = pti;
@@ -784,18 +784,18 @@ namespace TheWeirdEngine
             {
                 foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, true, n_plies);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth);
                 }
             }
             else
             {
                 foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, false, true, n_plies);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth);
                 }
                 foreach (vector v in this.piecetypes[pti].stepleapcapturevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, false, n_plies);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth);
                 }
             }
         }
@@ -900,7 +900,7 @@ namespace TheWeirdEngine
             return false;
         }
         public void GetSlideAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
-                                                  bool getcaptures, bool getnoncaptures, int n_plies, int pti)
+                                                  bool getcaptures, bool getnoncaptures, int depth, int pti)
         {
             int i2;
             int j2;
@@ -922,7 +922,7 @@ namespace TheWeirdEngine
                 if (getcaptures == true)
                 {
                     this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
-                    if (n_plies > 0)
+                    if (depth > 0)
                     {
                         if ((pposition.squares[i2, j2] > 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
                             (pposition.squares[i2, j2] < 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
@@ -935,7 +935,7 @@ namespace TheWeirdEngine
                         }
                     }
                 }
-                if (getnoncaptures == true & n_plies > 0)
+                if (getnoncaptures == true & depth > 0)
                 {
                     if ((pposition.squares[i2, j2] == 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
                              (pposition.squares[i2, j2] == 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
@@ -965,7 +965,7 @@ namespace TheWeirdEngine
                 }
             }
         }
-        public void GetSlideAttacksMoves(ref chessposition pposition, int i, int j, int n_plies)
+        public void GetSlideAttacksMoves(ref chessposition pposition, int i, int j, int depth)
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
             int pti_self = pti;
@@ -978,18 +978,18 @@ namespace TheWeirdEngine
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, n_plies, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti_self);
                 }
             }
             else
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, n_plies, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti_self);
                 }
                 foreach (vector v in this.piecetypes[pti].slidecapturevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, n_plies, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti_self);
                 }
             }
         }
@@ -1083,7 +1083,7 @@ namespace TheWeirdEngine
                 }
             }
         }
-        public void GetTimeThiefCapture(ref chessposition pposition, int i, int j, int prevposidx, int n_plies)
+        public void GetTimeThiefCapture(ref chessposition pposition, int i, int j, int prevposidx, int depth)
         {
             int movei;
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
@@ -1117,7 +1117,7 @@ namespace TheWeirdEngine
                         pposition.POKingInCheckTimeThief = true;
                     }
 
-                    if (n_plies > 0)
+                    if (depth > 0)
                     {
                         movei = pposition.movelist_totalfound;
                         InitializeMove(ref pposition, movei, i, j, i2, j2);
@@ -1377,7 +1377,7 @@ namespace TheWeirdEngine
                 pposition.movelist_totalfound += 1;
             }
         }
-        public calculationresponse Calculation_n_plies(int n_plies)
+        public calculationresponse Calculation_tree(int requested_depth)
         {
             this.Set_SpecialPiece_ind();
             this.MyWeirdEngineJson.SetLogfilename();
@@ -1389,7 +1389,7 @@ namespace TheWeirdEngine
 
             this.nodecount = 0;
             this.externalabort = false;
-            calculationresponse myresult = this.Calculation_n_plies_internal(0, -100, 100, n_plies,
+            calculationresponse myresult = this.Calculation_tree_internal(0, -100, 100, requested_depth,
                                                                              this.setting_SearchForFastestMate);
 
             MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
@@ -1403,8 +1403,8 @@ namespace TheWeirdEngine
             for (int i = 0; i < movecount; i++)
             {
                 int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
-                calculationresponse newresponse_presort = Calculation_n_plies_internal(newposidx, alpha, beta,
-                                                                               presort_using_n_plies, false);
+                calculationresponse newresponse_presort = Calculation_tree_internal(newposidx, alpha, beta,
+                                                                               presort_using_depth, false);
                 subresults_presort[i].moveidx = i;
                 subresults_presort[i].movevalue = newresponse_presort.posvalue;
                 //MyWeirdEngineJson.writelog("Value during presoring moveidx " + i.ToString()
@@ -1426,8 +1426,44 @@ namespace TheWeirdEngine
                 positionstack[posidx].moveprioindex[movei] = subresults_presort[movei].moveidx;
             }
         }
-        public calculationresponse Calculation_n_plies_internal(int posidx, double alpha, double beta,
-                                                                int n_plies, bool SearchForFastestMate)
+        public int Adjusted_newdepth(int newdepth, int colourtomove, double foundvalue)
+        {
+
+            int adjusteddepth = 2;
+            if (colourtomove == 1)
+            {
+                if (foundvalue <= 95)
+                {
+                    return newdepth;
+                }
+                for (double mydb = 99.9; mydb > 95; mydb = Math.Round(mydb - 0.1, 1))
+                {
+                    if (foundvalue >= mydb & foundvalue < mydb + 0.1)
+                    {
+                        return adjusteddepth;
+                    }
+                    adjusteddepth += 1;
+                }
+            }
+            else
+            {
+                if (foundvalue >= -95)
+                {
+                    return newdepth;
+                }
+                for (double mydb = -99.9; mydb < -95; mydb = Math.Round(mydb + 0.1, 1))
+                {
+                    if (foundvalue <= mydb & foundvalue > mydb - 0.1)
+                    {
+                        return adjusteddepth;
+                    }
+                    adjusteddepth += 1;
+                }
+            }
+            return newdepth;
+        }
+        public calculationresponse Calculation_tree_internal(int posidx, double alpha, double beta,
+                                                                int pdepth, bool SearchForFastestMate)
         {
             this.nodecount += 1;
             calculationresponse myresult;
@@ -1452,7 +1488,7 @@ namespace TheWeirdEngine
                     prevposidx = positionstack.Length - 1;
                 }
             }
-            GetAttacksMoves(ref positionstack[posidx], n_plies, prevposidx);
+            GetAttacksMoves(ref positionstack[posidx], pdepth, prevposidx);
 
             if (POKingIsInCheck(ref positionstack[posidx]) == true)
             {
@@ -1474,7 +1510,7 @@ namespace TheWeirdEngine
                 return myresult;
             }
 
-            if (n_plies == 0)
+            if (pdepth == 0)
             {
                 myresult.posvalue = StaticEvaluation(ref positionstack[posidx]);
                 return myresult;
@@ -1489,14 +1525,14 @@ namespace TheWeirdEngine
             double new_beta = beta;
 
             //presort BEGIN
-            if (n_plies > this.presort_when_n_plies_gt)
+            if (pdepth > this.presort_when_depth_gt)
             {
                 Application.DoEvents();
                 if (this.externalabort == true)
                 {
                     return myresult;
                 }
-                if (n_plies > this.display_when_n_plies_gt)
+                if (pdepth > this.display_when_depth_gt)
                 {
                     string s = "List before sorting : ";
                     s += this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]);
@@ -1505,7 +1541,7 @@ namespace TheWeirdEngine
 
                 reprioritize_movelist(posidx, new_alpha, new_beta, prevposidx);
 
-                if (n_plies > this.display_when_n_plies_gt)
+                if (pdepth > this.display_when_depth_gt)
                 {
                     string s = "List after sorting : ";
                     s += this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]);
@@ -1525,16 +1561,17 @@ namespace TheWeirdEngine
                 bestmovevalue = 120;
             }
             bool noescapecheck = true;
+            int newdepth = pdepth;
 
             for (int i = 0; i < movecount; i++)
             {
                 int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], prevposidx);
-                calculationresponse newresponse = Calculation_n_plies_internal(newposidx, new_alpha, new_beta,
-                                                                               n_plies - 1, SearchForFastestMate);
-                if (n_plies > this.display_when_n_plies_gt)
+                calculationresponse newresponse = Calculation_tree_internal(newposidx, new_alpha, new_beta,
+                                                                               newdepth - 1, SearchForFastestMate);
+                if (pdepth > this.display_when_depth_gt)
                 {
                     string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]]);
-                    MyWeirdEngineJson.writelog("n_plies " + n_plies.ToString() + " DONE checking move "
+                    MyWeirdEngineJson.writelog("pdepth " + pdepth.ToString() + " newdepth " + newdepth.ToString() + " DONE checking move "
                         + mvstr + " alpha " + new_alpha.ToString() + " beta " + new_beta.ToString()
                         + " posvalue " + newresponse.posvalue.ToString());
                 }
@@ -1576,7 +1613,7 @@ namespace TheWeirdEngine
                     }
 
                 }
-
+                newdepth = Adjusted_newdepth(newdepth, this.positionstack[posidx].colourtomove, newresponse.posvalue);
             }
 
             //Mate

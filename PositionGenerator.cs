@@ -56,7 +56,7 @@ namespace TheWeirdEngine
         public bool IsTrivial(int n_plies)
         {
             calculationresponse a;
-            a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
+            a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
             if (a.posvalue >= 30 || a.posvalue <= -30)
             {
                 return true;
@@ -66,7 +66,7 @@ namespace TheWeirdEngine
         public bool IsMate(int n_plies)
         {
             calculationresponse a;
-            a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
+            a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
             if (a.posvalue >= (100 - (n_plies * 0.1)) || a.posvalue <= ((n_plies * 0.1) - 100))
             {
                 return true;
@@ -166,7 +166,7 @@ namespace TheWeirdEngine
             for (int i = 0; i < totalnumber; i++)
             {
                 gennontrivial();
-                calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
+                calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
                 MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\",
                                                      "rnd_pos_" + i.ToString());
                 totvalue += a.posvalue;

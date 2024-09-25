@@ -134,7 +134,7 @@ namespace TheWeirdEngine
             this.RefreshInformation();
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", positionname);
 
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(n_plies);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
             //MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.positionstack[0]));
             //MessageBox.Show(this.MyWeirdEngineJson.DisplayAttacks(ref MyWeirdEngineMoveFinder.positionstack[0]));
             string s = "posvalue " + a.posvalue.ToString();
@@ -259,7 +259,7 @@ namespace TheWeirdEngine
             this.RefreshInformation();
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", positionname);
 
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_n_plies(1);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(1);
             MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.positionstack[0]));
             string s = "Check info :";
             if (MyWeirdEngineMoveFinder.WhiteKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
