@@ -92,6 +92,15 @@ namespace TheWeirdEngine
         public vector blackkingcoord;
         public vector blackkingsiderookcoord;
         public vector blackqueensiderookcoord;
+
+        //Below group is initialized and set in LocatePieces
+        public bool WhiteBareKing;
+        public bool BlackBareKing;
+        public bool WhiteBishopPair;
+        public bool BlackBishopPair;
+        public bool WhiteHasMatingMaterial;
+        public bool BlackHasMatingMaterial;
+
         public int movelist_totalfound;
         public chessmove[] movelist;
         public int[] moveprioindex;
@@ -267,13 +276,32 @@ namespace TheWeirdEngine
             }
             return -1;
         }
-        public void LocateKingsRooks(ref chessposition pposition)
+        public void LocatePieces(ref chessposition pposition)
         {
+            bool whitesquare;
+            bool whitebishopsonwhite = false;
+            bool whitebishopsonblack = false;
+            bool blackbishopsonwhite = false;
+            bool blackbishopsonblack = false;
+            int whiteknightcount = 0;
+            int blackknightcount = 0;
+
+            pposition.WhiteBareKing = true;
+            pposition.BlackBareKing = true;
+            pposition.WhiteBishopPair = false;
+            pposition.BlackBishopPair = false;
+            pposition.WhiteHasMatingMaterial = false;
+            pposition.BlackHasMatingMaterial = false;
+
             //If we go from left to right then we should find queensiderooks first
             for (int i = 0; i < pposition.boardwidth; i++)
             {
                 for (int j = 0; j < pposition.boardheight; j++)
                 {
+
+                    if ((i + j) % 2 == 0) { whitesquare = false; }
+                    else { whitesquare = true; }
+
                     if (pposition.squares[i, j] != 0)
                     {
                         int pti = this.pieceTypeIndex(pposition.squares[i, j]);
@@ -290,7 +318,7 @@ namespace TheWeirdEngine
                                 pposition.blackkingcoord.y = j;
                             }
                         }
-                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Rook)
+                        else if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Rook)
                         {
                             if (pposition.squares[i, j] > 0)
                             {
@@ -320,10 +348,92 @@ namespace TheWeirdEngine
                             }
 
                         }
+                        else if (this.piecetypes[pti].name == "Bishop")
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                if (whitesquare) { whitebishopsonwhite = true; }
+                                else { whitebishopsonblack = true; }
+                            }
+                            else
+                            {
+                                if (whitesquare) { blackbishopsonwhite = true; }
+                                else { blackbishopsonblack = true; }
+                            }
+                        }
+                        else if (this.piecetypes[pti].name == "Knight")
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                whiteknightcount += 1;
+                            }
+                            else
+                            {
+                                blackknightcount += 1;
+                            }
+                        }
+                        else
+                        {
+                            if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch)
+                            {
+                                //Now other piece, not King, not Rook, not Bishop, not Knight, not Witch:
+                                if (pposition.squares[i, j] > 0)
+                                {
+                                    pposition.WhiteHasMatingMaterial = true;
+                                }
+                                else
+                                {
+                                    pposition.BlackHasMatingMaterial = true;
+                                }
+                            }
+                        }
+                        //Also detect (lack of) bare King situation
+                        if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.King)
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                pposition.WhiteBareKing = false;
+                            }
+                            else
+                            {
+                                pposition.BlackBareKing = false;
+                            }
+                        }
                     }
                 }
             }
-
+            if (whitebishopsonblack == true & whitebishopsonwhite == true)
+            {
+                pposition.WhiteBishopPair = true;
+                pposition.WhiteHasMatingMaterial = true;
+            }
+            if (blackbishopsonblack == true & blackbishopsonwhite == true)
+            {
+                pposition.BlackBishopPair = true;
+                pposition.BlackHasMatingMaterial = true;
+            }
+            if (whitebishopsonblack == true || whitebishopsonwhite == true)
+            {
+                if (whiteknightcount > 0)
+                {
+                    pposition.WhiteHasMatingMaterial = true;
+                }
+            }
+            if (blackbishopsonblack == true || blackbishopsonwhite == true)
+            {
+                if (blackknightcount > 0)
+                {
+                    pposition.BlackHasMatingMaterial = true;
+                }
+            }
+            if (whiteknightcount > 1)
+            {
+                pposition.WhiteHasMatingMaterial = true;
+            }
+            if (blackknightcount > 1)
+            {
+                pposition.BlackHasMatingMaterial = true;
+            }
         }
         public double CheckKingsPresent(ref chessposition pposition)
         {
@@ -344,85 +454,15 @@ namespace TheWeirdEngine
         public bool DrawByMaterial(ref chessposition pposition)
         {
             //NOT FINISHED for now good enough to handle KBN vs K
-            bool whitesquare;
-            int whitenumberofknights = 0;
-            int whitenumberofbishopsonwhite = 0;
-            int whitenumberofbishopsonblack = 0;
-            int blacknumberofknights = 0;
-            int blacknumberofbishopsonwhite = 0;
-            int blacknumberofbishopsonblack = 0;
+            //Two bare Kings was already excluded earlier
+            if (pposition.WhiteBareKing == false & pposition.BlackBareKing == false) { return false; }
 
-            for (int i = 0; i < pposition.boardwidth; i++)
+            //Now exactly one of the players has bare King
+            if (pposition.WhiteHasMatingMaterial == true || pposition.BlackHasMatingMaterial == true)
             {
-                for (int j = 0; j < pposition.boardheight; j++)
-                {
-                    if ((i + j) % 2 == 0) { whitesquare = false; }
-                    else { whitesquare = true; }
-
-                    if (pposition.squares[i, j] != 0)
-                    {
-                        int pti = this.pieceTypeIndex(pposition.squares[i, j]);
-
-                        if (pposition.squares[i, j] > 0)
-                        {
-                            if (this.piecetypes[pti].name == "Knight") { whitenumberofknights += 1; }
-                            else if (this.piecetypes[pti].name == "Bishop")
-                            {
-                                if (whitesquare) { whitenumberofbishopsonwhite += 1; }
-                                else { whitenumberofbishopsonblack += 1; }
-                            }
-                            else if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.King)
-                            { 
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            if (this.piecetypes[pti].name == "Knight") { blacknumberofknights += 1; }
-                            else if (this.piecetypes[pti].name == "Bishop")
-                            {
-                                if (whitesquare) { blacknumberofbishopsonwhite += 1; }
-                                else { blacknumberofbishopsonblack += 1; }
-                            }
-                            else if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.King)
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
+                return false;
             }
-            //Now we're left with just knights and bishops
-            bool lonewhiteking = false;
-            bool loneblackking = false;
-            if (whitenumberofknights == 0 & whitenumberofbishopsonwhite == 0 & whitenumberofbishopsonblack == 0)
-            {
-                lonewhiteking = true;
-            }
-            if (blacknumberofknights == 0 & blacknumberofbishopsonwhite == 0 & blacknumberofbishopsonblack == 0)
-            {
-                loneblackking = true;
-            }
-            if (lonewhiteking == true & loneblackking == true) { return true; }
-            if (lonewhiteking == false & loneblackking == false) { return false; }
-
-            //Now exactly one of the players has lone King
-            if (whitenumberofknights > 1 || blacknumberofknights > 1) { return false;  }
-            if (whitenumberofbishopsonblack > 0 & whitenumberofbishopsonwhite > 0) { return false; }
-            if (blacknumberofbishopsonblack > 0 & blacknumberofbishopsonwhite > 0) { return false; }
-            //Now the other player has at most one Knight, and Bishop(s) on just one of the colours
-
-            if (lonewhiteking == true)
-            {
-                if (blacknumberofknights == 0) { return true ; }
-                if (blacknumberofbishopsonblack == 0 & blacknumberofbishopsonwhite == 0) { return true; }
-            }
-            if (loneblackking == true)
-            {
-                if (whitenumberofknights == 0) { return true; }
-                if (whitenumberofbishopsonblack == 0 & whitenumberofbishopsonwhite == 0) { return true; }
-            }
-            return false;
+            return true;
         }
         public double EvaluationByMaterial(ref chessposition pposition)
         {
@@ -1377,10 +1417,56 @@ namespace TheWeirdEngine
                 pposition.movelist_totalfound += 1;
             }
         }
+        public bool IsValidPosition(ref chessposition pposition)
+        {
+            int whitekingcount = 0;
+            int blackkingcount = 0;
+            for (int i = 0; i < pposition.boardwidth; i++)
+            {
+                for (int j = 0; j < pposition.boardheight; j++)
+                {
+                    if (pposition.squares[i, j] != 0)
+                    {
+                        int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.King)
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                whitekingcount++;
+                                if (whitekingcount > 1)
+                                {
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                blackkingcount++;
+                                if (blackkingcount > 1)
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+        }
         public calculationresponse Calculation_tree(int requested_depth)
         {
             this.Set_SpecialPiece_ind();
             this.MyWeirdEngineJson.SetLogfilename();
+            calculationresponse myresult;
+
+            if (IsValidPosition(ref positionstack[0]) == false)
+            {
+                MyWeirdEngineJson.writelog("Invalid position in method Calculation_tree");
+                MessageBox.Show("Invalid position in method Calculation_tree");
+                myresult.posvalue = 0;
+                myresult.moveidx = -1;
+                myresult.POKingIsInCheck = false;
+                return myresult;
+            }
 
             if (HasPreviousPosition() == true)
             {
@@ -1389,7 +1475,7 @@ namespace TheWeirdEngine
 
             this.nodecount = 0;
             this.externalabort = false;
-            calculationresponse myresult = this.Calculation_tree_internal(0, -100, 100, requested_depth,
+            myresult = this.Calculation_tree_internal(0, -100, 100, requested_depth,
                                                                              this.setting_SearchForFastestMate);
 
             MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
@@ -1471,7 +1557,14 @@ namespace TheWeirdEngine
             myresult.moveidx = -1;
             myresult.POKingIsInCheck = false;
 
-            this.LocateKingsRooks(ref positionstack[posidx]);
+            this.LocatePieces(ref positionstack[posidx]);
+
+            if (positionstack[posidx].WhiteBareKing == true & positionstack[posidx].BlackBareKing == true)
+            {
+                myresult.posvalue = 0.0;
+                return myresult;
+            }
+
             myresult.posvalue = CheckKingsPresent(ref positionstack[posidx]);
             if (myresult.posvalue == 100 || myresult.posvalue == -100)
             {
