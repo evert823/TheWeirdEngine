@@ -88,6 +88,7 @@
     <Compile Include="PositionGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WeirdEngineBareKingMate.cs" />
     <Compile Include="WeirdEngineJson.cs" />
     <Compile Include="WeirdEngineMoveFinder.cs" />
     <EmbeddedResource Include="formWeirdEngineMain.resx">

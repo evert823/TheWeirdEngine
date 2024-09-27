@@ -499,6 +499,15 @@ namespace TheWeirdEngine
             TestStalemate_n(ppath, "08B_insufficient_material_9a", 14);
             TestStalemate_n(ppath, "08B_insufficient_material_9b", 14);
 
+            TestMate_n(ppath, "08C_sufficient_material_mate_1_white_01", 1, 3, 4, 2, 6);
+            TestMate_n(ppath, "08C_sufficient_material_mate_1_white_02", 1, 3, 4, 1, 5);
+            TestMate_n(ppath, "08C_sufficient_material_mate_1_white_03", 1, 3, 4, 1, 5);
+            TestMate_n(ppath, "08C_sufficient_material_mate_2_white_01", 2, 4, 3, 3, 4);
+            TestMate_n(ppath, "08C_sufficient_material_mate_1_black_01", 1, 3, 3, 2, 1);
+            TestMate_n(ppath, "08C_sufficient_material_mate_1_black_02", 1, 3, 3, 1, 2);
+            TestMate_n(ppath, "08C_sufficient_material_mate_1_black_03", 1, 3, 3, 1, 2);
+            TestMate_n(ppath, "08C_sufficient_material_mate_2_black_01", 2, 4, 4, 3, 3);
+
             MyWeirdEngineMoveFinder.setting_SearchForFastestMate = false;
             BaselinePerformance(ppath, "07A_mate_4_white_BN", 8, 3);
             BaselinePerformance(ppath, "07A_mate_4_black_BN", 8, 3);

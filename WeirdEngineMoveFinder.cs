@@ -96,8 +96,10 @@ namespace TheWeirdEngine
         //Below group is initialized and set in LocatePieces
         public bool WhiteBareKing;
         public bool BlackBareKing;
-        public bool WhiteBishopPair;
-        public bool BlackBishopPair;
+        public bool WhiteBishoponWhite;
+        public bool WhiteBishoponBlack;
+        public bool BlackBishoponWhite;
+        public bool BlackBishoponBlack;
         public bool WhiteHasMatingMaterial;
         public bool BlackHasMatingMaterial;
 
@@ -115,6 +117,7 @@ namespace TheWeirdEngine
         public const int defaultboardheight = 8;
 
         public WeirdEngineJson MyWeirdEngineJson;//reference to Json object that can do some logging
+        public WeirdEngineBareKingMate MyWeirdEngineBareKingMate;
 
         public int presort_when_depth_gt;
         public bool setting_SearchForFastestMate;
@@ -126,6 +129,7 @@ namespace TheWeirdEngine
         public chessposition[] positionstack;
         public WeirdEngineMoveFinder()
         {
+            this.MyWeirdEngineBareKingMate = new WeirdEngineBareKingMate(this);
             this.presort_when_depth_gt = 4;
             this.setting_SearchForFastestMate = true;
             this.presort_using_depth = 3;
@@ -279,17 +283,15 @@ namespace TheWeirdEngine
         public void LocatePieces(ref chessposition pposition)
         {
             bool whitesquare;
-            bool whitebishopsonwhite = false;
-            bool whitebishopsonblack = false;
-            bool blackbishopsonwhite = false;
-            bool blackbishopsonblack = false;
             int whiteknightcount = 0;
             int blackknightcount = 0;
 
             pposition.WhiteBareKing = true;
             pposition.BlackBareKing = true;
-            pposition.WhiteBishopPair = false;
-            pposition.BlackBishopPair = false;
+            pposition.WhiteBishoponWhite = false;
+            pposition.WhiteBishoponBlack = false;
+            pposition.BlackBishoponWhite = false;
+            pposition.BlackBishoponBlack = false;
             pposition.WhiteHasMatingMaterial = false;
             pposition.BlackHasMatingMaterial = false;
 
@@ -299,8 +301,7 @@ namespace TheWeirdEngine
                 for (int j = 0; j < pposition.boardheight; j++)
                 {
 
-                    if ((i + j) % 2 == 0) { whitesquare = false; }
-                    else { whitesquare = true; }
+                    whitesquare = IsWhiteSquare(i, j);
 
                     if (pposition.squares[i, j] != 0)
                     {
@@ -352,13 +353,13 @@ namespace TheWeirdEngine
                         {
                             if (pposition.squares[i, j] > 0)
                             {
-                                if (whitesquare) { whitebishopsonwhite = true; }
-                                else { whitebishopsonblack = true; }
+                                if (whitesquare) { pposition.WhiteBishoponWhite = true; }
+                                else { pposition.WhiteBishoponBlack = true; }
                             }
                             else
                             {
-                                if (whitesquare) { blackbishopsonwhite = true; }
-                                else { blackbishopsonblack = true; }
+                                if (whitesquare) { pposition.BlackBishoponWhite = true; }
+                                else { pposition.BlackBishoponBlack = true; }
                             }
                         }
                         else if (this.piecetypes[pti].name == "Knight")
@@ -402,24 +403,22 @@ namespace TheWeirdEngine
                     }
                 }
             }
-            if (whitebishopsonblack == true & whitebishopsonwhite == true)
+            if (pposition.WhiteBishoponWhite == true & pposition.WhiteBishoponBlack == true)
             {
-                pposition.WhiteBishopPair = true;
                 pposition.WhiteHasMatingMaterial = true;
             }
-            if (blackbishopsonblack == true & blackbishopsonwhite == true)
+            if (pposition.BlackBishoponWhite == true & pposition.BlackBishoponBlack == true)
             {
-                pposition.BlackBishopPair = true;
                 pposition.BlackHasMatingMaterial = true;
             }
-            if (whitebishopsonblack == true || whitebishopsonwhite == true)
+            if (pposition.WhiteBishoponWhite == true || pposition.WhiteBishoponBlack == true)
             {
                 if (whiteknightcount > 0)
                 {
                     pposition.WhiteHasMatingMaterial = true;
                 }
             }
-            if (blackbishopsonblack == true || blackbishopsonwhite == true)
+            if (pposition.BlackBishoponWhite == true || pposition.BlackBishoponBlack == true)
             {
                 if (blackknightcount > 0)
                 {
@@ -450,6 +449,11 @@ namespace TheWeirdEngine
                 return 100.0;
             }
             return 0.0;
+        }
+        public bool IsWhiteSquare(int i, int j)
+        {
+            if ((i + j) % 2 == 0) { return true; }
+            else { return false; }
         }
         public bool DrawByMaterial(ref chessposition pposition)
         {
@@ -549,8 +553,21 @@ namespace TheWeirdEngine
         public double StaticEvaluation(ref chessposition pposition)
         {
             //Minimum/maximum score for 'soft' results should be -80/80 respectively !!!
+            double myev;
+
+            if (pposition.WhiteBareKing == true & pposition.BlackHasMatingMaterial == true)
+            {
+                myev = MyWeirdEngineBareKingMate.MateBareKing(ref pposition);
+                return myev;
+            }
+            else if (pposition.BlackBareKing == true & pposition.WhiteHasMatingMaterial == true)
+            {
+                myev = MyWeirdEngineBareKingMate.MateBareKing(ref pposition);
+                return myev;
+            }
+
             //double myev = EvaluationByMaterial(ref pposition);
-            double myev = EvaluationByAttack(ref pposition);
+            myev = EvaluationByAttack(ref pposition);
             return myev;
         }
         public void init_positionstack(int pboardwidth, int pboardheight)
@@ -1744,11 +1761,11 @@ namespace TheWeirdEngine
             if (SearchForFastestMate == true)
             {
                 //This comes with SLOWNESS!!!! because now it keeps looking for a faster forced mate
-                if (myresult.posvalue > 80)
+                if (myresult.posvalue > 95)
                 {
                     myresult.posvalue -= 0.1;
                 }
-                if (myresult.posvalue < -80)
+                if (myresult.posvalue < -95)
                 {
                     myresult.posvalue += 0.1;
                 }
