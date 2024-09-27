@@ -323,6 +323,7 @@ namespace TheWeirdEngine
                         {
                             if (pposition.squares[i, j] > 0)
                             {
+                                pposition.WhiteHasMatingMaterial = true;
                                 if (pposition.whitequeensiderookcoord.x == -1 & pposition.whitekingcoord.x == -1)
                                 {
                                     pposition.whitequeensiderookcoord.x = i;
@@ -336,6 +337,7 @@ namespace TheWeirdEngine
                             }
                             else
                             {
+                                pposition.BlackHasMatingMaterial = true;
                                 if (pposition.blackqueensiderookcoord.x == -1 & pposition.blackkingcoord.x == -1)
                                 {
                                     pposition.blackqueensiderookcoord.x = i;
@@ -1495,7 +1497,10 @@ namespace TheWeirdEngine
             myresult = this.Calculation_tree_internal(0, -100, 100, requested_depth,
                                                                              this.setting_SearchForFastestMate);
 
-            MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
+            if (requested_depth > display_when_depth_gt)
+            {
+                MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
+            }
             return myresult;
         }
         public void reprioritize_movelist(int posidx, double alpha, double beta, int prevposidx)
