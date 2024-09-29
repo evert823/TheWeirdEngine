@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -53,21 +54,21 @@ namespace TheWeirdEngine
             }
             MyWeirdEngineMoveFinder.positionstack[0].squares[i, j] = MyWeirdEngineJson.Str2PieceType(psymbol);
         }
-        public bool IsTrivial(int n_plies)
+        public bool IsTrivial(int depth)
         {
             calculationresponse a;
-            a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
-            if (a.posvalue >= 30 || a.posvalue <= -30)
+            a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
+            if (a.posvalue >= 99.0 || a.posvalue <= -99.0)
             {
                 return true;
             }
             return false;
         }
-        public bool IsMate(int n_plies)
+        public bool IsMate(int depth)
         {
             calculationresponse a;
-            a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
-            if (a.posvalue >= (100 - (n_plies * 0.1)) || a.posvalue <= ((n_plies * 0.1) - 100))
+            a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
+            if (a.posvalue >= (100 - (depth * 0.1)) || a.posvalue <= ((depth * 0.1) - 100))
             {
                 return true;
             }
@@ -105,16 +106,12 @@ namespace TheWeirdEngine
         }
         public void genone_puzzle()
         {
-            ClearMainPosition(8, 8);
-            PutOnePiece("-K", 0, 3, 6, 7);
-            PutOnePiece("K", 1, 5, 5, 7);
-            PutOnePiece("-p", 0, 5, 4, 6);
-            PutOnePiece("-p", 0, 5, 4, 6);
-            PutOnePiece("-N", 0, 6, 3, 7);
-            PutOnePiece("-B", 0, 6, 3, 7);
-            PutOnePiece("R", 0, 7, 0, 7);
-            PutOnePiece("H", 0, 7, 0, 7);
-            PutOnePiece("J", 1, 5, 5, 7);
+            ClearMainPosition(6, 6);
+            PutOnePiece("K", 2, 5, 2, 3);
+            PutOnePiece("-K", 4, 5, 0, 1);
+            PutOnePiece("N", 2, 5, 2, 3);
+            PutOnePiece("B", 1, 1, 1, 1);
+            PutOnePiece("T", 1, 5, 0, 5);
             //MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = 1;
         }
@@ -133,20 +130,29 @@ namespace TheWeirdEngine
             while (postrivial == true)
             {
                 genone_puzzle();
-                postrivial = IsTrivial(6);
+                postrivial = IsTrivial(4);
             }
         }
         public void gengreat_puzzle()
         {
+            int counter = 0;
             bool posgreat = false;
             while (posgreat == false)
             {
+                counter += 1;
+                if (counter % 10 == 0)
+                {
+                    MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions\\",
+                                                        "failed_gen_" + counter.ToString());
+                }
                 gennontrivial_puzzle();
                 posgreat = IsMate(8);
             }
         }
         public void genmain()
         {
+            //MyWeirdEngineMoveFinder.setting_SearchForFastestMate = false;
+            MyWeirdEngineMoveFinder.display_when_depth_gt = 8;
             gengreat_puzzle();
             MessageBox.Show("DONE generating great position!!");
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\", "frompositiongenerator");
@@ -156,17 +162,17 @@ namespace TheWeirdEngine
         {
             double totvalue = 0;
 
-            int n_plies;
+            int depth;
             int totalnumber;
-            int.TryParse(str_othervalues[0], out n_plies);
+            int.TryParse(str_othervalues[0], out depth);
             int.TryParse(str_othervalues[1], out totalnumber);
-            MessageBox.Show("n_plies : " + n_plies.ToString());
+            MessageBox.Show("depth : " + depth.ToString());
             MessageBox.Show("totalnumber : " + totalnumber.ToString());
 
             for (int i = 0; i < totalnumber; i++)
             {
                 gennontrivial();
-                calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
+                calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
                 MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\",
                                                      "rnd_pos_" + i.ToString());
                 totvalue += a.posvalue;

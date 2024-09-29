@@ -93,7 +93,6 @@ namespace TheWeirdEngine
         public vector blackkingsiderookcoord;
         public vector blackqueensiderookcoord;
 
-        //Below group is initialized and set in LocatePieces
         public bool WhiteBareKing;
         public bool BlackBareKing;
         public bool WhiteBishoponWhite;
@@ -102,11 +101,15 @@ namespace TheWeirdEngine
         public bool BlackBishoponBlack;
         public bool WhiteHasMatingMaterial;
         public bool BlackHasMatingMaterial;
+        public bool WhiteHasWitch;
+        public bool BlackHasWitch;
 
         public int movelist_totalfound;
         public chessmove[] movelist;
         public int[] moveprioindex;
         public bool POKingInCheckTimeThief;
+
+        public int RepetitionCounter;
     }
 
     public class WeirdEngineMoveFinder
@@ -118,6 +121,7 @@ namespace TheWeirdEngine
 
         public WeirdEngineJson MyWeirdEngineJson;//reference to Json object that can do some logging
         public WeirdEngineBareKingMate MyWeirdEngineBareKingMate;
+        public WeirdEnginePositionCompare MyWeirdEnginePositionCompare;
 
         public int presort_when_depth_gt;
         public bool setting_SearchForFastestMate;
@@ -130,6 +134,7 @@ namespace TheWeirdEngine
         public WeirdEngineMoveFinder()
         {
             this.MyWeirdEngineBareKingMate = new WeirdEngineBareKingMate(this);
+            this.MyWeirdEnginePositionCompare = new WeirdEnginePositionCompare(this);
             this.presort_when_depth_gt = 4;
             this.setting_SearchForFastestMate = true;
             this.presort_using_depth = 3;
@@ -162,6 +167,8 @@ namespace TheWeirdEngine
             pposition.squareInfo = new squareInfoItem[pboardwidth, pboardheight];
             pposition.precedingmove = null;
             pposition.precedingmove = new int[4] { -1, -1, -1, -1 };
+            pposition.WhiteJokerSubstitute_pti = -1;
+            pposition.BlackJokerSubstitute_pti = -1;
             this.ClearNonPersistent(ref pposition);
         }
         public bool HasPreviousPosition()
@@ -214,8 +221,6 @@ namespace TheWeirdEngine
             pposition.blackkingsiderookcoord.y = -1;
             pposition.blackqueensiderookcoord.x = -1;
             pposition.blackqueensiderookcoord.y = -1;
-            pposition.WhiteJokerSubstitute_pti = -1;
-            pposition.BlackJokerSubstitute_pti = -1;
             pposition.movelist_totalfound = 0;
             pposition.POKingInCheckTimeThief = false;
 
@@ -223,6 +228,17 @@ namespace TheWeirdEngine
             pposition.precedingmove[1] = -1;
             pposition.precedingmove[2] = -1;
             pposition.precedingmove[3] = -1;
+
+            pposition.WhiteBareKing = true;//true not false !!!
+            pposition.BlackBareKing = true;//true not false !!!
+            pposition.WhiteBishoponWhite = false;
+            pposition.WhiteBishoponBlack = false;
+            pposition.BlackBishoponWhite = false;
+            pposition.BlackBishoponBlack = false;
+            pposition.WhiteHasMatingMaterial = false;
+            pposition.BlackHasMatingMaterial = false;
+            pposition.WhiteHasWitch = false;
+            pposition.BlackHasWitch = false;
         }
         public void AllocateMovelist(ref chessposition pposition)
         {
@@ -285,15 +301,6 @@ namespace TheWeirdEngine
             bool whitesquare;
             int whiteknightcount = 0;
             int blackknightcount = 0;
-
-            pposition.WhiteBareKing = true;
-            pposition.BlackBareKing = true;
-            pposition.WhiteBishoponWhite = false;
-            pposition.WhiteBishoponBlack = false;
-            pposition.BlackBishoponWhite = false;
-            pposition.BlackBishoponBlack = false;
-            pposition.WhiteHasMatingMaterial = false;
-            pposition.BlackHasMatingMaterial = false;
 
             //If we go from left to right then we should find queensiderooks first
             for (int i = 0; i < pposition.boardwidth; i++)
@@ -375,19 +382,27 @@ namespace TheWeirdEngine
                                 blackknightcount += 1;
                             }
                         }
+                        else if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Witch)
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                pposition.WhiteHasWitch = true;
+                            }
+                            else
+                            {
+                                pposition.BlackHasWitch = true;
+                            }
+                        }
                         else
                         {
-                            if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch)
+                            //Now other piece, not King, not Rook, not Bishop, not Knight, not Witch:
+                            if (pposition.squares[i, j] > 0)
                             {
-                                //Now other piece, not King, not Rook, not Bishop, not Knight, not Witch:
-                                if (pposition.squares[i, j] > 0)
-                                {
-                                    pposition.WhiteHasMatingMaterial = true;
-                                }
-                                else
-                                {
-                                    pposition.BlackHasMatingMaterial = true;
-                                }
+                                pposition.WhiteHasMatingMaterial = true;
+                            }
+                            else
+                            {
+                                pposition.BlackHasMatingMaterial = true;
                             }
                         }
                         //Also detect (lack of) bare King situation
@@ -459,6 +474,7 @@ namespace TheWeirdEngine
         }
         public bool DrawByMaterial(ref chessposition pposition)
         {
+            if (pposition.WhiteBareKing == true & pposition.BlackBareKing == true) { return true; }
             //NOT FINISHED for now good enough to handle KBN vs K
             //Two bare Kings was already excluded earlier
             if (pposition.WhiteBareKing == false & pposition.BlackBareKing == false) { return false; }
@@ -594,6 +610,8 @@ namespace TheWeirdEngine
             topos.blackkinghasmoved = frompos.blackkinghasmoved;
             topos.blackkingsiderookhasmoved = frompos.blackkingsiderookhasmoved;
             topos.blackqueensiderookhasmoved = frompos.blackqueensiderookhasmoved;
+            topos.WhiteJokerSubstitute_pti = frompos.WhiteJokerSubstitute_pti;
+            topos.BlackJokerSubstitute_pti = frompos.BlackJokerSubstitute_pti;
 
             for (int i = 0; i < frompos.boardwidth; i++)
             {
@@ -606,6 +624,10 @@ namespace TheWeirdEngine
         }
         public void SetWitchInfluence(ref chessposition pposition)
         {
+            if (pposition.WhiteHasWitch == false & pposition.BlackHasWitch == false)
+            {
+                return;
+            }
             for (int i = 0; i < pposition.boardwidth; i++)
             {
                 for (int j = 0; j < pposition.boardheight; j++)
@@ -1474,8 +1496,14 @@ namespace TheWeirdEngine
         public calculationresponse Calculation_tree(int requested_depth)
         {
             this.Set_SpecialPiece_ind();
+            this.MyWeirdEnginePositionCompare.InitRepetitionCounter();
             this.MyWeirdEngineJson.SetLogfilename();
             calculationresponse myresult;
+
+            if (requested_depth > requested_depth - 2)
+            {
+                display_when_depth_gt = requested_depth - 2;
+            }
 
             if (IsValidPosition(ref positionstack[0]) == false)
             {
@@ -1489,6 +1517,7 @@ namespace TheWeirdEngine
 
             if (HasPreviousPosition() == true)
             {
+                this.LocatePieces(ref positionstack[positionstack.Length - 1]);
                 SetWitchInfluence(ref positionstack[positionstack.Length - 1]);
             }
 
@@ -1579,13 +1608,15 @@ namespace TheWeirdEngine
             myresult.moveidx = -1;
             myresult.POKingIsInCheck = false;
 
-            this.LocatePieces(ref positionstack[posidx]);
-
-            if (positionstack[posidx].WhiteBareKing == true & positionstack[posidx].BlackBareKing == true)
+            MyWeirdEnginePositionCompare.SetRepetitionCounter(posidx);
+            if (positionstack[posidx].RepetitionCounter >= 2)
             {
+                //MessageBox.Show("Found 2fold rep situation");
                 myresult.posvalue = 0.0;
                 return myresult;
             }
+
+            this.LocatePieces(ref positionstack[posidx]);
 
             myresult.posvalue = CheckKingsPresent(ref positionstack[posidx]);
             if (myresult.posvalue == 100 || myresult.posvalue == -100)

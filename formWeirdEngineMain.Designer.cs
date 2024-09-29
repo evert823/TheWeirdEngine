@@ -44,6 +44,8 @@
             this.showLegalMovesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadFENToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.getFENToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.unittestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newUnittestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,8 +58,7 @@
             this.btnAbort = new System.Windows.Forms.Button();
             this.txtbOtherValues = new System.Windows.Forms.TextBox();
             this.lblOtherValues = new System.Windows.Forms.Label();
-            this.loadFENToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.getFENToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.otherTestsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -151,14 +152,14 @@
             // suggestMoveToolStripMenuItem
             // 
             this.suggestMoveToolStripMenuItem.Name = "suggestMoveToolStripMenuItem";
-            this.suggestMoveToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.suggestMoveToolStripMenuItem.Size = new System.Drawing.Size(212, 26);
             this.suggestMoveToolStripMenuItem.Text = "Suggest move";
             this.suggestMoveToolStripMenuItem.Click += new System.EventHandler(this.suggestMoveToolStripMenuItem_Click);
             // 
             // showLegalMovesToolStripMenuItem
             // 
             this.showLegalMovesToolStripMenuItem.Name = "showLegalMovesToolStripMenuItem";
-            this.showLegalMovesToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.showLegalMovesToolStripMenuItem.Size = new System.Drawing.Size(212, 26);
             this.showLegalMovesToolStripMenuItem.Text = "Show legal moves";
             this.showLegalMovesToolStripMenuItem.Click += new System.EventHandler(this.showLegalMovesToolStripMenuItem_Click);
             // 
@@ -175,15 +176,30 @@
             // loadPositionToolStripMenuItem
             // 
             this.loadPositionToolStripMenuItem.Name = "loadPositionToolStripMenuItem";
-            this.loadPositionToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.loadPositionToolStripMenuItem.Size = new System.Drawing.Size(183, 26);
             this.loadPositionToolStripMenuItem.Text = "Load position";
             this.loadPositionToolStripMenuItem.Click += new System.EventHandler(this.loadPositionToolStripMenuItem_Click);
+            // 
+            // loadFENToolStripMenuItem
+            // 
+            this.loadFENToolStripMenuItem.Name = "loadFENToolStripMenuItem";
+            this.loadFENToolStripMenuItem.Size = new System.Drawing.Size(183, 26);
+            this.loadFENToolStripMenuItem.Text = "Load FEN";
+            this.loadFENToolStripMenuItem.Click += new System.EventHandler(this.loadFENToolStripMenuItem_Click);
+            // 
+            // getFENToolStripMenuItem
+            // 
+            this.getFENToolStripMenuItem.Name = "getFENToolStripMenuItem";
+            this.getFENToolStripMenuItem.Size = new System.Drawing.Size(183, 26);
+            this.getFENToolStripMenuItem.Text = "Get FEN";
+            this.getFENToolStripMenuItem.Click += new System.EventHandler(this.getFENToolStripMenuItem_Click);
             // 
             // testNewToolStripMenuItem
             // 
             this.testNewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.unittestsToolStripMenuItem,
-            this.newUnittestsToolStripMenuItem});
+            this.newUnittestsToolStripMenuItem,
+            this.otherTestsToolStripMenuItem});
             this.testNewToolStripMenuItem.Name = "testNewToolStripMenuItem";
             this.testNewToolStripMenuItem.Size = new System.Drawing.Size(79, 24);
             this.testNewToolStripMenuItem.Text = "TestNew";
@@ -191,14 +207,14 @@
             // unittestsToolStripMenuItem
             // 
             this.unittestsToolStripMenuItem.Name = "unittestsToolStripMenuItem";
-            this.unittestsToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.unittestsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.unittestsToolStripMenuItem.Text = "Unittests";
             this.unittestsToolStripMenuItem.Click += new System.EventHandler(this.unittestsToolStripMenuItem_Click);
             // 
             // newUnittestsToolStripMenuItem
             // 
             this.newUnittestsToolStripMenuItem.Name = "newUnittestsToolStripMenuItem";
-            this.newUnittestsToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.newUnittestsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.newUnittestsToolStripMenuItem.Text = "New unittests";
             this.newUnittestsToolStripMenuItem.Click += new System.EventHandler(this.newUnittestsToolStripMenuItem_Click);
             // 
@@ -285,19 +301,12 @@
             this.lblOtherValues.TabIndex = 22;
             this.lblOtherValues.Text = "Other values";
             // 
-            // loadFENToolStripMenuItem
+            // otherTestsToolStripMenuItem
             // 
-            this.loadFENToolStripMenuItem.Name = "loadFENToolStripMenuItem";
-            this.loadFENToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.loadFENToolStripMenuItem.Text = "Load FEN";
-            this.loadFENToolStripMenuItem.Click += new System.EventHandler(this.loadFENToolStripMenuItem_Click);
-            // 
-            // getFENToolStripMenuItem
-            // 
-            this.getFENToolStripMenuItem.Name = "getFENToolStripMenuItem";
-            this.getFENToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.getFENToolStripMenuItem.Text = "Get FEN";
-            this.getFENToolStripMenuItem.Click += new System.EventHandler(this.getFENToolStripMenuItem_Click);
+            this.otherTestsToolStripMenuItem.Name = "otherTestsToolStripMenuItem";
+            this.otherTestsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.otherTestsToolStripMenuItem.Text = "Other tests";
+            this.otherTestsToolStripMenuItem.Click += new System.EventHandler(this.otherTestsToolStripMenuItem_Click);
             // 
             // formWeirdEngineMain
             // 
@@ -357,6 +366,7 @@
         private System.Windows.Forms.ToolStripMenuItem showLegalMovesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadFENToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem getFENToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem otherTestsToolStripMenuItem;
     }
 }
 

@@ -303,13 +303,13 @@ namespace TheWeirdEngine
                 //nothing
             }
         }
-        public void TestNoMate_n(string ppath, string ppositionfilename, int n_plies)
+        public void TestNoMate_n(string ppath, string ppositionfilename, int depth)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
 
-            if (a.posvalue >= 100 - (n_plies * 0.1) || a.posvalue <= (n_plies * 0.1) - 100)
+            if (a.posvalue >= 100 - (depth * 0.1) || a.posvalue <= (depth * 0.1) - 100)
             {
                 MessageBox.Show(ppositionfilename + " No mate expected but there was mate.");
                 AllTestsPassed = false;
@@ -317,25 +317,25 @@ namespace TheWeirdEngine
         }
         public void TestMate_n(string ppath, string ppositionfilename, int mate_in_n, int pi1, int pj1, int pi2, int pj2)
         {
-            int n_plies;
+            int depth;
             if (mate_in_n > 0 & mate_in_n < 5)
             {
-                n_plies = mate_in_n * 2;
+                depth = mate_in_n * 2;
             }
             else
             {
-                n_plies = 4;
+                depth = 4;
             }
 
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             
             DateTime startdatetime = DateTime.Now;
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
             DateTime enddatetime = DateTime.Now;
 
             int secondsneeded = (int)(enddatetime - startdatetime).TotalSeconds;
-            if (n_plies < 5 & secondsneeded > 15)
+            if (depth < 5 & secondsneeded > 15)
             {
                 MessageBox.Show(ppositionfilename + " Performance of calculation under acceptable levels.");
                 AllTestsPassed = false;
@@ -356,11 +356,11 @@ namespace TheWeirdEngine
                     AllTestsPassed = false;
                 }
             }
-            if (a.posvalue >= 100 - (n_plies * 0.1) & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
+            if (a.posvalue >= 100 - (depth * 0.1) & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
             {
                 //nothing
             }
-            else if (a.posvalue <= (n_plies * 0.1) - 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
+            else if (a.posvalue <= (depth * 0.1) - 100 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
             {
                 //nothing
             }
@@ -372,20 +372,20 @@ namespace TheWeirdEngine
         }
         public void TestStalemate_n(string ppath, string ppositionfilename, int stalemate_in_n)
         {
-            int n_plies;
+            int depth;
             if (stalemate_in_n > 0 & stalemate_in_n < 5)
             {
-                n_plies = (stalemate_in_n * 2) + 1;
+                depth = (stalemate_in_n * 2) + 1;
             }
             else
             {
-                n_plies = 5;
+                depth = 5;
             }
 
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
 
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
 
             if (a.posvalue == 0)
             {
@@ -397,13 +397,30 @@ namespace TheWeirdEngine
                 AllTestsPassed = false;
             }
         }
-        public void BaselinePerformance(string ppath, string ppositionfilename, int n_plies, int baseline_seconds)
+        public void TestDraw_n(string ppath, string ppositionfilename, int depth)
+        {
+            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
+
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
+
+            if (a.posvalue == 0)
+            {
+                //nothing
+            }
+            else
+            {
+                MessageBox.Show(ppositionfilename + " Forced draw expected, but there was no forced draw.");
+                AllTestsPassed = false;
+            }
+        }
+        public void BaselinePerformance(string ppath, string ppositionfilename, int depth, int baseline_seconds)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
 
             DateTime startdatetime = DateTime.Now;
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(n_plies);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
             DateTime enddatetime = DateTime.Now;
             int secondsneeded = (int)(enddatetime - startdatetime).TotalSeconds;
 
@@ -509,6 +526,10 @@ namespace TheWeirdEngine
             TestMate_n(ppath, "08C_sufficient_material_mate_2_black_01", 2, 4, 4, 3, 3);
             TestMate_n(ppath, "08C_sufficient_material_mate_2_white_02", 2, 5, 5, 6, 5);
             TestMate_n(ppath, "08C_sufficient_material_mate_2_black_02", 2, 5, 2, 6, 2);
+            TestDraw_n(ppath, "08D_forced_draw_white_01", 7);
+            TestDraw_n(ppath, "08D_forced_draw_black_01", 7);
+            TestDraw_n(ppath, "08D_forced_draw_white_02", 6);
+            TestDraw_n(ppath, "08D_forced_draw_black_02", 6);
 
             MyWeirdEngineMoveFinder.setting_SearchForFastestMate = false;
             BaselinePerformance(ppath, "07A_mate_4_white_BN", 8, 3);
@@ -580,6 +601,7 @@ namespace TheWeirdEngine
         public void RunNewUnittests(string ppath)
         {
             AllTestsPassed = true;
+            MyWeirdEngineMoveFinder.setting_SearchForFastestMate = true;
             MessageBox.Show("Start with running new unittests");
 
             if (AllTestsPassed == true)
