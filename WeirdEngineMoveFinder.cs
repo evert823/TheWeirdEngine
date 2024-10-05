@@ -1602,7 +1602,7 @@ namespace TheWeirdEngine
                 {
                     if (foundvalue >= mydb & foundvalue < mydb + 0.1)
                     {
-                        return adjusteddepth;
+                        return Math.Min(newdepth, adjusteddepth);
                     }
                     adjusteddepth += 1;
                 }
@@ -1617,7 +1617,7 @@ namespace TheWeirdEngine
                 {
                     if (foundvalue <= mydb & foundvalue > mydb - 0.1)
                     {
-                        return adjusteddepth;
+                        return Math.Min(newdepth, adjusteddepth);
                     }
                     adjusteddepth += 1;
                 }
