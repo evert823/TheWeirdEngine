@@ -1627,6 +1627,7 @@ namespace TheWeirdEngine
         public calculationresponse Calculation_tree_internal(int posidx, double alpha, double beta,
                                                                 int pdepth, bool SearchForFastestMate)
         {
+            if (pdepth > 2) { Application.DoEvents(); }
             this.nodecount += 1;
             calculationresponse myresult;
             myresult.posvalue = 0.0;
@@ -1729,7 +1730,6 @@ namespace TheWeirdEngine
             //presort BEGIN
             if (pdepth > this.presort_when_depth_gt)
             {
-                Application.DoEvents();
                 if (this.externalabort == true)
                 {
                     return myresult;
