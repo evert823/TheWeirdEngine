@@ -12,6 +12,15 @@ using Newtonsoft.Json.Linq;
 
 namespace TheWeirdEngine
 {
+    public struct TransTableItem
+    {
+        public chessposition t_position;
+        public int used_depth;
+        public double used_alpha;
+        public double used_beta;
+        public double calculated_value;
+        public chessmove bestmove;
+    }
     public class WeirdEnginePositionCompare
     {
         //Compare positions
@@ -19,9 +28,162 @@ namespace TheWeirdEngine
         //Transposition table
         //threefold repetition
         public WeirdEngineMoveFinder MyWeirdEngineMoveFinder;
+        public TransTableItem[] TransTable;
+        public int TransTable_no_items_allocated;//memory allocated
+        public int TransTable_no_items_available;//functionally available
+        public int dumbcursor;
+        public int TransTable_no_positions_reused;
         public WeirdEnginePositionCompare(WeirdEngineMoveFinder pWeirdEngineMoveFinder)
         {
             this.MyWeirdEngineMoveFinder = pWeirdEngineMoveFinder;
+            TransTable_no_items_allocated = 100000;
+            dumbcursor = 0;
+        }
+        public chessposition New_chessposition(int pboardwidth, int pboardheight)
+        {
+            chessposition topos = new chessposition();
+            topos.boardwidth = pboardwidth;
+            topos.boardheight = pboardheight;
+            topos.squares = null;
+            topos.squares = new int[pboardwidth, pboardheight];
+            topos.squareInfo = null;
+            topos.precedingmove = null;
+            topos.precedingmove = new int[4] { -1, -1, -1, -1 };
+            topos.WhiteJokerSubstitute_pti = -1;
+            topos.BlackJokerSubstitute_pti = -1;
+            return topos;
+        }
+        public void AllocateTransTableItem(ref TransTableItem ttitem, int pboardwidth, int pboardheight)
+        {
+            ttitem.t_position = New_chessposition(pboardwidth, pboardheight);
+
+            ttitem.used_depth = 0;
+            ttitem.used_alpha = 0;
+            ttitem.used_beta = 0;
+            ttitem.calculated_value = 0;
+
+            ttitem.bestmove.MovingPiece = 0;
+            ttitem.bestmove.coordinates = null;
+            ttitem.bestmove.coordinates = new int[4] { 0, 0, 0, 0 };
+            ttitem.bestmove.IsEnPassant = false;
+            ttitem.bestmove.IsCapture = false;
+            ttitem.bestmove.IsCastling = false;
+            ttitem.bestmove.othercoordinates = null;
+            ttitem.bestmove.othercoordinates = new int[4] { -1, -1, -1, -1 };
+            ttitem.bestmove.PromoteToPiece = 0;
+        }
+        public void AllocateTransTable()
+        {
+            TransTable = null;
+            TransTable = new TransTableItem[TransTable_no_items_allocated];
+
+            int w = MyWeirdEngineMoveFinder.positionstack[0].boardwidth;
+            int h = MyWeirdEngineMoveFinder.positionstack[0].boardheight;
+
+            for (int p = 0; p < TransTable_no_items_allocated; p++)
+            {
+                AllocateTransTableItem(ref TransTable[p], w, h);
+            }
+            TransTable_no_items_available = 0;
+        }
+        public void StorePosition(chessposition frompos, chessmove mv,
+                                                         int used_depth,
+                                                         double used_alpha,
+                                                         double used_beta,
+                                                         double calculated_value)
+        {
+            if (TransTable_no_items_available < TransTable_no_items_allocated)
+            {
+                StoreIntoTransTable(frompos, TransTable_no_items_available, mv,
+                                    used_depth, used_alpha, used_beta, calculated_value);
+                TransTable_no_items_available += 1;
+                return;
+            }
+            if (dumbcursor >= TransTable_no_items_allocated)
+            {
+                dumbcursor = 0;
+            }
+            StoreIntoTransTable(frompos, dumbcursor, mv,
+                                    used_depth, used_alpha, used_beta, calculated_value);
+            dumbcursor += 1;
+        }
+        public void StoreIntoTransTable(chessposition frompos, int itemidx, chessmove mv,
+                                                               int used_depth,
+                                                               double used_alpha,
+                                                               double used_beta,
+                                                               double calculated_value)
+        {
+            TransTable[itemidx].t_position.boardwidth = frompos.boardwidth;
+            TransTable[itemidx].t_position.boardheight = frompos.boardheight;
+            TransTable[itemidx].t_position.colourtomove = frompos.colourtomove;
+
+            for (int ci = 0;ci < 4;ci ++)
+            {
+                TransTable[itemidx].t_position.precedingmove[ci] = frompos.precedingmove[ci];
+            }
+
+            TransTable[itemidx].t_position.whitekinghasmoved = frompos.whitekinghasmoved;
+            TransTable[itemidx].t_position.whitekingsiderookhasmoved = frompos.whitekingsiderookhasmoved;
+            TransTable[itemidx].t_position.whitequeensiderookhasmoved = frompos.whitequeensiderookhasmoved;
+            TransTable[itemidx].t_position.blackkinghasmoved = frompos.blackkinghasmoved;
+            TransTable[itemidx].t_position.blackkingsiderookhasmoved = frompos.blackkingsiderookhasmoved;
+            TransTable[itemidx].t_position.blackqueensiderookhasmoved = frompos.blackqueensiderookhasmoved;
+            TransTable[itemidx].t_position.WhiteJokerSubstitute_pti = frompos.WhiteJokerSubstitute_pti;
+            TransTable[itemidx].t_position.BlackJokerSubstitute_pti = frompos.BlackJokerSubstitute_pti;
+
+            for (int i = 0; i < frompos.boardwidth; i++)
+            {
+                for (int j = 0; j < frompos.boardheight; j++)
+                {
+                    TransTable[itemidx].t_position.squares[i, j] = frompos.squares[i, j];
+                }
+            }
+            MyWeirdEngineMoveFinder.SynchronizeChessmove(mv, ref TransTable[itemidx].bestmove);
+            TransTable[itemidx].used_depth = used_depth;
+            TransTable[itemidx].used_alpha = used_alpha;
+            TransTable[itemidx].used_beta = used_beta;
+            TransTable[itemidx].calculated_value = calculated_value;
+        }
+        public int SearchTransTable(chessposition pposition, int requested_depth,
+                                                             double current_alpha,
+                                                             double current_beta)
+        {
+            for (int p = 0; p < TransTable_no_items_available; p++)
+            {
+                if (TransTable[p].used_depth >= requested_depth)
+                {
+                    //Score was fail high or lowerbound
+                    if (TransTable[p].used_beta < TransTable[p].calculated_value &
+                        current_beta < TransTable[p].calculated_value)
+                    {
+                        if (PositionsAreEqual(pposition, TransTable[p].t_position))
+                        {
+                            return p;
+                        }
+                    }
+                    //Score was fail low or upperbound
+                    if (TransTable[p].used_alpha > TransTable[p].calculated_value &
+                        current_alpha > TransTable[p].calculated_value)
+                    {
+                        if (PositionsAreEqual(pposition, TransTable[p].t_position))
+                        {
+                            return p;
+                        }
+                    }
+                    //Score was exact
+                    if (TransTable[p].used_alpha <= TransTable[p].calculated_value &
+                        current_alpha <= TransTable[p].calculated_value &
+                        TransTable[p].used_beta >= TransTable[p].calculated_value &
+                        current_beta >= TransTable[p].calculated_value)
+                    {
+                        if (PositionsAreEqual(pposition, TransTable[p].t_position))
+                        {
+                            return p;
+                        }
+                    }
+                }
+            }
+            return -1;
         }
         public bool PotentialEnPassant(chessposition pposition)
         {
@@ -120,23 +282,41 @@ namespace TheWeirdEngine
                 MyWeirdEngineMoveFinder.positionstack[posidx].RepetitionCounter = 1;
             }
         }
-        public void TestCompare(int posidx)
+        public bool MovesAreEqual(chessmove moveA, chessmove moveB)
         {
-            for (int p1 = 0;p1 <= posidx; p1++)
-            {
-                for (int p2 = 0; p2 <= posidx; p2++)
-                {
-                    if (p1 != p2)
-                    {
-                        bool a = this.PositionsAreEqual(MyWeirdEngineMoveFinder.positionstack[p1],
-                            MyWeirdEngineMoveFinder.positionstack[p2]);
-                        if (a == true)
-                        {
-                            MessageBox.Show("Positions " + p1.ToString() + "," + p2.ToString() + " are equal");
-                        }
-                    }
-                }
-            }
+            if (moveA.MovingPiece != moveB.MovingPiece) { return false; }
+            if (moveA.coordinates[0] != moveB.coordinates[0]) { return false; }
+            if (moveA.coordinates[1] != moveB.coordinates[1]) { return false; }
+            if (moveA.coordinates[2] != moveB.coordinates[2]) { return false; }
+            if (moveA.coordinates[3] != moveB.coordinates[3]) { return false; }
+            if (moveA.IsEnPassant != moveB.IsEnPassant) { return false; }
+            if (moveA.IsCapture != moveB.IsCapture) { return false; }
+            if (moveA.IsCastling != moveB.IsCastling) { return false; }
+            if (moveA.othercoordinates[0] != moveB.othercoordinates[0]) { return false; }
+            if (moveA.othercoordinates[1] != moveB.othercoordinates[1]) { return false; }
+            if (moveA.othercoordinates[2] != moveB.othercoordinates[2]) { return false; }
+            if (moveA.othercoordinates[3] != moveB.othercoordinates[3]) { return false; }
+            if (moveA.PromoteToPiece != moveB.PromoteToPiece) { return false; }
+            return true;
+        }
+        public void TestItemsIntoTransTable()
+        {
+            TransTable[0].t_position.squares[1, 1] = MyWeirdEngineMoveFinder.MyWeirdEngineJson.Str2PieceType("R");
+            TransTable[0].t_position.squares[2, 3] = MyWeirdEngineMoveFinder.MyWeirdEngineJson.Str2PieceType("K");
+            TransTable[0].t_position.squares[0, 5] = MyWeirdEngineMoveFinder.MyWeirdEngineJson.Str2PieceType("-K");
+            TransTable[0].t_position.colourtomove = 1;
+            TransTable[0].t_position.whitekinghasmoved = true;
+            TransTable[0].t_position.blackkinghasmoved = true;
+            TransTable[0].used_depth = 8;
+            TransTable[0].used_alpha = -100;
+            TransTable[0].used_beta = 100;
+            TransTable[0].calculated_value = 99.3;
+            TransTable[0].bestmove.MovingPiece = MyWeirdEngineMoveFinder.MyWeirdEngineJson.Str2PieceType("K");
+            TransTable[0].bestmove.coordinates[0] = 2;
+            TransTable[0].bestmove.coordinates[1] = 3;
+            TransTable[0].bestmove.coordinates[2] = 2;
+            TransTable[0].bestmove.coordinates[3] = 4;
+            TransTable_no_items_available = 1;
         }
     }
 }

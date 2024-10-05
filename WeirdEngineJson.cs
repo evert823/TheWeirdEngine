@@ -54,6 +54,21 @@ namespace TheWeirdEngine
         public bool setting_SearchForFastestMate;
         public int presort_using_depth;
         public int display_when_depth_gt;
+        public int use_transposition_table_when_depth_gt;
+    }
+    public struct jsonTransTableItem
+    {
+        public jsonchessposition t_position;
+        public int used_depth;
+        public double used_alpha;
+        public double used_beta;
+        public double calculated_value;
+        public string bestmove;
+    }
+    public struct jsonTransTable
+    {
+        public int TransTable_no_items_available;
+        public jsonTransTableItem[] TranspositionTable;
     }
     public class WeirdEngineJson
     {
@@ -199,6 +214,7 @@ namespace TheWeirdEngine
             this.MyWeirdEngineMoveFinder.setting_SearchForFastestMate = a.setting_SearchForFastestMate;
             this.MyWeirdEngineMoveFinder.presort_using_depth = a.presort_using_depth;
             this.MyWeirdEngineMoveFinder.display_when_depth_gt = a.display_when_depth_gt;
+            this.MyWeirdEngineMoveFinder.use_transposition_table_when_depth_gt = a.use_transposition_table_when_depth_gt;
         }
         public void LoadPieceFromJson(string pFileName, int seq)
         {
@@ -365,25 +381,25 @@ namespace TheWeirdEngine
                 }
             }
         }
-        public jsonchessposition positionstack_to_jsonchessposition(int posidx)
+        public jsonchessposition positionstack_to_jsonchessposition(chessposition pposition)
         {
             jsonchessposition mypos = new jsonchessposition();
-            mypos.boardwidth = this.MyWeirdEngineMoveFinder.positionstack[posidx].boardwidth;
-            mypos.boardheight = this.MyWeirdEngineMoveFinder.positionstack[posidx].boardheight;
+            mypos.boardwidth = pposition.boardwidth;
+            mypos.boardheight = pposition.boardheight;
             mypos.squares = new string[mypos.boardheight];
-            mypos.colourtomove = this.MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove;
-            mypos.precedingmove.x_from = this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[0];
-            mypos.precedingmove.y_from = this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[1];
-            mypos.precedingmove.x_to = this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[2];
-            mypos.precedingmove.y_to = this.MyWeirdEngineMoveFinder.positionstack[posidx].precedingmove[3];
-            mypos.castlinginfo.whitekinghasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].whitekinghasmoved;
-            mypos.castlinginfo.whitekingsiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].whitekingsiderookhasmoved;
-            mypos.castlinginfo.whitequeensiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].whitequeensiderookhasmoved;
-            mypos.castlinginfo.blackkinghasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkinghasmoved;
-            mypos.castlinginfo.blackkingsiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkingsiderookhasmoved;
-            mypos.castlinginfo.blackqueensiderookhasmoved = this.MyWeirdEngineMoveFinder.positionstack[posidx].blackqueensiderookhasmoved;
-            mypos.WhiteJokerImitatesPieceName = pti2Name(this.MyWeirdEngineMoveFinder.positionstack[posidx].WhiteJokerSubstitute_pti);
-            mypos.BlackJokerImitatesPieceName = pti2Name(this.MyWeirdEngineMoveFinder.positionstack[posidx].BlackJokerSubstitute_pti);
+            mypos.colourtomove = pposition.colourtomove;
+            mypos.precedingmove.x_from = pposition.precedingmove[0];
+            mypos.precedingmove.y_from = pposition.precedingmove[1];
+            mypos.precedingmove.x_to = pposition.precedingmove[2];
+            mypos.precedingmove.y_to = pposition.precedingmove[3];
+            mypos.castlinginfo.whitekinghasmoved = pposition.whitekinghasmoved;
+            mypos.castlinginfo.whitekingsiderookhasmoved = pposition.whitekingsiderookhasmoved;
+            mypos.castlinginfo.whitequeensiderookhasmoved = pposition.whitequeensiderookhasmoved;
+            mypos.castlinginfo.blackkinghasmoved = pposition.blackkinghasmoved;
+            mypos.castlinginfo.blackkingsiderookhasmoved = pposition.blackkingsiderookhasmoved;
+            mypos.castlinginfo.blackqueensiderookhasmoved = pposition.blackqueensiderookhasmoved;
+            mypos.WhiteJokerImitatesPieceName = pti2Name(pposition.WhiteJokerSubstitute_pti);
+            mypos.BlackJokerImitatesPieceName = pti2Name(pposition.BlackJokerSubstitute_pti);
 
             for (int j = 0; j < mypos.boardheight; j++)
             {
@@ -391,7 +407,7 @@ namespace TheWeirdEngine
                 string myvisualrank = "";
                 for (int i = 0; i < mypos.boardwidth; i++)
                 {
-                    string mysymbol = this.PieceType2Str(this.MyWeirdEngineMoveFinder.positionstack[posidx].squares[i, rj]);
+                    string mysymbol = this.PieceType2Str(pposition.squares[i, rj]);
                     while (mysymbol.Length < 2)
                     {
                         mysymbol = " " + mysymbol;
@@ -408,12 +424,13 @@ namespace TheWeirdEngine
         }
         public void SavePositionAsJson(string ppath, string pFileName)
         {
-            jsonchessposition mypos = positionstack_to_jsonchessposition(0);
+            jsonchessposition mypos = positionstack_to_jsonchessposition(MyWeirdEngineMoveFinder.positionstack[0]);
             string jsonString;
 
             if (MyWeirdEngineMoveFinder.HasPreviousPosition() == true)
             {
-                jsonchessposition myprevpos = positionstack_to_jsonchessposition(MyWeirdEngineMoveFinder.positionstack.Length - 1);
+                jsonchessposition myprevpos = positionstack_to_jsonchessposition(
+                    MyWeirdEngineMoveFinder.positionstack[MyWeirdEngineMoveFinder.positionstack.Length - 1]);
                 jsonchesspositions myposall = new jsonchesspositions();
                 myposall.positionslast2prev = new jsonchessposition[2] { mypos, myprevpos };
                 jsonString = JsonConvert.SerializeObject(myposall, Formatting.Indented);
@@ -424,6 +441,37 @@ namespace TheWeirdEngine
             }
 
             using (StreamWriter writer = new StreamWriter(ppath + pFileName + ".json"))
+            {
+                writer.WriteLine(jsonString);
+                writer.Close();
+            }
+        }
+        public void DumpTranspositionTable()
+        {
+            string jsonString;
+            jsonTransTable myposall = new jsonTransTable();
+            int av = MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable_no_items_available;
+            myposall.TransTable_no_items_available = av;
+            myposall.TranspositionTable = new jsonTransTableItem[av];
+            for (int p = 0; p < MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable_no_items_available;p++)
+            {
+                myposall.TranspositionTable[p] = new jsonTransTableItem();
+                myposall.TranspositionTable[p].t_position = positionstack_to_jsonchessposition(
+                    MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].t_position);
+                myposall.TranspositionTable[p].used_depth =
+                    MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].used_depth;
+                myposall.TranspositionTable[p].used_alpha =
+                    MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].used_alpha;
+                myposall.TranspositionTable[p].used_beta =
+                    MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].used_beta;
+                myposall.TranspositionTable[p].calculated_value =
+                    MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].calculated_value;
+                myposall.TranspositionTable[p].bestmove =
+                    ShortNotation(MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].bestmove);
+            }
+            jsonString = JsonConvert.SerializeObject(myposall, Formatting.Indented);
+            using (StreamWriter writer = new StreamWriter(this.jsonworkpath + "log\\"
+                                                          + this.logfilename + ".transpositiontable.json"))
             {
                 writer.WriteLine(jsonString);
                 writer.Close();

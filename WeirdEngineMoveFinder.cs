@@ -103,6 +103,8 @@ namespace TheWeirdEngine
         public bool BlackHasMatingMaterial;
         public bool WhiteHasWitch;
         public bool BlackHasWitch;
+        public bool WhiteHasJoker;
+        public bool BlackHasJoker;
 
         public int movelist_totalfound;
         public chessmove[] movelist;
@@ -124,6 +126,7 @@ namespace TheWeirdEngine
         public WeirdEnginePositionCompare MyWeirdEnginePositionCompare;
 
         public int presort_when_depth_gt;
+        public int use_transposition_table_when_depth_gt;
         public bool setting_SearchForFastestMate;
         public int presort_using_depth;
         public int display_when_depth_gt;
@@ -136,6 +139,7 @@ namespace TheWeirdEngine
             this.MyWeirdEngineBareKingMate = new WeirdEngineBareKingMate(this);
             this.MyWeirdEnginePositionCompare = new WeirdEnginePositionCompare(this);
             this.presort_when_depth_gt = 4;
+            this.use_transposition_table_when_depth_gt = 3;
             this.setting_SearchForFastestMate = true;
             this.presort_using_depth = 3;
             this.display_when_depth_gt = 7;
@@ -239,6 +243,8 @@ namespace TheWeirdEngine
             pposition.BlackHasMatingMaterial = false;
             pposition.WhiteHasWitch = false;
             pposition.BlackHasWitch = false;
+            pposition.WhiteHasJoker = false;
+            pposition.BlackHasJoker = false;
         }
         public void AllocateMovelist(ref chessposition pposition)
         {
@@ -415,6 +421,17 @@ namespace TheWeirdEngine
                             else
                             {
                                 pposition.BlackBareKing = false;
+                            }
+                        }
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                pposition.WhiteHasJoker = true;
+                            }
+                            else
+                            {
+                                pposition.BlackHasJoker = true;
                             }
                         }
                     }
@@ -1497,6 +1514,9 @@ namespace TheWeirdEngine
         {
             this.Set_SpecialPiece_ind();
             this.MyWeirdEnginePositionCompare.InitRepetitionCounter();
+            this.MyWeirdEnginePositionCompare.AllocateTransTable();
+            this.MyWeirdEnginePositionCompare.TransTable_no_positions_reused = 0;
+            //this.MyWeirdEnginePositionCompare.TestItemsIntoTransTable();
             this.MyWeirdEngineJson.SetLogfilename();
             calculationresponse myresult;
 
@@ -1529,6 +1549,11 @@ namespace TheWeirdEngine
             if (requested_depth > display_when_depth_gt)
             {
                 MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
+                MyWeirdEngineJson.writelog("Reused from transposition table " +
+                    this.MyWeirdEnginePositionCompare.TransTable_no_positions_reused.ToString()
+                    + " available " + MyWeirdEnginePositionCompare.TransTable_no_items_available.ToString());
+
+                MyWeirdEngineJson.DumpTranspositionTable();
             }
             return myresult;
         }
@@ -1663,6 +1688,37 @@ namespace TheWeirdEngine
             }
 
             int movecount = positionstack[posidx].movelist_totalfound;
+
+            //Here search the transposition table for current position
+            int t_reuse_nr = -1;
+            if (pdepth > use_transposition_table_when_depth_gt)
+            {
+                if (pdepth > this.display_when_depth_gt)
+                {
+                    MyWeirdEngineJson.writelog("Start search in transposition table | available "
+                        + MyWeirdEnginePositionCompare.TransTable_no_items_available.ToString()
+                        + " used " + MyWeirdEnginePositionCompare.TransTable_no_positions_reused.ToString());
+                }
+                t_reuse_nr = MyWeirdEnginePositionCompare.SearchTransTable(positionstack[posidx],
+                                                                               pdepth, alpha, beta);
+                if (t_reuse_nr > -1)
+                {
+                    for (int movei = 0; movei < movecount; movei++)
+                    {
+                        if (MyWeirdEnginePositionCompare.MovesAreEqual(MyWeirdEnginePositionCompare.TransTable[t_reuse_nr].bestmove,
+                            positionstack[posidx].movelist[movei]))
+                        {
+                            this.MyWeirdEnginePositionCompare.TransTable_no_positions_reused += 1;
+                            myresult.posvalue = MyWeirdEnginePositionCompare.TransTable[t_reuse_nr].calculated_value;
+                            myresult.moveidx = movei;
+                            //myresult.POKingIsInCheck = false; Never store a position for which POKingIsInCheck == true!!!
+                            return myresult;
+                        }
+                    }
+                    MessageBox.Show("IMPOSSIBLE stored move not found amongst generated moves!!!");
+                }
+            }
+
             //this.MyWeirdEngineJson.writelog(this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]));
             //MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]));
             //MessageBox.Show(this.MyWeirdEngineJson.DisplayAttacks(ref positionstack[posidx]));
@@ -1808,6 +1864,15 @@ namespace TheWeirdEngine
             }
 
             myresult.moveidx = bestmoveidx;
+
+            //Here store into transposition table
+            if (pdepth > use_transposition_table_when_depth_gt)
+            {
+                MyWeirdEnginePositionCompare.StorePosition(positionstack[posidx],
+                                                           positionstack[posidx].movelist[bestmoveidx],
+                                                           pdepth, alpha, beta, myresult.posvalue);
+            }
+
             return myresult;
         }
         public int ExecuteMove(int posidx, chessmove pmove, int prevposidx)
@@ -1914,6 +1979,10 @@ namespace TheWeirdEngine
                 {
                     positionstack[newposidx].BlackJokerSubstitute_pti = positionstack[posidx].WhiteJokerSubstitute_pti;
                 }
+                else if (positionstack[posidx].BlackHasJoker == false)
+                {
+                    positionstack[newposidx].BlackJokerSubstitute_pti = -1;
+                }
                 else if (pmove.PromoteToPiece != 0)
                 {
                     positionstack[newposidx].BlackJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
@@ -1928,6 +1997,10 @@ namespace TheWeirdEngine
                 if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
                 {
                     positionstack[newposidx].WhiteJokerSubstitute_pti = positionstack[posidx].BlackJokerSubstitute_pti;
+                }
+                else if (positionstack[posidx].WhiteHasJoker == false)
+                {
+                    positionstack[newposidx].WhiteJokerSubstitute_pti = -1;
                 }
                 else if (pmove.PromoteToPiece != 0)
                 {

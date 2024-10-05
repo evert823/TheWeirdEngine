@@ -308,16 +308,7 @@ namespace TheWeirdEngine
 
         private void otherTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string infilename = "maingame";
-            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
-            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
-
             this.DisableGUI();
-
-            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions",
-                "forced_repetition_draw");
-            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(6);
-            MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TestCompare(6);
 
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
