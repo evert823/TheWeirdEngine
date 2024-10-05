@@ -139,7 +139,7 @@ namespace TheWeirdEngine
             this.MyWeirdEngineBareKingMate = new WeirdEngineBareKingMate(this);
             this.MyWeirdEnginePositionCompare = new WeirdEnginePositionCompare(this);
             this.presort_when_depth_gt = 4;
-            this.use_transposition_table_when_depth_gt = 3;
+            this.use_transposition_table_when_depth_gt = 2;
             this.setting_SearchForFastestMate = true;
             this.presort_using_depth = 3;
             this.display_when_depth_gt = 7;
@@ -1520,7 +1520,7 @@ namespace TheWeirdEngine
             this.MyWeirdEngineJson.SetLogfilename();
             calculationresponse myresult;
 
-            if (requested_depth > requested_depth - 2)
+            if (display_when_depth_gt < requested_depth - 2 & requested_depth > 8)
             {
                 display_when_depth_gt = requested_depth - 2;
             }
