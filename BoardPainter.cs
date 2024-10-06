@@ -210,12 +210,14 @@ namespace TheWeirdEngine
                 s = s + "Black to move\n";
             }
 
-            s = s + "presort_when_depth_gt " + MyWeirdEngineMoveFinder.presort_when_depth_gt.ToString() + "\n";
-            s = s + "SearchForFastestMate " + MyWeirdEngineMoveFinder.setting_SearchForFastestMate.ToString() + "\n";
-            s = s + "presort_using_depth " + MyWeirdEngineMoveFinder.presort_using_depth.ToString() + "\n";
-            s = s + "display_when_depth_gt " + MyWeirdEngineMoveFinder.display_when_depth_gt.ToString() + "\n";
-            s = s + "use_transposition_table_when_depth_gt "
-                           + MyWeirdEngineMoveFinder.use_transposition_table_when_depth_gt.ToString() + "\n";
+            s = s + "presort_when_depth_gt " + MyWeirdEngineMoveFinder.myenginesettings.presort_when_depth_gt.ToString() + "\n";
+            s = s + "SearchForFastestMate " + MyWeirdEngineMoveFinder.myenginesettings.setting_SearchForFastestMate.ToString() + "\n";
+            s = s + "presort_using_depth " + MyWeirdEngineMoveFinder.myenginesettings.presort_using_depth.ToString() + "\n";
+            s = s + "display_when_depth_gt " + MyWeirdEngineMoveFinder.myenginesettings.display_when_depth_gt.ToString() + "\n";
+            s = s + "consult_tt_when_depth_gt "
+                           + MyWeirdEngineMoveFinder.myenginesettings.consult_tt_when_depth_gt.ToString() + "\n";
+            s = s + "store_in_tt_when_depth_gt "
+                           + MyWeirdEngineMoveFinder.myenginesettings.store_in_tt_when_depth_gt.ToString() + "\n";
             s = s + "jsonsourcepath " + MyWeirdEngineMoveFinder.MyWeirdEngineJson.jsonsourcepath + "\n";
             s = s + "jsonworkpath " + MyWeirdEngineMoveFinder.MyWeirdEngineJson.jsonworkpath + "\n";
 

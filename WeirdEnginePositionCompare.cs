@@ -12,6 +12,11 @@ using Newtonsoft.Json.Linq;
 
 namespace TheWeirdEngine
 {
+    public struct searchresult
+    {
+        public int naivematch;
+        public int reusematch;
+    }
     public struct TransTableItem
     {
         public chessposition t_position;
@@ -86,12 +91,21 @@ namespace TheWeirdEngine
             }
             TransTable_no_items_available = 0;
         }
-        public void StorePosition(chessposition frompos, chessmove mv,
+        public void StorePosition(chessposition frompos, int t_naive_match,
+                                                         chessmove mv,
                                                          int used_depth,
                                                          double used_alpha,
                                                          double used_beta,
                                                          double calculated_value)
         {
+            
+            if (t_naive_match > -1)
+            {
+                //causing trouble --> comparing now
+                //StoreIntoTransTable(frompos, t_naive_match, mv,
+                //                    used_depth, used_alpha, used_beta, calculated_value);
+                //return;
+            }
             if (TransTable_no_items_available < TransTable_no_items_allocated)
             {
                 StoreIntoTransTable(frompos, TransTable_no_items_available, mv,
@@ -144,46 +158,49 @@ namespace TheWeirdEngine
             TransTable[itemidx].used_beta = used_beta;
             TransTable[itemidx].calculated_value = calculated_value;
         }
-        public int SearchTransTable(chessposition pposition, int requested_depth,
-                                                             double current_alpha,
-                                                             double current_beta)
+        public searchresult SearchTransTable(chessposition pposition, int requested_depth,
+                                             double current_alpha, double current_beta)
         {
+            searchresult myresult = new searchresult();
+            myresult.naivematch = -1;
+            myresult.reusematch = -1;
             for (int p = 0; p < TransTable_no_items_available; p++)
             {
-                if (TransTable[p].used_depth >= requested_depth)
+                if (PositionsAreEqual(pposition, TransTable[p].t_position))
                 {
-                    //Score was fail high or lowerbound
-                    if (TransTable[p].used_beta < TransTable[p].calculated_value &
-                        current_beta < TransTable[p].calculated_value)
+                    if (TransTable[p].used_depth < requested_depth)
                     {
-                        if (PositionsAreEqual(pposition, TransTable[p].t_position))
-                        {
-                            return p;
-                        }
+                        myresult.naivematch = p;
                     }
-                    //Score was fail low or upperbound
-                    if (TransTable[p].used_alpha > TransTable[p].calculated_value &
-                        current_alpha > TransTable[p].calculated_value)
+                    if (TransTable[p].used_depth >= requested_depth)
                     {
-                        if (PositionsAreEqual(pposition, TransTable[p].t_position))
+                        //Score was fail high or lowerbound
+                        if (TransTable[p].used_beta < TransTable[p].calculated_value &
+                            current_beta < TransTable[p].calculated_value)
                         {
-                            return p;
+                            myresult.reusematch = p;
+                            return myresult;
                         }
-                    }
-                    //Score was exact
-                    if (TransTable[p].used_alpha <= TransTable[p].calculated_value &
-                        current_alpha <= TransTable[p].calculated_value &
-                        TransTable[p].used_beta >= TransTable[p].calculated_value &
-                        current_beta >= TransTable[p].calculated_value)
-                    {
-                        if (PositionsAreEqual(pposition, TransTable[p].t_position))
+                        //Score was fail low or upperbound
+                        if (TransTable[p].used_alpha > TransTable[p].calculated_value &
+                            current_alpha > TransTable[p].calculated_value)
                         {
-                            return p;
+                            myresult.reusematch = p;
+                            return myresult;
+                        }
+                        //Score was exact
+                        if (TransTable[p].used_alpha <= TransTable[p].calculated_value &
+                            current_alpha <= TransTable[p].calculated_value &
+                            TransTable[p].used_beta >= TransTable[p].calculated_value &
+                            current_beta >= TransTable[p].calculated_value)
+                        {
+                            myresult.reusematch = p;
+                            return myresult;
                         }
                     }
                 }
             }
-            return -1;
+            return myresult;
         }
         public bool PotentialEnPassant(chessposition pposition)
         {
@@ -317,6 +334,30 @@ namespace TheWeirdEngine
             TransTable[0].bestmove.coordinates[2] = 2;
             TransTable[0].bestmove.coordinates[3] = 4;
             TransTable_no_items_available = 1;
+        }
+        public void SanityCheck()
+        {
+            int dupfound = 0;
+            int exampledisplayed = 0;
+            for (int p1 = 0;p1 < TransTable_no_items_available - 1; p1++)
+            {
+                for (int p2 = p1 + 1; p2 < TransTable_no_items_available; p2++)
+                {
+                    if (PositionsAreEqual(TransTable[p1].t_position, TransTable[p2].t_position))
+                    {
+                        if (TransTable[p1].used_depth == TransTable[p2].used_depth)
+                        {
+                            if (exampledisplayed < 5)
+                            {
+                                MessageBox.Show("p1 " + p1.ToString() + " p2 " + p2.ToString());
+                                exampledisplayed++;
+                            }
+                            dupfound++;
+                        }
+                    }
+                }
+            }
+            MessageBox.Show("dupfound " + dupfound.ToString());
         }
     }
 }

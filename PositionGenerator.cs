@@ -152,7 +152,7 @@ namespace TheWeirdEngine
         public void genmain()
         {
             //MyWeirdEngineMoveFinder.setting_SearchForFastestMate = false;
-            MyWeirdEngineMoveFinder.display_when_depth_gt = 8;
+            MyWeirdEngineMoveFinder.myenginesettings.display_when_depth_gt = 8;
             gengreat_puzzle();
             MessageBox.Show("DONE generating great position!!");
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\", "frompositiongenerator");

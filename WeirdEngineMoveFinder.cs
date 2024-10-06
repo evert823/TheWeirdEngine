@@ -12,6 +12,15 @@ namespace TheWeirdEngine
     //In WeirdEngineMoveFinder we re-implement a python code for a chess variant engine,
     //which eventually replaces the old WeirdEngineBackend
 
+    public struct enginesettings
+    {
+        public int presort_when_depth_gt;
+        public bool setting_SearchForFastestMate;
+        public int presort_using_depth;
+        public int display_when_depth_gt;
+        public int consult_tt_when_depth_gt;
+        public int store_in_tt_when_depth_gt;
+    }
     public struct movePrioItem
     {
         public int moveidx;
@@ -125,11 +134,7 @@ namespace TheWeirdEngine
         public WeirdEngineBareKingMate MyWeirdEngineBareKingMate;
         public WeirdEnginePositionCompare MyWeirdEnginePositionCompare;
 
-        public int presort_when_depth_gt;
-        public int use_transposition_table_when_depth_gt;
-        public bool setting_SearchForFastestMate;
-        public int presort_using_depth;
-        public int display_when_depth_gt;
+        public enginesettings myenginesettings;
         public int nodecount;
         public bool externalabort;
         public chesspiecetype[] piecetypes;
@@ -138,11 +143,12 @@ namespace TheWeirdEngine
         {
             this.MyWeirdEngineBareKingMate = new WeirdEngineBareKingMate(this);
             this.MyWeirdEnginePositionCompare = new WeirdEnginePositionCompare(this);
-            this.presort_when_depth_gt = 4;
-            this.use_transposition_table_when_depth_gt = 2;
-            this.setting_SearchForFastestMate = true;
-            this.presort_using_depth = 3;
-            this.display_when_depth_gt = 7;
+            this.myenginesettings.presort_when_depth_gt = 4;
+            this.myenginesettings.consult_tt_when_depth_gt = 2;
+            this.myenginesettings.store_in_tt_when_depth_gt = 3;
+            this.myenginesettings.setting_SearchForFastestMate = true;
+            this.myenginesettings.presort_using_depth = 3;
+            this.myenginesettings.display_when_depth_gt = 7;
             this.externalabort = false;
             this.init_positionstack(defaultboardwidth, defaultboardheight);
         }
@@ -1520,11 +1526,20 @@ namespace TheWeirdEngine
             this.MyWeirdEngineJson.SetLogfilename();
             calculationresponse myresult;
 
-            if (display_when_depth_gt < requested_depth - 2 & requested_depth > 8)
+            if (myenginesettings.display_when_depth_gt < requested_depth - 2 & requested_depth > 8)
             {
-                display_when_depth_gt = requested_depth - 2;
+                myenginesettings.display_when_depth_gt = requested_depth - 2;
             }
 
+            if (myenginesettings.consult_tt_when_depth_gt > myenginesettings.store_in_tt_when_depth_gt)
+            {
+                MyWeirdEngineJson.writelog("Invalid settings");
+                MessageBox.Show("Invalid settings");
+                myresult.posvalue = 0;
+                myresult.moveidx = -1;
+                myresult.POKingIsInCheck = false;
+                return myresult;
+            }
             if (IsValidPosition(ref positionstack[0]) == false)
             {
                 MyWeirdEngineJson.writelog("Invalid position in method Calculation_tree");
@@ -1544,9 +1559,9 @@ namespace TheWeirdEngine
             this.nodecount = 0;
             this.externalabort = false;
             myresult = this.Calculation_tree_internal(0, -100, 100, requested_depth,
-                                                                             this.setting_SearchForFastestMate);
+                                      this.myenginesettings.setting_SearchForFastestMate);
 
-            if (requested_depth > display_when_depth_gt)
+            if (requested_depth > myenginesettings.display_when_depth_gt)
             {
                 MyWeirdEngineJson.writelog("End of calculation --> nodecount " + this.nodecount.ToString());
                 MyWeirdEngineJson.writelog("Reused from transposition table " +
@@ -1566,7 +1581,7 @@ namespace TheWeirdEngine
             {
                 int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
                 calculationresponse newresponse_presort = Calculation_tree_internal(newposidx, alpha, beta,
-                                                                               presort_using_depth, false);
+                                                                     myenginesettings.presort_using_depth, false);
                 subresults_presort[i].moveidx = i;
                 subresults_presort[i].movevalue = newresponse_presort.posvalue;
                 //MyWeirdEngineJson.writelog("Value during presoring moveidx " + i.ToString()
@@ -1691,17 +1706,20 @@ namespace TheWeirdEngine
             int movecount = positionstack[posidx].movelist_totalfound;
 
             //Here search the transposition table for current position
+            int t_naive_match = -1;
             int t_reuse_nr = -1;
-            if (pdepth > use_transposition_table_when_depth_gt)
+            if (pdepth > myenginesettings.consult_tt_when_depth_gt)
             {
-                if (pdepth > this.display_when_depth_gt)
+                if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
                     MyWeirdEngineJson.writelog("Start search in transposition table | available "
                         + MyWeirdEnginePositionCompare.TransTable_no_items_available.ToString()
                         + " used " + MyWeirdEnginePositionCompare.TransTable_no_positions_reused.ToString());
                 }
-                t_reuse_nr = MyWeirdEnginePositionCompare.SearchTransTable(positionstack[posidx],
+                searchresult a = MyWeirdEnginePositionCompare.SearchTransTable(positionstack[posidx],
                                                                                pdepth, alpha, beta);
+                t_naive_match = a.naivematch;
+                t_reuse_nr = a.reusematch;
                 if (t_reuse_nr > -1)
                 {
                     for (int movei = 0; movei < movecount; movei++)
@@ -1728,13 +1746,13 @@ namespace TheWeirdEngine
             double new_beta = beta;
 
             //presort BEGIN
-            if (pdepth > this.presort_when_depth_gt)
+            if (pdepth > this.myenginesettings.presort_when_depth_gt)
             {
                 if (this.externalabort == true)
                 {
                     return myresult;
                 }
-                if (pdepth > this.display_when_depth_gt)
+                if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
                     string s = "List before sorting : ";
                     s += this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]);
@@ -1743,7 +1761,7 @@ namespace TheWeirdEngine
 
                 reprioritize_movelist(posidx, new_alpha, new_beta, prevposidx);
 
-                if (pdepth > this.display_when_depth_gt)
+                if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
                     string s = "List after sorting : ";
                     s += this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]);
@@ -1770,7 +1788,7 @@ namespace TheWeirdEngine
                 int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], prevposidx);
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, new_alpha, new_beta,
                                                                                newdepth - 1, SearchForFastestMate);
-                if (pdepth > this.display_when_depth_gt)
+                if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
                     string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]]);
                     MyWeirdEngineJson.writelog("pdepth " + pdepth.ToString() + " newdepth " + newdepth.ToString() + " DONE checking move "
@@ -1866,9 +1884,9 @@ namespace TheWeirdEngine
             myresult.moveidx = bestmoveidx;
 
             //Here store into transposition table
-            if (pdepth > use_transposition_table_when_depth_gt)
+            if (pdepth > myenginesettings.store_in_tt_when_depth_gt)
             {
-                MyWeirdEnginePositionCompare.StorePosition(positionstack[posidx],
+                MyWeirdEnginePositionCompare.StorePosition(positionstack[posidx], t_naive_match,
                                                            positionstack[posidx].movelist[bestmoveidx],
                                                            pdepth, alpha, beta, myresult.posvalue);
             }

@@ -311,6 +311,7 @@ namespace TheWeirdEngine
         private void otherTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.DisableGUI();
+            MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.SanityCheck();
 
             this.pictureBox1.Invalidate();
             this.RefreshInformation();

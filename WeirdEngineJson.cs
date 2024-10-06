@@ -48,14 +48,6 @@ namespace TheWeirdEngine
     {
         public jsonchessposition[] positionslast2prev;
     }
-    public struct jsonenginesettings
-    {
-        public int presort_when_depth_gt;
-        public bool setting_SearchForFastestMate;
-        public int presort_using_depth;
-        public int display_when_depth_gt;
-        public int use_transposition_table_when_depth_gt;
-    }
     public struct jsonTransTableItem
     {
         public jsonchessposition t_position;
@@ -208,13 +200,14 @@ namespace TheWeirdEngine
             {
                 json = r.ReadToEnd();
             }
-            jsonenginesettings a = JsonConvert.DeserializeObject<jsonenginesettings>(json);
+            enginesettings a = JsonConvert.DeserializeObject<enginesettings>(json);
 
-            this.MyWeirdEngineMoveFinder.presort_when_depth_gt = a.presort_when_depth_gt;
-            this.MyWeirdEngineMoveFinder.setting_SearchForFastestMate = a.setting_SearchForFastestMate;
-            this.MyWeirdEngineMoveFinder.presort_using_depth = a.presort_using_depth;
-            this.MyWeirdEngineMoveFinder.display_when_depth_gt = a.display_when_depth_gt;
-            this.MyWeirdEngineMoveFinder.use_transposition_table_when_depth_gt = a.use_transposition_table_when_depth_gt;
+            this.MyWeirdEngineMoveFinder.myenginesettings.presort_when_depth_gt = a.presort_when_depth_gt;
+            this.MyWeirdEngineMoveFinder.myenginesettings.setting_SearchForFastestMate = a.setting_SearchForFastestMate;
+            this.MyWeirdEngineMoveFinder.myenginesettings.presort_using_depth = a.presort_using_depth;
+            this.MyWeirdEngineMoveFinder.myenginesettings.display_when_depth_gt = a.display_when_depth_gt;
+            this.MyWeirdEngineMoveFinder.myenginesettings.consult_tt_when_depth_gt = a.consult_tt_when_depth_gt;
+            this.MyWeirdEngineMoveFinder.myenginesettings.store_in_tt_when_depth_gt = a.store_in_tt_when_depth_gt;
         }
         public void LoadPieceFromJson(string pFileName, int seq)
         {

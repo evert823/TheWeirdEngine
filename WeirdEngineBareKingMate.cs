@@ -28,11 +28,6 @@ namespace TheWeirdEngine
         {
             this.MyWeirdEngineMoveFinder = pWeirdEngineMoveFinder;
         }
-        public void Test()
-        {
-            MessageBox.Show("presort_when_depth_gt : " + MyWeirdEngineMoveFinder.presort_when_depth_gt.ToString());
-        }
-
 
         public int DistanceBetweenSquares(int i1, int j1, int i2, int j2)
         {
