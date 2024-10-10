@@ -221,6 +221,7 @@ namespace TheWeirdEngine
             this.MyWeirdEngineMoveFinder.piecetypes[seq].symbol = a.symbol;
             this.MyWeirdEngineMoveFinder.piecetypes[seq].name = a.name;
             this.MyWeirdEngineMoveFinder.piecetypes[seq].IsDivergent = a.IsDivergent;
+            this.MyWeirdEngineMoveFinder.piecetypes[seq].CheckDuplicateMoves = a.CheckDuplicateMoves;
             if (a.stepleapmovevectors != null)
             {
                 this.MyWeirdEngineMoveFinder.piecetypes[seq].stepleapmovevectors = new vector[a.stepleapmovevectors.Length];

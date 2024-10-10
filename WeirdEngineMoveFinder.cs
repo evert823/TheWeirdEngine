@@ -62,6 +62,7 @@ namespace TheWeirdEngine
         public string name;
         public SpecialPiece SpecialPiece_ind;
         public bool IsDivergent;
+        public bool CheckDuplicateMoves;
         public vector[] stepleapmovevectors;
         public vector[] slidemovevectors;
         public vector[] stepleapcapturevectors;
@@ -812,7 +813,7 @@ namespace TheWeirdEngine
             Default_moveprioindex(ref pposition);
         }
         public void GetStepLeapAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
-                                                     bool getcaptures, bool getnoncaptures, int depth)
+                                                     bool getcaptures, bool getnoncaptures, int depth, int pti, int pti_self)
         {
             int i2;
             int j2;
@@ -840,7 +841,7 @@ namespace TheWeirdEngine
                             InitializeMove(ref pposition, movei, i, j, i2, j2);
                             pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                             pposition.movelist[movei].IsCapture = true;
-                            GetPromotion(ref pposition, movei);
+                            GetPromotion(ref pposition, movei, pti, pti_self);
                         }
                     }
                 }
@@ -852,7 +853,7 @@ namespace TheWeirdEngine
                         movei = pposition.movelist_totalfound;
                         InitializeMove(ref pposition, movei, i, j, i2, j2);
                         pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
-                        GetPromotion(ref pposition, movei);
+                        GetPromotion(ref pposition, movei, pti, pti_self);
                     }
                 }
             }
@@ -888,18 +889,18 @@ namespace TheWeirdEngine
             {
                 foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti, pti_self);
                 }
             }
             else
             {
                 foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti, pti_self);
                 }
                 foreach (vector v in this.piecetypes[pti].stepleapcapturevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti, pti_self);
                 }
             }
         }
@@ -1004,7 +1005,7 @@ namespace TheWeirdEngine
             return false;
         }
         public void GetSlideAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
-                                                  bool getcaptures, bool getnoncaptures, int depth, int pti)
+                                                  bool getcaptures, bool getnoncaptures, int depth, int pti, int pti_self)
         {
             int i2;
             int j2;
@@ -1035,7 +1036,7 @@ namespace TheWeirdEngine
                             InitializeMove(ref pposition, movei, i, j, i2, j2);
                             pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                             pposition.movelist[movei].IsCapture = true;
-                            GetPromotion(ref pposition, movei);
+                            GetPromotion(ref pposition, movei, pti, pti_self);
                         }
                     }
                 }
@@ -1047,12 +1048,12 @@ namespace TheWeirdEngine
                         movei = pposition.movelist_totalfound;
                         InitializeMove(ref pposition, movei, i, j, i2, j2);
                         pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
-                        GetPromotion(ref pposition, movei);
+                        GetPromotion(ref pposition, movei, pti, pti_self);
                     }
                 }
                 if (pposition.squares[i2, j2] != 0)
                 {
-                    bool IsTransparent = SquareIsTransparent(ref pposition, i, j, i2, j2, pti);
+                    bool IsTransparent = SquareIsTransparent(ref pposition, i, j, i2, j2, pti_self);
                     if (IsTransparent == false)
                     {
                         blocked = true;
@@ -1082,18 +1083,18 @@ namespace TheWeirdEngine
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti, pti_self);
                 }
             }
             else
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti, pti_self);
                 }
                 foreach (vector v in this.piecetypes[pti].slidecapturevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti, pti_self);
                 }
             }
         }
@@ -1129,13 +1130,45 @@ namespace TheWeirdEngine
             pposition.movelist[movei].othercoordinates[3] = -1;
             pposition.movelist[movei].PromoteToPiece = 0;
         }
-        public void GetPromotion(ref chessposition pposition, int movei)
+        public void DeleteLatestMoveIfDuplicate(ref chessposition pposition, int pti)
+        {
+            //Only because of duplication of vectors in inefficient piece definitions
+            if (piecetypes[pti].CheckDuplicateMoves == false) { return; }
+
+            bool IsDuplicateMove = false;
+            int lmi = pposition.movelist_totalfound - 1;
+            for (int movei = lmi - 1;movei >= 0; movei--)
+            {
+                if (MyWeirdEnginePositionCompare.MovesAreEqual(pposition.movelist[movei], pposition.movelist[lmi]) == true)
+                {
+                    IsDuplicateMove = true;
+                    break;
+                }
+            }
+            if (IsDuplicateMove == true)
+            {
+                pposition.movelist[lmi].MovingPiece = 0;
+                pposition.movelist[lmi].coordinates[0] = 0;
+                pposition.movelist[lmi].coordinates[1] = 0;
+                pposition.movelist[lmi].coordinates[2] = 0;
+                pposition.movelist[lmi].coordinates[3] = 0;
+                pposition.movelist[lmi].IsEnPassant = false;
+                pposition.movelist[lmi].IsCapture = false;
+                pposition.movelist[lmi].IsCastling = false;
+                pposition.movelist[lmi].othercoordinates[0] = -1;
+                pposition.movelist[lmi].othercoordinates[1] = -1;
+                pposition.movelist[lmi].othercoordinates[2] = -1;
+                pposition.movelist[lmi].othercoordinates[3] = -1;
+                pposition.movelist[lmi].PromoteToPiece = 0;
+                pposition.movelist_totalfound = lmi;
+            }
+        }
+        public void GetPromotion(ref chessposition pposition, int movei, int pti, int pti_self)
         {
             bool includepromote = false;
             bool includenonpromote = false;
-            int pti = this.pieceTypeIndex(pposition.movelist[movei].MovingPiece);
             
-            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Pawn)
+            if (this.piecetypes[pti_self].SpecialPiece_ind == SpecialPiece.Pawn)
             {
                 if (pposition.movelist[movei].MovingPiece > 0 &
                     pposition.movelist[movei].coordinates[3] == pposition.boardheight - 1)
@@ -1162,12 +1195,13 @@ namespace TheWeirdEngine
             if (includenonpromote == true)
             {
                 pposition.movelist_totalfound += 1;
+                DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }
             if (includepromote == true)
             {
                 for (int pi = 0; pi < this.piecetypes.Length; pi++)
                 {
-                    if (pi == pti) { }//nothing
+                    if (pi == pti_self) { }//nothing
                     else if (this.piecetypes[pi].SpecialPiece_ind == SpecialPiece.King) { }//nothing
                     else if (this.piecetypes[pi].SpecialPiece_ind == SpecialPiece.Amazon) { }//nothing
                     else
@@ -1183,6 +1217,7 @@ namespace TheWeirdEngine
                             pposition.movelist[movei2].PromoteToPiece = pi + 1;
                         }
                         pposition.movelist_totalfound += 1;
+                        DeleteLatestMoveIfDuplicate(ref pposition, pti);
                     }
                 }
             }
@@ -1228,6 +1263,7 @@ namespace TheWeirdEngine
                         pposition.movelist[movei].IsCapture = true;
                         pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                         pposition.movelist_totalfound += 1;
+                        //DeleteLatestMoveIfDuplicate(ref pposition, pti);
                     }
                 }
             }
@@ -1276,6 +1312,7 @@ namespace TheWeirdEngine
                 InitializeMove(ref pposition, movei, i, j, i2, j2);
                 pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                 pposition.movelist_totalfound += 1;
+                //DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }
         }
         public void GetPawnEnPassantMoves(ref chessposition pposition, int i, int j)
@@ -1335,6 +1372,7 @@ namespace TheWeirdEngine
                 pposition.movelist[movei].othercoordinates[3] = -1;
                 pposition.movelist[movei].IsCapture = true;
                 pposition.movelist_totalfound += 1;
+                //DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }
             if (pposition.colourtomove < 0)
             {
@@ -1351,6 +1389,7 @@ namespace TheWeirdEngine
                 pposition.movelist[movei].othercoordinates[3] = -1;
                 pposition.movelist[movei].IsCapture = true;
                 pposition.movelist_totalfound += 1;
+                //DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }
 
         }
@@ -1444,6 +1483,7 @@ namespace TheWeirdEngine
                 pposition.movelist[movei].othercoordinates[2] = i_qr_new;
                 pposition.movelist[movei].othercoordinates[3] = j;
                 pposition.movelist_totalfound += 1;
+                //DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }
             if (kingsidepossible)
             {
@@ -1479,6 +1519,7 @@ namespace TheWeirdEngine
                 pposition.movelist[movei].othercoordinates[2] = i_kr_new;
                 pposition.movelist[movei].othercoordinates[3] = j;
                 pposition.movelist_totalfound += 1;
+                //DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }
         }
         public bool IsValidPosition(ref chessposition pposition)
