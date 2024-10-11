@@ -1646,39 +1646,25 @@ namespace TheWeirdEngine
         }
         public int Adjusted_newdepth(int newdepth, int colourtomove, double foundvalue)
         {
-
-            int adjusteddepth = 2;
+            int adjusteddepth;
             if (colourtomove == 1)
             {
-                if (foundvalue <= 95)
+                if (foundvalue <= 95 || foundvalue >= 100)
                 {
                     return newdepth;
                 }
-                for (double mydb = 99.9; mydb > 95; mydb = Math.Round(mydb - 0.1, 1))
-                {
-                    if (foundvalue >= mydb & foundvalue < mydb + 0.1)
-                    {
-                        return Math.Min(newdepth, adjusteddepth);
-                    }
-                    adjusteddepth += 1;
-                }
+                adjusteddepth = (int)Math.Round(((100 - foundvalue) * 10) + 1);
+                return Math.Min(newdepth, adjusteddepth);
             }
             else
             {
-                if (foundvalue >= -95)
+                if (foundvalue >= -95 || foundvalue <= -100)
                 {
                     return newdepth;
                 }
-                for (double mydb = -99.9; mydb < -95; mydb = Math.Round(mydb + 0.1, 1))
-                {
-                    if (foundvalue <= mydb & foundvalue > mydb - 0.1)
-                    {
-                        return Math.Min(newdepth, adjusteddepth);
-                    }
-                    adjusteddepth += 1;
-                }
+                adjusteddepth = (int)Math.Round(((foundvalue + 100) * 10) + 1);
+                return Math.Min(newdepth, adjusteddepth);
             }
-            return newdepth;
         }
         public calculationresponse Calculation_tree_internal(int posidx, double alpha, double beta,
                                                                 int pdepth, bool SearchForFastestMate)
@@ -1914,11 +1900,11 @@ namespace TheWeirdEngine
                 //This comes with SLOWNESS!!!! because now it keeps looking for a faster forced mate
                 if (myresult.posvalue > 95)
                 {
-                    myresult.posvalue -= 0.1;
+                    myresult.posvalue = Math.Round(myresult.posvalue - 0.1, 3);
                 }
                 if (myresult.posvalue < -95)
                 {
-                    myresult.posvalue += 0.1;
+                    myresult.posvalue = Math.Round(myresult.posvalue + 0.1, 3);
                 }
             }
 
