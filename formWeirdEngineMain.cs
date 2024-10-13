@@ -144,7 +144,7 @@ namespace TheWeirdEngine
             string mvstr;
             if (a.moveidx > -1)
             {
-                mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx]);
+                mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx], false);
             }
             else
             {
@@ -262,7 +262,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", positionname);
 
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(1);
-            MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.positionstack[0]));
+            MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(MyWeirdEngineMoveFinder.positionstack[0], false));
             string s = "Check info :";
             if (MyWeirdEngineMoveFinder.WhiteKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
             {
@@ -311,6 +311,8 @@ namespace TheWeirdEngine
         private void otherTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.DisableGUI();
+
+            MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.SanityCheck();
 
             this.pictureBox1.Invalidate();
             this.RefreshInformation();

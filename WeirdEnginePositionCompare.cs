@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -15,6 +16,7 @@ namespace TheWeirdEngine
     public struct searchresult
     {
         public int naivematch;
+        public int prio_ordermatch;
         public int reusematch;
     }
     public struct TransTableItem
@@ -56,6 +58,7 @@ namespace TheWeirdEngine
             topos.precedingmove = new int[4] { -1, -1, -1, -1 };
             topos.WhiteJokerSubstitute_pti = -1;
             topos.BlackJokerSubstitute_pti = -1;
+            topos.movelist_totalfound = 0;
             return topos;
         }
         public void AllocateTransTableItem(ref TransTableItem ttitem, int pboardwidth, int pboardheight)
@@ -158,41 +161,57 @@ namespace TheWeirdEngine
             TransTable[itemidx].used_beta = used_beta;
             TransTable[itemidx].calculated_value = calculated_value;
         }
+        public bool alpha_beta_compatible(int p, double current_alpha, double current_beta)
+        {
+            //Score was fail high or lowerbound
+            if (TransTable[p].used_beta < TransTable[p].calculated_value &
+                current_beta < TransTable[p].calculated_value)
+            {
+                return true;
+            }
+            //Score was fail low or upperbound
+            if (TransTable[p].used_alpha > TransTable[p].calculated_value &
+                current_alpha > TransTable[p].calculated_value)
+            {
+                return true;
+            }
+            //Score was exact
+            if (TransTable[p].used_alpha <= TransTable[p].calculated_value &
+                current_alpha <= TransTable[p].calculated_value &
+                TransTable[p].used_beta >= TransTable[p].calculated_value &
+                current_beta >= TransTable[p].calculated_value)
+            {
+                return true;
+            }
+            return false;
+        }
         public searchresult SearchTransTable(chessposition pposition, int requested_depth,
                                              double current_alpha, double current_beta)
         {
             searchresult myresult = new searchresult();
             myresult.naivematch = -1;
+            myresult.prio_ordermatch = -1;
             myresult.reusematch = -1;
             for (int p = 0; p < TransTable_no_items_available; p++)
             {
                 if (PositionsAreEqual(pposition, TransTable[p].t_position))
                 {
-                    if (TransTable[p].used_depth < requested_depth)
+                    myresult.naivematch = p;
+                    if (TransTable[p].used_depth > MyWeirdEngineMoveFinder.myenginesettings.presort_using_depth
+                        & alpha_beta_compatible(p, current_alpha, current_beta) == true)
                     {
-                        myresult.naivematch = p;
+                        if (myresult.prio_ordermatch > -1)
+                        {
+                            if (TransTable[p].used_depth > TransTable[myresult.prio_ordermatch].used_depth)
+                            {
+                                myresult.prio_ordermatch = p;
+                            }
+                        }
+                        else { myresult.prio_ordermatch = p; }
                     }
                     if (TransTable[p].used_depth >= requested_depth)
                     {
-                        //Score was fail high or lowerbound
-                        if (TransTable[p].used_beta < TransTable[p].calculated_value &
-                            current_beta < TransTable[p].calculated_value)
-                        {
-                            myresult.reusematch = p;
-                            return myresult;
-                        }
-                        //Score was fail low or upperbound
-                        if (TransTable[p].used_alpha > TransTable[p].calculated_value &
-                            current_alpha > TransTable[p].calculated_value)
-                        {
-                            myresult.reusematch = p;
-                            return myresult;
-                        }
-                        //Score was exact
-                        if (TransTable[p].used_alpha <= TransTable[p].calculated_value &
-                            current_alpha <= TransTable[p].calculated_value &
-                            TransTable[p].used_beta >= TransTable[p].calculated_value &
-                            current_beta >= TransTable[p].calculated_value)
+                        if (alpha_beta_compatible(p, current_alpha, current_beta) == true)
                         {
                             myresult.reusematch = p;
                             return myresult;
@@ -345,14 +364,17 @@ namespace TheWeirdEngine
                 {
                     if (PositionsAreEqual(TransTable[p1].t_position, TransTable[p2].t_position))
                     {
-                        if (TransTable[p1].used_depth == TransTable[p2].used_depth)
+                        if (TransTable[p1].calculated_value != 0 || TransTable[p2].calculated_value != 0)
                         {
-                            if (exampledisplayed < 5)
+                            if (TransTable[p1].calculated_value == 0 || TransTable[p2].calculated_value == 0)
                             {
-                                MessageBox.Show("p1 " + p1.ToString() + " p2 " + p2.ToString());
-                                exampledisplayed++;
+                                if (exampledisplayed < 3)
+                                {
+                                    MessageBox.Show("p1 " + p1.ToString() + " p2 " + p2.ToString());
+                                    exampledisplayed++;
+                                }
+                                dupfound++;
                             }
-                            dupfound++;
                         }
                     }
                 }

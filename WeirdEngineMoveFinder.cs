@@ -79,6 +79,7 @@ namespace TheWeirdEngine
         //othercoordinates will give the Rook that co-moves with castling, or the pawn captured en passant
         public int[] othercoordinates;
         public int PromoteToPiece;
+        public double calculatedvalue;
     }
     public struct chessposition
     {
@@ -267,6 +268,7 @@ namespace TheWeirdEngine
                 pposition.movelist[mi].IsCastling = false;
                 pposition.movelist[mi].othercoordinates = new int[4] { -1, -1, -1, -1 };
                 pposition.movelist[mi].PromoteToPiece = 0;
+                pposition.movelist[mi].calculatedvalue = 0;
             }
         }
         public double PieceType2Value(int pti)
@@ -1113,6 +1115,7 @@ namespace TheWeirdEngine
             tomove.othercoordinates[2] = frommove.othercoordinates[2];
             tomove.othercoordinates[3] = frommove.othercoordinates[3];
             tomove.PromoteToPiece = frommove.PromoteToPiece;
+            tomove.calculatedvalue = frommove.calculatedvalue;
         }
         public void InitializeMove(ref chessposition pposition, int movei, int pi1, int pj1, int pi2, int pj2)
         {
@@ -1591,6 +1594,8 @@ namespace TheWeirdEngine
                 return myresult;
             }
 
+            MyWeirdEngineJson.LogAllSettings();
+
             if (HasPreviousPosition() == true)
             {
                 this.LocatePieces(ref positionstack[positionstack.Length - 1]);
@@ -1613,36 +1618,83 @@ namespace TheWeirdEngine
             }
             return myresult;
         }
-        public void reprioritize_movelist(int posidx, double alpha, double beta, int prevposidx)
+        public int FindMove(chessposition pposition, chessmove mv)
+        {
+            for (int movei = 0; movei < pposition.movelist_totalfound; movei++)
+            {
+                if (MyWeirdEnginePositionCompare.MovesAreEqual(mv, pposition.movelist[movei]))
+                {
+                    return movei;
+                }
+            }
+            return -1;
+        }
+        public void prioritize_one_move(int posidx, chessmove mv)
+        {
+            int movei = FindMove(positionstack[posidx], mv);
+            if (movei == -1)
+            {
+                return;
+            }
+            else
+            {
+                int movecount = positionstack[posidx].movelist_totalfound;
+                int[] worklist = new int[movecount];
+                for (int iw = 0; iw < movecount; iw++)
+                {
+                    worklist[iw] = positionstack[posidx].moveprioindex[iw];
+                }
+                positionstack[posidx].moveprioindex[0] = movei;
+                int iw2 = 0;
+                for (int ic = 1; ic < movecount; ic++)
+                {
+                    if (worklist[iw2] == movei)
+                    {
+                        iw2++;
+                    }
+                    positionstack[posidx].moveprioindex[ic] = worklist[iw2];
+                    iw2++;
+                }
+            }
+        }
+        public void set_moveprioindex(int posidx)
         {
             int movecount = positionstack[posidx].movelist_totalfound;
-            movePrioItem[] subresults_presort = new movePrioItem[movecount];
+            movePrioItem[] workarray = new movePrioItem[movecount];
 
             for (int i = 0; i < movecount; i++)
             {
-                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
-                calculationresponse newresponse_presort = Calculation_tree_internal(newposidx, alpha, beta,
-                                                                     myenginesettings.presort_using_depth, false);
-                subresults_presort[i].moveidx = i;
-                subresults_presort[i].movevalue = newresponse_presort.posvalue;
-                //MyWeirdEngineJson.writelog("Value during presoring moveidx " + i.ToString()
-                //    + " movevalue " + newresponse_presort.posvalue.ToString());
+                workarray[i].moveidx = i;
+                workarray[i].movevalue = positionstack[posidx].movelist[i].calculatedvalue;
             }
 
             if (positionstack[posidx].colourtomove == 1)
             {
                 //order list by movevalue descending so best move for white first
-                Array.Sort<movePrioItem>(subresults_presort, (x, y) => y.movevalue.CompareTo(x.movevalue));
+                Array.Sort<movePrioItem>(workarray, (x, y) => y.movevalue.CompareTo(x.movevalue));
             }
             else
             {
                 //order list by movevalue ascending so best move for black first
-                Array.Sort<movePrioItem>(subresults_presort, (x, y) => x.movevalue.CompareTo(y.movevalue));
+                Array.Sort<movePrioItem>(workarray, (x, y) => x.movevalue.CompareTo(y.movevalue));
             }
             for (int movei = 0; movei < movecount; movei++)
             {
-                positionstack[posidx].moveprioindex[movei] = subresults_presort[movei].moveidx;
+                positionstack[posidx].moveprioindex[movei] = workarray[movei].moveidx;
             }
+        }
+        public void reprioritize_movelist(int posidx, double alpha, double beta, int prevposidx)
+        {
+            int movecount = positionstack[posidx].movelist_totalfound;
+
+            for (int i = 0; i < movecount; i++)
+            {
+                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
+                calculationresponse newresponse = Calculation_tree_internal(newposidx, alpha, beta,
+                                                                     myenginesettings.presort_using_depth, false);
+                positionstack[posidx].movelist[i].calculatedvalue = newresponse.posvalue;
+            }
+            set_moveprioindex(posidx);
         }
         public int Adjusted_newdepth(int newdepth, int colourtomove, double foundvalue)
         {
@@ -1735,6 +1787,7 @@ namespace TheWeirdEngine
             //Here search the transposition table for current position
             int t_naive_match = -1;
             int t_reuse_nr = -1;
+            int t_prio_ordermatch = -1;
             if (pdepth > myenginesettings.consult_tt_when_depth_gt)
             {
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
@@ -1746,20 +1799,18 @@ namespace TheWeirdEngine
                 searchresult a = MyWeirdEnginePositionCompare.SearchTransTable(positionstack[posidx],
                                                                                pdepth, alpha, beta);
                 t_naive_match = a.naivematch;
+                t_prio_ordermatch = a.prio_ordermatch;
                 t_reuse_nr = a.reusematch;
                 if (t_reuse_nr > -1)
                 {
-                    for (int movei = 0; movei < movecount; movei++)
+                    int movei = FindMove(positionstack[posidx], MyWeirdEnginePositionCompare.TransTable[t_reuse_nr].bestmove);
+                    if (movei > -1)
                     {
-                        if (MyWeirdEnginePositionCompare.MovesAreEqual(MyWeirdEnginePositionCompare.TransTable[t_reuse_nr].bestmove,
-                            positionstack[posidx].movelist[movei]))
-                        {
-                            this.MyWeirdEnginePositionCompare.TransTable_no_positions_reused += 1;
-                            myresult.posvalue = MyWeirdEnginePositionCompare.TransTable[t_reuse_nr].calculated_value;
-                            myresult.moveidx = movei;
-                            //myresult.POKingIsInCheck = false; Never store a position for which POKingIsInCheck == true!!!
-                            return myresult;
-                        }
+                        this.MyWeirdEnginePositionCompare.TransTable_no_positions_reused += 1;
+                        myresult.posvalue = MyWeirdEnginePositionCompare.TransTable[t_reuse_nr].calculated_value;
+                        myresult.moveidx = movei;
+                        //myresult.POKingIsInCheck = false; Never store a position for which POKingIsInCheck == true!!!
+                        return myresult;
                     }
                     MessageBox.Show("IMPOSSIBLE stored move not found amongst generated moves!!!");
                 }
@@ -1782,7 +1833,7 @@ namespace TheWeirdEngine
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
                     string s = "List before sorting : ";
-                    s += this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]);
+                    s += this.MyWeirdEngineJson.DisplayMovelist(positionstack[posidx], false);
                     this.MyWeirdEngineJson.writelog(s);
                 }
 
@@ -1791,11 +1842,32 @@ namespace TheWeirdEngine
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
                     string s = "List after sorting : ";
-                    s += this.MyWeirdEngineJson.DisplayMovelist(ref positionstack[posidx]);
+                    s += this.MyWeirdEngineJson.DisplayMovelist(positionstack[posidx], true);
                     this.MyWeirdEngineJson.writelog(s);
                 }
             }
             //presort END
+
+            if (t_prio_ordermatch > -1)
+            {
+                if (pdepth > this.myenginesettings.display_when_depth_gt)
+                {
+                    string s = "pdepth " + pdepth.ToString() + " t_prio_ordermatch " + t_prio_ordermatch.ToString();
+                    s += " stored depth : " + MyWeirdEnginePositionCompare.TransTable[t_prio_ordermatch].used_depth.ToString();
+                    s += " List before apply best move from transition table : ";
+                    s += this.MyWeirdEngineJson.DisplayMovelist(positionstack[posidx], true);
+                    this.MyWeirdEngineJson.writelog(s);
+                }
+
+                prioritize_one_move(posidx, MyWeirdEnginePositionCompare.TransTable[t_prio_ordermatch].bestmove);
+
+                if (pdepth > this.myenginesettings.display_when_depth_gt)
+                {
+                    string s = "List after apply best move from transition table : ";
+                    s += this.MyWeirdEngineJson.DisplayMovelist(positionstack[posidx], true);
+                    this.MyWeirdEngineJson.writelog(s);
+                }
+            }
 
             int bestmoveidx = -1;
             double bestmovevalue = 0;
@@ -1815,9 +1887,10 @@ namespace TheWeirdEngine
                 int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], prevposidx);
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, new_alpha, new_beta,
                                                                                newdepth - 1, SearchForFastestMate);
+                positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]].calculatedvalue = newresponse.posvalue;
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
-                    string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]]);
+                    string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], false);
                     MyWeirdEngineJson.writelog("pdepth " + pdepth.ToString() + " newdepth " + newdepth.ToString() + " DONE checking move "
                         + mvstr + " alpha " + new_alpha.ToString() + " beta " + new_beta.ToString()
                         + " posvalue " + newresponse.posvalue.ToString());

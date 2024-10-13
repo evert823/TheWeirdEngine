@@ -56,6 +56,7 @@ namespace TheWeirdEngine
         public double used_beta;
         public double calculated_value;
         public string bestmove;
+        public int pos_in_tt;
     }
     public struct jsonTransTable
     {
@@ -94,12 +95,12 @@ namespace TheWeirdEngine
                 writer.Close();
             }
         }
-        public string DisplayMovelist(ref chessposition pposition)
+        public string DisplayMovelist(chessposition pposition, bool displayvalue)
         {
             string s = "";
             for (int movei = 0;movei < pposition.movelist_totalfound;movei++)
             {
-                string mvstr = ShortNotation(pposition.movelist[pposition.moveprioindex[movei]]);
+                string mvstr = ShortNotation(pposition.movelist[pposition.moveprioindex[movei]], displayvalue);
                 if (s == "")
                 {
                     s += mvstr;
@@ -440,6 +441,21 @@ namespace TheWeirdEngine
                 writer.Close();
             }
         }
+        public void LogAllSettings()
+        {
+            writelog(string.Format("presort_when_depth_gt : {0}", 
+                MyWeirdEngineMoveFinder.myenginesettings.presort_when_depth_gt));
+            writelog(string.Format("setting_SearchForFastestMate : {0}", 
+                MyWeirdEngineMoveFinder.myenginesettings.setting_SearchForFastestMate));
+            writelog(string.Format("presort_using_depth : {0}", 
+                MyWeirdEngineMoveFinder.myenginesettings.presort_using_depth));
+            writelog(string.Format("display_when_depth_gt : {0}", 
+                MyWeirdEngineMoveFinder.myenginesettings.display_when_depth_gt));
+            writelog(string.Format("consult_tt_when_depth_gt : {0}", 
+                MyWeirdEngineMoveFinder.myenginesettings.consult_tt_when_depth_gt));
+            writelog(string.Format("store_in_tt_when_depth_gt : {0}", 
+                MyWeirdEngineMoveFinder.myenginesettings.store_in_tt_when_depth_gt));
+        }
         public void DumpTranspositionTable()
         {
             string jsonString;
@@ -461,7 +477,8 @@ namespace TheWeirdEngine
                 myposall.TranspositionTable[p].calculated_value =
                     MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].calculated_value;
                 myposall.TranspositionTable[p].bestmove =
-                    ShortNotation(MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].bestmove);
+                    ShortNotation(MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].bestmove, true);
+                myposall.TranspositionTable[p].pos_in_tt = p;
             }
             jsonString = JsonConvert.SerializeObject(myposall, Formatting.Indented);
             using (StreamWriter writer = new StreamWriter(this.jsonworkpath + "log\\"
@@ -584,17 +601,19 @@ namespace TheWeirdEngine
             string myresult = "Attacked by PM : " + AttackedByPMstr + " Attacked by PO : " + AttackedByPOstr;
             return myresult;
         }
-        public string ShortNotation(chessmove pmove)
+        public string ShortNotation(chessmove pmove, bool displayvalue)
         {
             if (pmove.IsCastling == true)
             {
                 if (pmove.coordinates[2] == 2)
                 {
-                    return "0-0-0";
+                    if (displayvalue == true) { return "0-0-0(" + pmove.calculatedvalue.ToString() + ")"; }
+                    else { return "0-0-0"; }
                 }
                 else
                 {
-                    return "0-0";
+                    if (displayvalue == true) { return "0-0(" + pmove.calculatedvalue.ToString() + ")"; }
+                    else { return "0-0"; }
                 }
             }
             string s = this.PieceType2Str(pmove.MovingPiece).Replace("-", "");
@@ -616,6 +635,9 @@ namespace TheWeirdEngine
             {
                 s += " e.p.";
             }
+
+            if (displayvalue == true) { s += "(" + pmove.calculatedvalue.ToString() + ")"; }
+
             return s;
         }
         public string Coord2Squarename(int pi, int pj)

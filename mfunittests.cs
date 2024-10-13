@@ -34,7 +34,7 @@ namespace TheWeirdEngine
 
             for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
             {
-                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei]);
+                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei], false);
                 if (mvstr == "0-0")
                 {
                     kingsidecastling_happened = true;
@@ -66,7 +66,7 @@ namespace TheWeirdEngine
 
             for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
             {
-                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei]);
+                string mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei], false);
                 if (mvstr == "0-0")
                 {
                     castling_happened = true;
