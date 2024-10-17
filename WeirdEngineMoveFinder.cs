@@ -43,6 +43,20 @@ namespace TheWeirdEngine
         public int AttackedByPO;
         public byte n_adjacent_whitewitches;
         public byte n_adjacent_blackwitches;
+        public bool adjacent_whitefemmefatale;
+        public bool adjacent_blackfemmefatale;
+    }
+    public struct FreezeType
+    {
+        public bool capturefreeze;
+        public bool noncapturefreeze;
+    }
+    public enum MoveType
+    {
+        //MoveType - mainly for the Elf
+        Noncapture,
+        Capture,
+        other,
     }
     public enum SpecialPiece
     {
@@ -53,8 +67,10 @@ namespace TheWeirdEngine
         Pawn,
         Amazon,
         Witch,
+        FemmeFatale,
         TimeThief,
-        Joker
+        Joker,
+        Elf
     }
     public struct chesspiecetype
     {
@@ -95,6 +111,8 @@ namespace TheWeirdEngine
         public bool blackqueensiderookhasmoved;
         public int WhiteJokerSubstitute_pti;
         public int BlackJokerSubstitute_pti;
+        public MoveType WhiteElfMoveType;
+        public MoveType BlackElfMoveType;
         public int[,] squares;//python square[j][i] becomes C# square[i, j]
         public squareInfoItem[,] squareInfo;
         public vector whitekingcoord;
@@ -114,8 +132,12 @@ namespace TheWeirdEngine
         public bool BlackHasMatingMaterial;
         public bool WhiteHasWitch;
         public bool BlackHasWitch;
+        public bool WhiteHasFemmeFatale;
+        public bool BlackHasFemmeFatale;
         public bool WhiteHasJoker;
         public bool BlackHasJoker;
+        public bool WhiteHasElf;
+        public bool BlackHasElf;
 
         public int movelist_totalfound;
         public chessmove[] movelist;
@@ -164,8 +186,10 @@ namespace TheWeirdEngine
                 else if (this.piecetypes[pti].name == "Pawn") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Pawn; }
                 else if (this.piecetypes[pti].name == "Amazon") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Amazon; }
                 else if (this.piecetypes[pti].name == "Witch") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Witch; }
+                else if (this.piecetypes[pti].name == "FemmeFatale") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.FemmeFatale; }
                 else if (this.piecetypes[pti].name == "TimeThief") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.TimeThief; }
                 else if (this.piecetypes[pti].name == "Joker") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Joker; }
+                else if (this.piecetypes[pti].name == "Elf") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Elf; }
                 else { piecetypes[pti].SpecialPiece_ind = SpecialPiece.normalpiece; }
             }
         }
@@ -181,6 +205,8 @@ namespace TheWeirdEngine
             pposition.precedingmove = new int[4] { -1, -1, -1, -1 };
             pposition.WhiteJokerSubstitute_pti = -1;
             pposition.BlackJokerSubstitute_pti = -1;
+            pposition.WhiteElfMoveType = MoveType.other;
+            pposition.BlackElfMoveType = MoveType.other;
             this.ClearNonPersistent(ref pposition);
         }
         public bool HasPreviousPosition()
@@ -219,6 +245,8 @@ namespace TheWeirdEngine
                     pposition.squareInfo[i, j].AttackedByPO = 0;
                     pposition.squareInfo[i, j].n_adjacent_whitewitches = 0;
                     pposition.squareInfo[i, j].n_adjacent_blackwitches = 0;
+                    pposition.squareInfo[i, j].adjacent_whitefemmefatale = false;
+                    pposition.squareInfo[i, j].adjacent_blackfemmefatale = false;
                 }
             }
             pposition.whitekingcoord.x = -1;
@@ -251,8 +279,12 @@ namespace TheWeirdEngine
             pposition.BlackHasMatingMaterial = false;
             pposition.WhiteHasWitch = false;
             pposition.BlackHasWitch = false;
+            pposition.WhiteHasFemmeFatale = false;
+            pposition.BlackHasFemmeFatale = false;
             pposition.WhiteHasJoker = false;
             pposition.BlackHasJoker = false;
+            pposition.WhiteHasElf = false;
+            pposition.BlackHasElf = false;
         }
         public void AllocateMovelist(ref chessposition pposition)
         {
@@ -441,6 +473,28 @@ namespace TheWeirdEngine
                             else
                             {
                                 pposition.BlackHasJoker = true;
+                            }
+                        }
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.FemmeFatale)
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                pposition.WhiteHasFemmeFatale = true;
+                            }
+                            else
+                            {
+                                pposition.BlackHasFemmeFatale = true;
+                            }
+                        }
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Elf)
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                pposition.WhiteHasElf = true;
+                            }
+                            else
+                            {
+                                pposition.BlackHasElf = true;
                             }
                         }
                     }
@@ -638,6 +692,8 @@ namespace TheWeirdEngine
             topos.blackqueensiderookhasmoved = frompos.blackqueensiderookhasmoved;
             topos.WhiteJokerSubstitute_pti = frompos.WhiteJokerSubstitute_pti;
             topos.BlackJokerSubstitute_pti = frompos.BlackJokerSubstitute_pti;
+            topos.WhiteElfMoveType = frompos.WhiteElfMoveType;
+            topos.BlackElfMoveType = frompos.BlackElfMoveType;
 
             for (int i = 0; i < frompos.boardwidth; i++)
             {
@@ -676,6 +732,43 @@ namespace TheWeirdEngine
                                         else
                                         {
                                             pposition.squareInfo[i2, j2].n_adjacent_blackwitches += 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public void SetFemmeFataleInfluence(ref chessposition pposition)
+        {
+            if (pposition.WhiteHasFemmeFatale == false & pposition.BlackHasFemmeFatale == false)
+            {
+                return;
+            }
+            for (int i = 0; i < pposition.boardwidth; i++)
+            {
+                for (int j = 0; j < pposition.boardheight; j++)
+                {
+                    if (pposition.squares[i, j] != 0)
+                    {
+                        int pti = pieceTypeIndex(pposition.squares[i, j]);
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.FemmeFatale)
+                        {
+                            for (int i2 = i - 1; i2 < i + 2; i2++)
+                            {
+                                for (int j2 = j - 1; j2 < j + 2; j2++)
+                                {
+                                    if (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight)
+                                    {
+                                        if (pposition.squares[i, j] > 0)
+                                        {
+                                            pposition.squareInfo[i2, j2].adjacent_whitefemmefatale = true;
+                                        }
+                                        else
+                                        {
+                                            pposition.squareInfo[i2, j2].adjacent_blackfemmefatale = true;
                                         }
                                     }
                                 }
@@ -815,7 +908,8 @@ namespace TheWeirdEngine
             Default_moveprioindex(ref pposition);
         }
         public void GetStepLeapAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
-                                                     bool getcaptures, bool getnoncaptures, int depth, int pti, int pti_self)
+                                                     bool getcaptures, bool getnoncaptures, int depth, int pti,
+                                                     int pti_self, FreezeType ft)
         {
             int i2;
             int j2;
@@ -831,7 +925,7 @@ namespace TheWeirdEngine
             }
             if (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight)
             {
-                if (getcaptures == true)
+                if (getcaptures == true & ft.capturefreeze == false)
                 {
                     this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
                     if (depth > 0)
@@ -847,7 +941,7 @@ namespace TheWeirdEngine
                         }
                     }
                 }
-                if (getnoncaptures == true & depth > 0)
+                if (getnoncaptures == true & depth > 0 & ft.noncapturefreeze == false)
                 {
                     if ((pposition.squares[i2, j2] == 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
                         (pposition.squares[i2, j2] == 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
@@ -878,10 +972,52 @@ namespace TheWeirdEngine
             }
             return pti;
         }
+        public FreezeType GetFreezeType(chessposition pposition, int i, int j, int pti_self)
+        {
+            FreezeType myresponse;
+            myresponse.capturefreeze = false;
+            myresponse.noncapturefreeze = false;
+            if (pposition.squares[i, j] > 0)
+            {
+                if (this.piecetypes[pti_self].SpecialPiece_ind == SpecialPiece.Elf)
+                {
+                    if (pposition.WhiteElfMoveType == MoveType.other)
+                    {
+                        myresponse.capturefreeze = true;
+                        myresponse.noncapturefreeze = true;
+                    }
+                    else if (pposition.WhiteElfMoveType == MoveType.Capture) { myresponse.noncapturefreeze = true; }
+                    else { myresponse.capturefreeze = true; }
+                }
+                if (pposition.squareInfo[i, j].adjacent_blackfemmefatale == true)
+                {
+                    myresponse.capturefreeze = true;
+                }
+            }
+            else
+            {
+                if (this.piecetypes[pti_self].SpecialPiece_ind == SpecialPiece.Elf)
+                {
+                    if (pposition.BlackElfMoveType == MoveType.other)
+                    {
+                        myresponse.capturefreeze = true;
+                        myresponse.noncapturefreeze = true;
+                    }
+                    else if (pposition.BlackElfMoveType == MoveType.Capture) { myresponse.noncapturefreeze = true; }
+                    else { myresponse.capturefreeze = true; }
+                }
+                if (pposition.squareInfo[i, j].adjacent_whitefemmefatale == true)
+                {
+                    myresponse.capturefreeze = true;
+                }
+            }
+            return myresponse;
+        }
         public void GetStepLeapAttacksMoves(ref chessposition pposition, int i, int j, int depth)
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
             int pti_self = pti;
+            FreezeType ft = GetFreezeType(pposition, i, j, pti_self);
             if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
             {
                 pti = jokersubspti(ref pposition, i, j, pti);
@@ -891,18 +1027,18 @@ namespace TheWeirdEngine
             {
                 foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti, pti_self);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti, pti_self, ft);
                 }
             }
             else
             {
                 foreach (vector v in this.piecetypes[pti].stepleapmovevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti, pti_self);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti, pti_self, ft);
                 }
                 foreach (vector v in this.piecetypes[pti].stepleapcapturevectors)
                 {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti, pti_self);
+                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti, pti_self, ft);
                 }
             }
         }
@@ -945,6 +1081,12 @@ namespace TheWeirdEngine
                                                      vector v)
         {
             //Establish if [i3,j3] is attacked from [i,j] using StepLeap vector v yes or no
+            //We would need this if we would have combined Time Thief power with step-leap vectors
+
+            int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+            FreezeType ft = GetFreezeType(pposition, i, j, pti);
+            if (ft.capturefreeze == true) { return false; }
+
             int i2;
             int j2;
             i2 = i + v.x;
@@ -966,6 +1108,10 @@ namespace TheWeirdEngine
                                                   vector v, int pti)
         {
             //Establish if [i3,j3] is attacked from [i,j] using Slide vector v yes or no
+
+            FreezeType ft = GetFreezeType(pposition, i, j, pti);
+            if (ft.capturefreeze == true) { return false; }
+
             int i2;
             int j2;
             bool blocked;
@@ -1007,7 +1153,8 @@ namespace TheWeirdEngine
             return false;
         }
         public void GetSlideAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
-                                                  bool getcaptures, bool getnoncaptures, int depth, int pti, int pti_self)
+                                                  bool getcaptures, bool getnoncaptures, int depth, int pti,
+                                                  int pti_self, FreezeType ft)
         {
             int i2;
             int j2;
@@ -1026,7 +1173,7 @@ namespace TheWeirdEngine
             blocked = false;
             while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight & blocked == false)
             {
-                if (getcaptures == true)
+                if (getcaptures == true & ft.capturefreeze == false)
                 {
                     this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
                     if (depth > 0)
@@ -1042,7 +1189,7 @@ namespace TheWeirdEngine
                         }
                     }
                 }
-                if (getnoncaptures == true & depth > 0)
+                if (getnoncaptures == true & depth > 0 & ft.noncapturefreeze == false)
                 {
                     if ((pposition.squares[i2, j2] == 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
                              (pposition.squares[i2, j2] == 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
@@ -1076,6 +1223,7 @@ namespace TheWeirdEngine
         {
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
             int pti_self = pti;
+            FreezeType ft = GetFreezeType(pposition, i, j, pti_self);
             if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
             {
                 pti = jokersubspti(ref pposition, i, j, pti);
@@ -1085,18 +1233,18 @@ namespace TheWeirdEngine
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti, pti_self, ft);
                 }
             }
             else
             {
                 foreach (vector v in this.piecetypes[pti].slidemovevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti, pti_self, ft);
                 }
                 foreach (vector v in this.piecetypes[pti].slidecapturevectors)
                 {
-                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti, pti_self);
+                    GetSlideAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti, pti_self, ft);
                 }
             }
         }
@@ -1229,6 +1377,11 @@ namespace TheWeirdEngine
         {
             int movei;
             int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+            FreezeType ft = GetFreezeType(pposition, i, j, pti);
+            if (ft.capturefreeze == true)
+            {
+                return;
+            }
             if (this.piecetypes[pti].SpecialPiece_ind != SpecialPiece.TimeThief)
             {
                 return;
@@ -1600,6 +1753,7 @@ namespace TheWeirdEngine
             {
                 this.LocatePieces(ref positionstack[positionstack.Length - 1]);
                 SetWitchInfluence(ref positionstack[positionstack.Length - 1]);
+                SetFemmeFataleInfluence(ref positionstack[positionstack.Length - 1]);
             }
 
             this.nodecount = 0;
@@ -1745,6 +1899,7 @@ namespace TheWeirdEngine
             }
 
             SetWitchInfluence(ref positionstack[posidx]);
+            SetFemmeFataleInfluence(ref positionstack[posidx]);
 
             int prevposidx = posidx - 1;
             if (prevposidx == -1)
@@ -1993,6 +2148,93 @@ namespace TheWeirdEngine
 
             return myresult;
         }
+        public void ApplyImitators(int posidx, int newposidx, chessmove pmove, int pti)
+        {
+            //JokerInfo begin
+            if (positionstack[posidx].colourtomove == 1)
+            {
+                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
+                {
+                    positionstack[newposidx].BlackJokerSubstitute_pti = positionstack[posidx].WhiteJokerSubstitute_pti;
+                }
+                else if (positionstack[posidx].BlackHasJoker == false)
+                {
+                    positionstack[newposidx].BlackJokerSubstitute_pti = -1;
+                }
+                else if (pmove.PromoteToPiece != 0)
+                {
+                    positionstack[newposidx].BlackJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
+                }
+                else
+                {
+                    positionstack[newposidx].BlackJokerSubstitute_pti = pti;
+                }
+            }
+            else
+            {
+                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
+                {
+                    positionstack[newposidx].WhiteJokerSubstitute_pti = positionstack[posidx].BlackJokerSubstitute_pti;
+                }
+                else if (positionstack[posidx].WhiteHasJoker == false)
+                {
+                    positionstack[newposidx].WhiteJokerSubstitute_pti = -1;
+                }
+                else if (pmove.PromoteToPiece != 0)
+                {
+                    positionstack[newposidx].WhiteJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
+                }
+                else
+                {
+                    positionstack[newposidx].WhiteJokerSubstitute_pti = pti;
+                }
+            }
+            //JokerInfo end
+
+            //ElfInfo begin
+            if (positionstack[posidx].colourtomove == 1)
+            {
+                if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & pmove.IsCapture == true)
+                {
+                    //special move
+                    positionstack[newposidx].BlackElfMoveType = MoveType.other;
+                }
+                else if (pmove.IsCapture == true)
+                {
+                    positionstack[newposidx].BlackElfMoveType = MoveType.Capture;
+                }
+                else if (positionstack[posidx].BlackHasElf == false)
+                {
+                    positionstack[newposidx].BlackElfMoveType = MoveType.other;
+                }
+                else
+                {
+                    positionstack[newposidx].BlackElfMoveType = MoveType.Noncapture;
+                }
+            }
+            else
+            {
+                if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & pmove.IsCapture == true)
+                {
+                    //special move
+                    positionstack[newposidx].WhiteElfMoveType = MoveType.other;
+                }
+                else if (pmove.IsCapture == true)
+                {
+                    positionstack[newposidx].WhiteElfMoveType = MoveType.Capture;
+                }
+                else if (positionstack[posidx].WhiteHasElf == false)
+                {
+                    positionstack[newposidx].WhiteElfMoveType = MoveType.other;
+                }
+                else
+                {
+                    positionstack[newposidx].WhiteElfMoveType = MoveType.Noncapture;
+                }
+            }
+            //ElfInfo end
+
+        }
         public int ExecuteMove(int posidx, chessmove pmove, int prevposidx)
         {
             int newposidx = posidx + 1;
@@ -2090,46 +2332,7 @@ namespace TheWeirdEngine
                 positionstack[newposidx].colourtomove = 1;
             }
 
-            //JokerInfo begin
-            if (positionstack[posidx].colourtomove == 1)
-            {
-                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
-                {
-                    positionstack[newposidx].BlackJokerSubstitute_pti = positionstack[posidx].WhiteJokerSubstitute_pti;
-                }
-                else if (positionstack[posidx].BlackHasJoker == false)
-                {
-                    positionstack[newposidx].BlackJokerSubstitute_pti = -1;
-                }
-                else if (pmove.PromoteToPiece != 0)
-                {
-                    positionstack[newposidx].BlackJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
-                }
-                else
-                {
-                    positionstack[newposidx].BlackJokerSubstitute_pti = pti;
-                }
-            }
-            else
-            {
-                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
-                {
-                    positionstack[newposidx].WhiteJokerSubstitute_pti = positionstack[posidx].BlackJokerSubstitute_pti;
-                }
-                else if (positionstack[posidx].WhiteHasJoker == false)
-                {
-                    positionstack[newposidx].WhiteJokerSubstitute_pti = -1;
-                }
-                else if (pmove.PromoteToPiece != 0)
-                {
-                    positionstack[newposidx].WhiteJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
-                }
-                else
-                {
-                    positionstack[newposidx].WhiteJokerSubstitute_pti = pti;
-                }
-            }
-            //JokerInfo end
+            ApplyImitators(posidx, newposidx, pmove, pti);
 
 
             return newposidx;

@@ -58,6 +58,8 @@ namespace TheWeirdEngine
             topos.precedingmove = new int[4] { -1, -1, -1, -1 };
             topos.WhiteJokerSubstitute_pti = -1;
             topos.BlackJokerSubstitute_pti = -1;
+            topos.WhiteElfMoveType = MoveType.other;
+            topos.BlackElfMoveType = MoveType.other;
             topos.movelist_totalfound = 0;
             return topos;
         }
@@ -147,6 +149,8 @@ namespace TheWeirdEngine
             TransTable[itemidx].t_position.blackqueensiderookhasmoved = frompos.blackqueensiderookhasmoved;
             TransTable[itemidx].t_position.WhiteJokerSubstitute_pti = frompos.WhiteJokerSubstitute_pti;
             TransTable[itemidx].t_position.BlackJokerSubstitute_pti = frompos.BlackJokerSubstitute_pti;
+            TransTable[itemidx].t_position.WhiteElfMoveType = frompos.WhiteElfMoveType;
+            TransTable[itemidx].t_position.BlackElfMoveType = frompos.BlackElfMoveType;
 
             for (int i = 0; i < frompos.boardwidth; i++)
             {
@@ -258,6 +262,8 @@ namespace TheWeirdEngine
             if (posA.blackqueensiderookhasmoved != posB.blackqueensiderookhasmoved) { return false; }
             if (posA.WhiteJokerSubstitute_pti != posB.WhiteJokerSubstitute_pti) { return false; }
             if (posA.BlackJokerSubstitute_pti != posB.BlackJokerSubstitute_pti) { return false; }
+            if (posA.WhiteElfMoveType != posB.WhiteElfMoveType) { return false; }
+            if (posA.BlackElfMoveType != posB.BlackElfMoveType) { return false; }
 
             for (int i = 0; i < posA.boardwidth; i++)
             {

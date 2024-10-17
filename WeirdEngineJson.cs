@@ -42,6 +42,8 @@ namespace TheWeirdEngine
         public jsoncastlinginfo castlinginfo;
         public string WhiteJokerImitatesPieceName;
         public string BlackJokerImitatesPieceName;
+        public string WhiteElfMoveType;
+        public string BlackElfMoveType;
         public string[] squares;
     }
     public struct jsonchesspositions
@@ -316,6 +318,8 @@ namespace TheWeirdEngine
             this.MyWeirdEngineMoveFinder.positionstack[posidx].blackkingsiderookhasmoved = loadedpos.castlinginfo.blackkingsiderookhasmoved;
             this.MyWeirdEngineMoveFinder.positionstack[posidx].blackqueensiderookhasmoved = loadedpos.castlinginfo.blackqueensiderookhasmoved;
             this.MyWeirdEngineMoveFinder.positionstack[posidx].WhiteJokerSubstitute_pti = Name2pti(loadedpos.WhiteJokerImitatesPieceName);
+            Enum.TryParse(loadedpos.WhiteElfMoveType, out this.MyWeirdEngineMoveFinder.positionstack[posidx].WhiteElfMoveType);
+            Enum.TryParse(loadedpos.BlackElfMoveType, out this.MyWeirdEngineMoveFinder.positionstack[posidx].BlackElfMoveType);
             this.MyWeirdEngineMoveFinder.positionstack[posidx].BlackJokerSubstitute_pti = Name2pti(loadedpos.BlackJokerImitatesPieceName);
             for (int j = 0; j < loadedpos.boardheight; j++)
             {
@@ -395,6 +399,8 @@ namespace TheWeirdEngine
             mypos.castlinginfo.blackqueensiderookhasmoved = pposition.blackqueensiderookhasmoved;
             mypos.WhiteJokerImitatesPieceName = pti2Name(pposition.WhiteJokerSubstitute_pti);
             mypos.BlackJokerImitatesPieceName = pti2Name(pposition.BlackJokerSubstitute_pti);
+            mypos.WhiteElfMoveType = pposition.WhiteElfMoveType.ToString();
+            mypos.BlackElfMoveType = pposition.BlackElfMoveType.ToString();
 
             for (int j = 0; j < mypos.boardheight; j++)
             {
