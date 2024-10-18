@@ -434,6 +434,56 @@ namespace TheWeirdEngine
                 AllTestsPassed = false;
             }
         }
+        public chessmove NewTestMove()
+        {
+            chessmove mytestmove = new chessmove();
+            mytestmove.MovingPiece = 0;
+            mytestmove.coordinates = new int[4] { 0, 0, 0,0 };
+            mytestmove.IsEnPassant = false;
+            mytestmove.IsCapture = false;
+            mytestmove.IsCastling = false;
+            mytestmove.othercoordinates = new int[4] { -1, -1, -1, -1 };
+            mytestmove.PromoteToPiece = 0;
+            mytestmove.calculatedvalue = 0;
+            return mytestmove;
+        }
+        public void TestExecuteMove(string ppath, string ppositionfilename, string psymbol,
+                                    int pi1, int pj1, int pi2, int pj2)
+        {
+            bool TestSucceeded = false;
+            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(1);
+            chessmove mytestmove = NewTestMove();
+            mytestmove.MovingPiece = MyWeirdEngineJson.Str2PieceType(psymbol);
+            mytestmove.coordinates[0] = pi1;
+            mytestmove.coordinates[1] = pj1;
+            mytestmove.coordinates[2] = pi2;
+            mytestmove.coordinates[3] = pj2;
+            mytestmove.IsCapture = true;
+
+            int movei = MyWeirdEngineMoveFinder.FindMove(MyWeirdEngineMoveFinder.positionstack[0], mytestmove);
+            if (movei > -1)
+            {
+                int newposidx = MyWeirdEngineMoveFinder.ExecuteMove(0, mytestmove,
+                                                                    WeirdEngineMoveFinder.positionstack_size - 1);
+                if (newposidx == 1 & ppositionfilename == "13A_ExecuteMove_white_01"
+                    & MyWeirdEngineMoveFinder.positionstack[newposidx].BlackElfMoveType == MoveType.other)
+                {
+                    TestSucceeded = true;
+                }
+                if (newposidx == 1 & ppositionfilename == "13A_ExecuteMove_black_01"
+                    & MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteElfMoveType == MoveType.other)
+                {
+                    TestSucceeded = true;
+                }
+            }
+            if (TestSucceeded == false)
+            {
+                MessageBox.Show(ppositionfilename + " TestExecuteMove not succeeded.");
+                AllTestsPassed = false;
+            }
+        }
         public void RunAllUnittests(string ppath)
         {
             AllTestsPassed = true;
@@ -588,6 +638,67 @@ namespace TheWeirdEngine
             TestMate_n(ppath, "11D_Joker_imitating_Joker_2", 1, 3, 7, 3, 0);
             TestMate_n(ppath, "11E_Joker_Hunter_1", 1, 4, 6, 5, 6);
             TestMate_n(ppath, "11E_Joker_Hunter_2", 1, 4, 1, 5, 1);
+
+            TestMove(ppath, "12A_FemmeFatale01_white", "Knight", 1, 2, 0, 0, true);
+            TestMove(ppath, "12A_FemmeFatale01_white", "Knight", 1, 2, 2, 4, false);
+            TestMove(ppath, "12A_FemmeFatale01_white", "Rook", 6, 1, 0, 1, true);
+            TestMove(ppath, "12A_FemmeFatale01_white", "Rook", 6, 1, 6, 5, true);
+            TestMove(ppath, "12A_FemmeFatale01_white", "Rook", 6, 1, 6, 6, false);
+            TestMove(ppath, "12A_FemmeFatale01_white", "Rook", 6, 1, 6, 0, false);
+
+            TestMove(ppath, "12A_FemmeFatale01_black", "Knight", 1, 5, 0, 7, true);
+            TestMove(ppath, "12A_FemmeFatale01_black", "Knight", 1, 5, 2, 3, false);
+            TestMove(ppath, "12A_FemmeFatale01_black", "Rook", 6, 6, 0, 6, true);
+            TestMove(ppath, "12A_FemmeFatale01_black", "Rook", 6, 6, 6, 2, true);
+            TestMove(ppath, "12A_FemmeFatale01_black", "Rook", 6, 6, 6, 1, false);
+            TestMove(ppath, "12A_FemmeFatale01_black", "Rook", 6, 6, 6, 7, false);
+
+            TestMove(ppath, "12A_Elf01_white", "Elf", 1, 2, 4, 5, true);
+            TestMove(ppath, "12A_Elf01_white", "Elf", 1, 2, 0, 0, true);
+            TestMove(ppath, "12A_Elf01_white", "Elf", 1, 2, 5, 6, false);
+            TestMove(ppath, "12A_Elf01_white", "Elf", 1, 2, 0, 4, false);
+            TestMove(ppath, "12A_Elf02_white", "Elf", 1, 2, 4, 5, false);
+            TestMove(ppath, "12A_Elf02_white", "Elf", 1, 2, 0, 0, false);
+            TestMove(ppath, "12A_Elf02_white", "Elf", 1, 2, 5, 6, true);
+            TestMove(ppath, "12A_Elf02_white", "Elf", 1, 2, 0, 4, true);
+            TestMove(ppath, "12A_Elf03_white", "Elf", 1, 2, 4, 5, false);
+            TestMove(ppath, "12A_Elf03_white", "Elf", 1, 2, 0, 0, false);
+            TestMove(ppath, "12A_Elf03_white", "Elf", 1, 2, 5, 6, false);
+            TestMove(ppath, "12A_Elf03_white", "Elf", 1, 2, 0, 4, false);
+
+            TestMove(ppath, "12A_Elf01_black", "Elf", 1, 5, 4, 2, true);
+            TestMove(ppath, "12A_Elf01_black", "Elf", 1, 5, 0, 7, true);
+            TestMove(ppath, "12A_Elf01_black", "Elf", 1, 5, 5, 1, false);
+            TestMove(ppath, "12A_Elf01_black", "Elf", 1, 5, 0, 3, false);
+            TestMove(ppath, "12A_Elf02_black", "Elf", 1, 5, 4, 2, false);
+            TestMove(ppath, "12A_Elf02_black", "Elf", 1, 5, 0, 7, false);
+            TestMove(ppath, "12A_Elf02_black", "Elf", 1, 5, 5, 1, true);
+            TestMove(ppath, "12A_Elf02_black", "Elf", 1, 5, 0, 3, true);
+            TestMove(ppath, "12A_Elf03_black", "Elf", 1, 5, 4, 2, false);
+            TestMove(ppath, "12A_Elf03_black", "Elf", 1, 5, 0, 7, false);
+            TestMove(ppath, "12A_Elf03_black", "Elf", 1, 5, 5, 1, false);
+            TestMove(ppath, "12A_Elf03_black", "Elf", 1, 5, 0, 3, false);
+
+            TestMove(ppath, "12A_FemmeFatale02_white", "Knight", 1, 2, 2, 4, true);
+            TestMove(ppath, "12A_FemmeFatale02_white", "Rook", 6, 1, 6, 6, true);
+            TestMove(ppath, "12A_FemmeFatale02_black", "Knight", 1, 5, 2, 3, true);
+            TestMove(ppath, "12A_FemmeFatale02_black", "Rook", 6, 6, 6, 1, true);
+
+            TestMove(ppath, "12B_FF_adj_Elf_01_white", "Elf", 2, 2, 2, 3, false);
+            TestMove(ppath, "12B_FF_adj_Elf_01_white", "Elf", 2, 2, 1, 4, false);
+            TestMove(ppath, "12B_FF_adj_Elf_01_white", "Elf", 2, 2, 2, 7, false);
+            TestMove(ppath, "12B_FF_adj_Elf_02_white", "Elf", 2, 2, 2, 3, true);
+            TestMove(ppath, "12B_FF_adj_Elf_02_white", "Elf", 2, 2, 1, 4, false);
+            TestMove(ppath, "12B_FF_adj_Elf_02_white", "Elf", 2, 2, 2, 7, false);
+            TestMove(ppath, "12B_FF_adj_Elf_01_black", "Elf", 2, 5, 2, 4, false);
+            TestMove(ppath, "12B_FF_adj_Elf_01_black", "Elf", 2, 5, 1, 3, false);
+            TestMove(ppath, "12B_FF_adj_Elf_01_black", "Elf", 2, 5, 2, 0, false);
+            TestMove(ppath, "12B_FF_adj_Elf_02_black", "Elf", 2, 5, 2, 4, true);
+            TestMove(ppath, "12B_FF_adj_Elf_02_black", "Elf", 2, 5, 1, 3, false);
+            TestMove(ppath, "12B_FF_adj_Elf_02_black", "Elf", 2, 5, 2, 0, false);
+
+            TestExecuteMove(ppath, "13A_ExecuteMove_white_01", "T", 2, 2, 0, 4);
+            TestExecuteMove(ppath, "13A_ExecuteMove_black_01", "-T", 2, 5, 0, 3);
 
             if (AllTestsPassed == true)
             {
