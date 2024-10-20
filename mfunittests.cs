@@ -606,6 +606,33 @@ namespace TheWeirdEngine
             TestMove(ppath, "09A_witch_black", "Witch", 4, 4, 3, 4, false);
             TestMove(ppath, "09A_witch_black", "Witch", 4, 4, 1, 4, false);
 
+            TestMove(ppath, "09B_witch_white", "Queen", 3, 1, 3, 7, false);
+            TestMove(ppath, "09B_witch_white", "Witch", 0, 3, 3, 3, false);
+            TestMove(ppath, "09B_witch_white", "Witch", 0, 3, 4, 3, false);
+            TestMove(ppath, "09B_witch_white", "Witch", 0, 3, 6, 3, false);
+
+            TestMove(ppath, "09B_witch_black", "Queen", 3, 6, 3, 0, false);
+            TestMove(ppath, "09B_witch_black", "Witch", 0, 4, 3, 4, false);
+            TestMove(ppath, "09B_witch_black", "Witch", 0, 4, 4, 4, false);
+            TestMove(ppath, "09B_witch_black", "Witch", 0, 4, 6, 4, false);
+
+            TestMove(ppath, "09C_witch_white", "Bishop", 0, 1, 5, 6, true);
+            TestMove(ppath, "09C_witch_white", "Rook", 1, 1, 1, 7, false);
+            TestMove(ppath, "09C_witch_black", "Bishop", 0, 6, 5, 1, true);
+            TestMove(ppath, "09C_witch_black", "Rook", 1, 6, 1, 0, false);
+
+            TestMove(ppath, "09D_witch_white", "Witch", 6, 1, 6, 4, true);
+            TestMove(ppath, "09D_witch_white", "Witch", 6, 1, 1, 1, true);
+            TestMove(ppath, "09D_witch_white", "Witch", 6, 1, 6, 6, false);
+            TestMove(ppath, "09D_witch_white", "Witch", 6, 1, 0, 7, false);
+            TestMove(ppath, "09D_witch_white", "Witch", 7, 1, 1, 1, true);
+
+            TestMove(ppath, "09D_witch_black", "Witch", 6, 6, 6, 3, true);
+            TestMove(ppath, "09D_witch_black", "Witch", 6, 6, 1, 6, true);
+            TestMove(ppath, "09D_witch_black", "Witch", 6, 6, 6, 1, false);
+            TestMove(ppath, "09D_witch_black", "Witch", 6, 6, 0, 0, false);
+            TestMove(ppath, "09D_witch_black", "Witch", 7, 6, 1, 6, true);
+
             TestStalemate(ppath, "10A_timethief_stalemate_white");
             TestStalemate(ppath, "10A_timethief_stalemate_black");
             TestSelfCheck(ppath, "10A_timethief_check_white");

@@ -64,6 +64,8 @@ namespace TheWeirdEngine
         normalpiece,
         King,
         Rook,
+        Bishop,
+        Knight,
         Pawn,
         Amazon,
         Witch,
@@ -183,6 +185,8 @@ namespace TheWeirdEngine
             {
                 if (this.piecetypes[pti].name == "King") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.King; }
                 else if (this.piecetypes[pti].name == "Rook") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Rook; }
+                else if (this.piecetypes[pti].name == "Bishop") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Bishop; }
+                else if (this.piecetypes[pti].name == "Knight") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Knight; }
                 else if (this.piecetypes[pti].name == "Pawn") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Pawn; }
                 else if (this.piecetypes[pti].name == "Amazon") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Amazon; }
                 else if (this.piecetypes[pti].name == "Witch") { piecetypes[pti].SpecialPiece_ind = SpecialPiece.Witch; }
@@ -326,7 +330,7 @@ namespace TheWeirdEngine
                 case "Guard":
                     return 4.0;
                 case "Hunter":
-                    return 3.9;
+                    return 4.9;
                 default:
                     return 2.05;
             }
@@ -405,7 +409,7 @@ namespace TheWeirdEngine
                             }
 
                         }
-                        else if (this.piecetypes[pti].name == "Bishop")
+                        else if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Bishop)
                         {
                             if (pposition.squares[i, j] > 0)
                             {
@@ -418,7 +422,7 @@ namespace TheWeirdEngine
                                 else { pposition.BlackBishoponBlack = true; }
                             }
                         }
-                        else if (this.piecetypes[pti].name == "Knight")
+                        else if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Knight)
                         {
                             if (pposition.squares[i, j] > 0)
                             {
@@ -1042,9 +1046,23 @@ namespace TheWeirdEngine
                 }
             }
         }
+        public bool SquaresAdjacent(int i, int j, int i2, int j2)
+        {
+            int di = i - i2;
+            if (di < -1) { return false; }
+            if (di > 1) { return false; }
+            int dj = j - j2;
+            if (dj < -1) { return false; }
+            if (dj > 1) { return false; }
+            return true;
+        }
         public bool SquareIsTransparent(ref chessposition pposition, int i, int j, int i2, int j2, int pti)
         {
+            //A Witch is transparent for pieces of her own colour.
+            //A Witch makes adjecent pieces (of any colour) transparent for pieces of her own colour.
+            //A Witch does not make adjacent pieces transparent for herself. But another allied Witch can do that for her.
             bool IsTransparent = false;
+            bool adj = SquaresAdjacent(i, j, i2, j2);
             if (pposition.squares[i, j] > 0 & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 0)
             {
                 if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Witch
@@ -1054,10 +1072,8 @@ namespace TheWeirdEngine
                 }
                 else
                 {
-                    if (piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch)
-                    {
-                        IsTransparent = true;
-                    }
+                    if (piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch) { IsTransparent = true; }
+                    if (adj == false) { IsTransparent = true; }
                 }
             }
             if (pposition.squares[i, j] < 0 & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 0)
@@ -1069,10 +1085,8 @@ namespace TheWeirdEngine
                 }
                 else
                 {
-                    if (piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch)
-                    {
-                        IsTransparent = true;
-                    }
+                    if (piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch) { IsTransparent = true; }
+                    if (adj == false) { IsTransparent = true; }
                 }
             }
             return IsTransparent;
