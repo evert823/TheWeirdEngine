@@ -440,9 +440,20 @@ namespace TheWeirdEngine
                                 pposition.BlackHasWitch = true;
                             }
                         }
+                        else if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Elf)
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                pposition.WhiteHasElf = true;
+                            }
+                            else
+                            {
+                                pposition.BlackHasElf = true;
+                            }
+                        }
                         else
                         {
-                            //Now other piece, not King, not Rook, not Bishop, not Knight, not Witch:
+                            //Now other piece, not King, not Rook, not Bishop, not Knight, not Witch, not Elf:
                             if (pposition.squares[i, j] > 0)
                             {
                                 pposition.WhiteHasMatingMaterial = true;
@@ -484,17 +495,6 @@ namespace TheWeirdEngine
                             else
                             {
                                 pposition.BlackHasFemmeFatale = true;
-                            }
-                        }
-                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Elf)
-                        {
-                            if (pposition.squares[i, j] > 0)
-                            {
-                                pposition.WhiteHasElf = true;
-                            }
-                            else
-                            {
-                                pposition.BlackHasElf = true;
                             }
                         }
                     }
