@@ -95,25 +95,28 @@ namespace TheWeirdEngine
 
             PutOnePiece("N", 0, 7, 0, 5);
             PutOnePiece("B", 0, 7, 0, 5);
-            PutOnePiece("R", 0, 7, 0, 5);
+            PutOnePiece("Q", 0, 7, 0, 5);
             PutOnePiece("-N", 0, 7, 2, 7);
             PutOnePiece("-B", 0, 7, 2, 7);
-            PutOnePiece("-R", 0, 7, 2, 7);
+            PutOnePiece("-Q", 0, 7, 2, 7);
 
-            PutOnePiece("-J", 0, 7, 2, 7);
-            PutOnePiece("A", 0, 7, 2, 7);
+            PutOnePiece("F", 0, 7, 0, 5);
+            PutOnePiece("-R", 0, 7, 2, 7);
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
         }
         public void genone_puzzle()
         {
-            ClearMainPosition(6, 6);
-            PutOnePiece("K", 2, 5, 2, 3);
-            PutOnePiece("-K", 4, 5, 0, 1);
-            PutOnePiece("N", 2, 5, 2, 3);
-            PutOnePiece("B", 1, 1, 1, 1);
-            PutOnePiece("T", 1, 5, 0, 5);
+            ClearMainPosition(7, 7);
+            PutOnePiece("K", 4, 4, 0, 3);
+            PutOnePiece("-K", 6, 6, 0, 1);
+            PutOnePiece("-N", 2, 6, 0, 5);
+            PutOnePiece("N", 2, 6, 0, 3);
+            PutOnePiece("B", 0, 6, 0, 6);
+            PutOnePiece("E", 2, 4, 0, 4);
+            PutOnePiece("H", 2, 4, 0, 4);
             //MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = 1;
+            MyWeirdEngineMoveFinder.positionstack[0].WhiteElfMoveType = MoveType.Noncapture;
         }
         public void gennontrivial()
         {
@@ -140,9 +143,9 @@ namespace TheWeirdEngine
             while (posgreat == false)
             {
                 counter += 1;
-                if (counter % 10 == 0)
+                if (counter % 20 == 0)
                 {
-                    MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions\\",
+                    MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\",
                                                         "failed_gen_" + counter.ToString());
                 }
                 gennontrivial_puzzle();

@@ -99,6 +99,14 @@ namespace TheWeirdEngine
         public int PromoteToPiece;
         public double calculatedvalue;
     }
+    public struct BoardTopology
+    {
+        public int boardwidth;
+        public int boardheight;
+        public bool[,] IsWhiteSquare;
+        public int[,,,] DistanceBetweenSquares;
+        public bool[,,,] SquaresAdjacent;
+    }
     public struct chessposition
     {
         public int boardwidth;
@@ -165,6 +173,7 @@ namespace TheWeirdEngine
         public bool externalabort;
         public chesspiecetype[] piecetypes;
         public chessposition[] positionstack;
+        public BoardTopology MyBoardTopology;
         public WeirdEngineMoveFinder()
         {
             this.MyWeirdEngineBareKingMate = new WeirdEngineBareKingMate(this);
@@ -359,7 +368,7 @@ namespace TheWeirdEngine
                 for (int j = 0; j < pposition.boardheight; j++)
                 {
 
-                    whitesquare = IsWhiteSquare(i, j);
+                    whitesquare = MyBoardTopology.IsWhiteSquare[i, j];
 
                     if (pposition.squares[i, j] != 0)
                     {
@@ -551,11 +560,6 @@ namespace TheWeirdEngine
             }
             return 0.0;
         }
-        public bool IsWhiteSquare(int i, int j)
-        {
-            if ((i + j) % 2 == 0) { return true; }
-            else { return false; }
-        }
         public bool DrawByMaterial(ref chessposition pposition)
         {
             if (pposition.WhiteBareKing == true & pposition.BlackBareKing == true) { return true; }
@@ -672,8 +676,47 @@ namespace TheWeirdEngine
             myev = EvaluationByAttack(ref pposition);
             return myev;
         }
+        public void SetBoardTopology(int pboardwidth, int pboardheight)
+        {
+            MyBoardTopology.boardwidth = pboardwidth;
+            MyBoardTopology.boardheight = pboardheight;
+            MyBoardTopology.IsWhiteSquare = null;
+            MyBoardTopology.IsWhiteSquare = new bool[pboardwidth, pboardheight];
+            for (int i = 0; i < pboardwidth; i++)
+            {
+                for (int j = 0; j < pboardheight; j++)
+                {
+                    if ((i + j) % 2 == 0) { MyBoardTopology.IsWhiteSquare[i, j] = true; }
+                    else { MyBoardTopology.IsWhiteSquare[i, j] = false; }
+                }
+            }
+
+            MyBoardTopology.DistanceBetweenSquares = null;
+            MyBoardTopology.DistanceBetweenSquares = new int[pboardwidth, pboardheight, pboardwidth, pboardheight];
+            MyBoardTopology.SquaresAdjacent = null;
+            MyBoardTopology.SquaresAdjacent = new bool[pboardwidth, pboardheight, pboardwidth, pboardheight];
+            for (int i1 = 0; i1 < pboardwidth; i1++)
+            {
+                for (int j1 = 0; j1 < pboardheight; j1++)
+                {
+                    for (int i2 = 0; i2 < pboardwidth; i2++)
+                    {
+                        for (int j2 = 0; j2 < pboardheight; j2++)
+                        {
+                            int di = Math.Abs(i1 - i2);
+                            int dj = Math.Abs(j1 - j2);
+                            int d = di + dj;
+                            MyBoardTopology.DistanceBetweenSquares[i1, j1, i2, j2] = d;
+                            if (di <= 1 & dj <= 1) { MyBoardTopology.SquaresAdjacent[i1, j1, i2, j2] = true; }
+                            else { MyBoardTopology.SquaresAdjacent[i1, j1, i2, j2] = false; }
+                        }
+                    }
+                }
+            }
+        }
         public void init_positionstack(int pboardwidth, int pboardheight)
         {
+            this.SetBoardTopology(pboardwidth, pboardheight);
             this.positionstack = null;
             this.positionstack = new chessposition[positionstack_size];
             for (int pi = 0; pi < positionstack_size; pi++)
@@ -1046,23 +1089,12 @@ namespace TheWeirdEngine
                 }
             }
         }
-        public bool SquaresAdjacent(int i, int j, int i2, int j2)
-        {
-            int di = i - i2;
-            if (di < -1) { return false; }
-            if (di > 1) { return false; }
-            int dj = j - j2;
-            if (dj < -1) { return false; }
-            if (dj > 1) { return false; }
-            return true;
-        }
         public bool SquareIsTransparent(ref chessposition pposition, int i, int j, int i2, int j2, int pti)
         {
             //A Witch is transparent for pieces of her own colour.
             //A Witch makes adjecent pieces (of any colour) transparent for pieces of her own colour.
             //A Witch does not make adjacent pieces transparent for herself. But another allied Witch can do that for her.
             bool IsTransparent = false;
-            bool adj = SquaresAdjacent(i, j, i2, j2);
             if (pposition.squares[i, j] > 0 & pposition.squareInfo[i2, j2].n_adjacent_whitewitches > 0)
             {
                 if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Witch
@@ -1073,7 +1105,7 @@ namespace TheWeirdEngine
                 else
                 {
                     if (piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch) { IsTransparent = true; }
-                    if (adj == false) { IsTransparent = true; }
+                    if (MyBoardTopology.SquaresAdjacent[i, j, i2, j2] == false) { IsTransparent = true; }
                 }
             }
             if (pposition.squares[i, j] < 0 & pposition.squareInfo[i2, j2].n_adjacent_blackwitches > 0)
@@ -1086,7 +1118,7 @@ namespace TheWeirdEngine
                 else
                 {
                     if (piecetypes[pti].SpecialPiece_ind != SpecialPiece.Witch) { IsTransparent = true; }
-                    if (adj == false) { IsTransparent = true; }
+                    if (MyBoardTopology.SquaresAdjacent[i, j, i2, j2] == false) { IsTransparent = true; }
                 }
             }
             return IsTransparent;

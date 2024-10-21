@@ -31,9 +31,7 @@ namespace TheWeirdEngine
 
         public int DistanceBetweenSquares(int i1, int j1, int i2, int j2)
         {
-            int d = Math.Abs(i1 - i2);
-            d += Math.Abs(j1 - j2);
-            return d;
+            return MyWeirdEngineMoveFinder.MyBoardTopology.DistanceBetweenSquares[i1, j1, i2, j2];
         }
         public cornerInfo CheckOneCorner(ref chessposition pposition, int i, int j, vector targetkingcoord)
         {
@@ -44,7 +42,7 @@ namespace TheWeirdEngine
             myresult.BishopCanAttack = false;
             if (pposition.WhiteBareKing == true)
             {
-                if (MyWeirdEngineMoveFinder.IsWhiteSquare(i, j) == true)
+                if (MyWeirdEngineMoveFinder.MyBoardTopology.IsWhiteSquare[i, j] == true)
                 {
                     if (pposition.BlackBishoponWhite == true) { myresult.BishopCanAttack = true; }
                 }
@@ -55,7 +53,7 @@ namespace TheWeirdEngine
             }
             else
             {
-                if (MyWeirdEngineMoveFinder.IsWhiteSquare(i, j) == true)
+                if (MyWeirdEngineMoveFinder.MyBoardTopology.IsWhiteSquare[i, j] == true)
                 {
                     if (pposition.WhiteBishoponWhite == true) { myresult.BishopCanAttack = true; }
                 }

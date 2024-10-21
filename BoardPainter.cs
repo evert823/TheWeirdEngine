@@ -97,7 +97,7 @@ namespace TheWeirdEngine
             {
                 for (j = 0; j < this.MyWeirdEngineMoveFinder.positionstack[0].boardheight; j++)
                 {
-                    if (MyWeirdEngineMoveFinder.IsWhiteSquare(i, j) == true)
+                    if (MyWeirdEngineMoveFinder.MyBoardTopology.IsWhiteSquare[i, j] == true)
                     {
                         colourpart = "onwhite";
                     }
