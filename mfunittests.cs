@@ -414,6 +414,42 @@ namespace TheWeirdEngine
                 AllTestsPassed = false;
             }
         }
+        public void TestMate_high_depth(string ppath, string ppositionfilename, int pdepth, int pi1, int pj1, int pi2, int pj2)
+        {
+            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
+
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(pdepth);
+
+            if (pi1 != -1)
+            {
+                if (MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].coordinates[0] == pi1 &
+                    MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].coordinates[1] == pj1 &
+                    MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].coordinates[2] == pi2 &
+                    MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].coordinates[3] == pj2)
+                {
+                    //nothing
+                }
+                else
+                {
+                    MessageBox.Show(ppositionfilename + " Mate expected, but the identified move is not correct.");
+                    AllTestsPassed = false;
+                }
+            }
+            if (a.posvalue > 98 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == 1)
+            {
+                //nothing
+            }
+            else if (a.posvalue < -98 & MyWeirdEngineMoveFinder.positionstack[0].colourtomove == -1)
+            {
+                //nothing
+            }
+            else
+            {
+                MessageBox.Show(ppositionfilename + " Mate expected but there was no mate.");
+                AllTestsPassed = false;
+            }
+        }
         public void BaselinePerformance(string ppath, string ppositionfilename, int depth, int baseline_seconds)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
@@ -726,6 +762,12 @@ namespace TheWeirdEngine
 
             TestExecuteMove(ppath, "13A_ExecuteMove_white_01", "T", 2, 2, 0, 4);
             TestExecuteMove(ppath, "13A_ExecuteMove_black_01", "-T", 2, 5, 0, 3);
+
+            MyWeirdEngineJson.LoadPieceTypesFromJson("fide");
+            TestMate_high_depth(ppath, "14A_mate_in_1_depth_14_white", 14, 4, 2, 0, 2);
+            TestMate_high_depth(ppath, "14A_mate_in_1_depth_14_black", 14, 4, 5, 0, 5);
+            TestMate_high_depth(ppath, "14B_mate_in_2_depth_5_bug_white", 5, 7, 3, 6, 2);
+            TestMate_high_depth(ppath, "14B_mate_in_2_depth_5_bug_black", 5, 7, 4, 6, 5);
 
             if (AllTestsPassed == true)
             {

@@ -179,8 +179,8 @@ namespace TheWeirdEngine
             this.MyWeirdEngineBareKingMate = new WeirdEngineBareKingMate(this);
             this.MyWeirdEnginePositionCompare = new WeirdEnginePositionCompare(this);
             this.myenginesettings.presort_when_depth_gt = 4;
-            this.myenginesettings.consult_tt_when_depth_gt = 2;
-            this.myenginesettings.store_in_tt_when_depth_gt = 3;
+            this.myenginesettings.consult_tt_when_depth_gt = 3;
+            this.myenginesettings.store_in_tt_when_depth_gt = 4;
             this.myenginesettings.setting_SearchForFastestMate = true;
             this.myenginesettings.presort_using_depth = 3;
             this.myenginesettings.display_when_depth_gt = 7;
@@ -1885,6 +1885,7 @@ namespace TheWeirdEngine
         }
         public void reprioritize_movelist(int posidx, double alpha, double beta, int prevposidx)
         {
+            int stopi = -1;
             int movecount = positionstack[posidx].movelist_totalfound;
 
             for (int i = 0; i < movecount; i++)
@@ -1893,6 +1894,32 @@ namespace TheWeirdEngine
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, alpha, beta,
                                                                      myenginesettings.presort_using_depth, false);
                 positionstack[posidx].movelist[i].calculatedvalue = newresponse.posvalue;
+                if (positionstack[posidx].colourtomove == 1)
+                {
+                    if (newresponse.posvalue >= 100)
+                    {
+                        stopi = i;
+                        break;
+                    }
+                }
+                if (positionstack[posidx].colourtomove == -1)
+                {
+                    if (newresponse.posvalue <= -100)
+                    {
+                        stopi = i;
+                        break;
+                    }
+                }
+            }
+            if (stopi > -1)
+            {
+                for (int j = stopi + 1;j < movecount; j++)
+                {
+                    if (positionstack[posidx].colourtomove == 1)
+                               { positionstack[posidx].movelist[j].calculatedvalue = -100; }
+                    if (positionstack[posidx].colourtomove == -1)
+                               { positionstack[posidx].movelist[j].calculatedvalue = 100; }
+                }
             }
             set_moveprioindex(posidx);
         }
@@ -1917,6 +1944,22 @@ namespace TheWeirdEngine
                 adjusteddepth = (int)Math.Round(((foundvalue + 100) * 10) + 1);
                 return Math.Min(newdepth, adjusteddepth);
             }
+        }
+        public int newdepth_if_presort_found_mate(int posidx, int pdepth)
+        {
+            int suggesteddepth = myenginesettings.presort_using_depth + 1;
+            if (pdepth <= suggesteddepth) { return pdepth; }
+            if (positionstack[posidx].colourtomove == 1 &
+                positionstack[posidx].movelist[positionstack[posidx].moveprioindex[0]].calculatedvalue >= 100)
+            {
+                return suggesteddepth;
+            }
+            if (positionstack[posidx].colourtomove == -1 &
+                positionstack[posidx].movelist[positionstack[posidx].moveprioindex[0]].calculatedvalue <= -100)
+            {
+                return suggesteddepth;
+            }
+            return pdepth;
         }
         public calculationresponse Calculation_tree_internal(int posidx, double alpha, double beta,
                                                                 int pdepth, bool SearchForFastestMate)
@@ -2048,7 +2091,6 @@ namespace TheWeirdEngine
                 }
             }
             //presort END
-
             if (t_prio_ordermatch > -1)
             {
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
@@ -2072,6 +2114,9 @@ namespace TheWeirdEngine
 
             int bestmoveidx = -1;
             double bestmovevalue = 0;
+
+            int newdepth = newdepth_if_presort_found_mate(posidx, pdepth);//returns pdepth by default
+
             if (positionstack[posidx].colourtomove == 1)
             {
                 bestmovevalue = -120;
@@ -2081,7 +2126,6 @@ namespace TheWeirdEngine
                 bestmovevalue = 120;
             }
             bool noescapecheck = true;
-            int newdepth = pdepth;
 
             for (int i = 0; i < movecount; i++)
             {

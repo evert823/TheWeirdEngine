@@ -312,7 +312,6 @@ namespace TheWeirdEngine
         {
             this.DisableGUI();
 
-            MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.SanityCheck();
 
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
