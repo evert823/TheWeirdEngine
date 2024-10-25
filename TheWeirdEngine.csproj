@@ -91,6 +91,7 @@
     <Compile Include="WeirdEngineBareKingMate.cs" />
     <Compile Include="WeirdEngineJson.cs" />
     <Compile Include="WeirdEngineMoveFinder.cs" />
+    <Compile Include="WeirdEngineMoveGenerator.cs" />
     <Compile Include="WeirdEnginePositionCompare.cs" />
     <EmbeddedResource Include="formWeirdEngineMain.resx">
       <DependentUpon>formWeirdEngineMain.cs</DependentUpon>

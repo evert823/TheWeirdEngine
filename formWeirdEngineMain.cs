@@ -264,19 +264,19 @@ namespace TheWeirdEngine
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(1);
             MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(MyWeirdEngineMoveFinder.positionstack[0], false));
             string s = "Check info :";
-            if (MyWeirdEngineMoveFinder.WhiteKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            if (MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.WhiteKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
             {
                 s += " white in check";
             }
-            if (MyWeirdEngineMoveFinder.BlackKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            if (MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.BlackKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
             {
                 s += " black in check";
             }
-            if (MyWeirdEngineMoveFinder.PMKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            if (MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.PMKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
             {
                 s += " PM in check";
             }
-            if (MyWeirdEngineMoveFinder.POKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            if (MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.POKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
             {
                 s += " PO in check";
             }
@@ -312,6 +312,21 @@ namespace TheWeirdEngine
         {
             this.DisableGUI();
 
+
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
+            this.EnableGUI();
+        }
+
+        private void switchPieceTypesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PositionGenerator MyPositionGenerator;
+            MyPositionGenerator = new PositionGenerator(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
+
+            string infilename = this.txtbOtherValues.Lines[0].ToString();
+            this.DisableGUI();
+            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
+            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
 
             this.pictureBox1.Invalidate();
             this.RefreshInformation();

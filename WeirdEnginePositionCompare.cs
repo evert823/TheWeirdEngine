@@ -159,7 +159,7 @@ namespace TheWeirdEngine
                     TransTable[itemidx].t_position.squares[i, j] = frompos.squares[i, j];
                 }
             }
-            MyWeirdEngineMoveFinder.SynchronizeChessmove(mv, ref TransTable[itemidx].bestmove);
+            MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.SynchronizeChessmove(mv, ref TransTable[itemidx].bestmove);
             TransTable[itemidx].used_depth = used_depth;
             TransTable[itemidx].used_alpha = used_alpha;
             TransTable[itemidx].used_beta = used_beta;
@@ -236,7 +236,7 @@ namespace TheWeirdEngine
 
             if (MyWeirdEngineMoveFinder.piecetypes[ptm].SpecialPiece_ind == SpecialPiece.Joker)
             {
-                ptm = MyWeirdEngineMoveFinder.jokersubspti(ref pposition, x_to, y_to, ptm);
+                ptm = MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.jokersubspti(ref pposition, x_to, y_to, ptm);
             }
             if (MyWeirdEngineMoveFinder.piecetypes[ptm].SpecialPiece_ind != SpecialPiece.Pawn)
             {

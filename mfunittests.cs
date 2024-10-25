@@ -220,7 +220,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(0);
 
-            if (MyWeirdEngineMoveFinder.POKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            if (MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.POKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
             {
                 //nothing
             }
@@ -236,7 +236,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
             calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(1);
 
-            if (MyWeirdEngineMoveFinder.PMKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
+            if (MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.PMKingIsInCheck(ref MyWeirdEngineMoveFinder.positionstack[0]) == true)
             {
                 //nothing
             }
