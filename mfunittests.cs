@@ -501,7 +501,7 @@ namespace TheWeirdEngine
             int movei = MyWeirdEngineMoveFinder.FindMove(MyWeirdEngineMoveFinder.positionstack[0], mytestmove);
             if (movei > -1)
             {
-                int newposidx = MyWeirdEngineMoveFinder.ExecuteMove(0, mytestmove,
+                int newposidx = MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.ExecuteMove(0, mytestmove,
                                                                     WeirdEngineMoveFinder.positionstack_size - 1);
                 if (newposidx == 1 & ppositionfilename == "13A_ExecuteMove_white_01"
                     & MyWeirdEngineMoveFinder.positionstack[newposidx].BlackElfMoveType == MoveType.other)

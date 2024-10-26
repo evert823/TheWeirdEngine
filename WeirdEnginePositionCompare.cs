@@ -71,16 +71,7 @@ namespace TheWeirdEngine
             ttitem.used_alpha = 0;
             ttitem.used_beta = 0;
             ttitem.calculated_value = 0;
-
-            ttitem.bestmove.MovingPiece = 0;
-            ttitem.bestmove.coordinates = null;
-            ttitem.bestmove.coordinates = new int[4] { 0, 0, 0, 0 };
-            ttitem.bestmove.IsEnPassant = false;
-            ttitem.bestmove.IsCapture = false;
-            ttitem.bestmove.IsCastling = false;
-            ttitem.bestmove.othercoordinates = null;
-            ttitem.bestmove.othercoordinates = new int[4] { -1, -1, -1, -1 };
-            ttitem.bestmove.PromoteToPiece = 0;
+            MyWeirdEngineMoveFinder.Init_chessmove(ref ttitem.bestmove);
         }
         public void AllocateTransTable()
         {

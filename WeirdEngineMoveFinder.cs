@@ -31,6 +31,7 @@ namespace TheWeirdEngine
         public double posvalue;
         public int moveidx;
         public bool POKingIsInCheck;
+        public bool ForcedDraw;
     }
     public struct vector
     {
@@ -301,6 +302,19 @@ namespace TheWeirdEngine
             pposition.WhiteHasElf = false;
             pposition.BlackHasElf = false;
         }
+        public void Init_chessmove(ref chessmove mv)
+        {
+            mv.MovingPiece = 0;
+            mv.coordinates = null;
+            mv.coordinates = new int[4] { 0, 0, 0, 0 };
+            mv.IsEnPassant = false;
+            mv.IsCapture = false;
+            mv.IsCastling = false;
+            mv.othercoordinates = null;
+            mv.othercoordinates = new int[4] { -1, -1, -1, -1 };
+            mv.PromoteToPiece = 0;
+            mv.calculatedvalue = 0;
+        }
         public void AllocateMovelist(ref chessposition pposition)
         {
             pposition.movelist = null;
@@ -308,14 +322,7 @@ namespace TheWeirdEngine
             pposition.moveprioindex = new int[movelist_allocated];
             for (int mi = 0; mi < movelist_allocated; mi++)
             {
-                pposition.movelist[mi].MovingPiece = 0;
-                pposition.movelist[mi].coordinates = new int[4] { 0, 0, 0, 0};
-                pposition.movelist[mi].IsEnPassant = false;
-                pposition.movelist[mi].IsCapture = false;
-                pposition.movelist[mi].IsCastling = false;
-                pposition.movelist[mi].othercoordinates = new int[4] { -1, -1, -1, -1 };
-                pposition.movelist[mi].PromoteToPiece = 0;
-                pposition.movelist[mi].calculatedvalue = 0;
+                Init_chessmove(ref pposition.movelist[mi]);
             }
         }
         public double PieceType2Value(int pti)
@@ -810,6 +817,7 @@ namespace TheWeirdEngine
                 myresult.posvalue = 0;
                 myresult.moveidx = -1;
                 myresult.POKingIsInCheck = false;
+                myresult.ForcedDraw = false;
                 return myresult;
             }
             if (IsValidPosition(ref positionstack[0]) == false)
@@ -819,6 +827,7 @@ namespace TheWeirdEngine
                 myresult.posvalue = 0;
                 myresult.moveidx = -1;
                 myresult.POKingIsInCheck = false;
+                myresult.ForcedDraw = false;
                 return myresult;
             }
 
@@ -844,6 +853,67 @@ namespace TheWeirdEngine
                     + " available " + MyWeirdEnginePositionCompare.TransTable_no_items_available.ToString());
 
                 MyWeirdEngineJson.DumpTranspositionTable();
+            }
+            return myresult;
+        }
+        public bool StopConditionIterativeDeepening(calculationresponse myresult, int dynamic_depth, int external_depth)
+        {
+            bool mystop = false;
+            if (externalabort == true) { mystop = true; }
+            if (dynamic_depth > external_depth) { mystop = true; }
+            if (myresult.posvalue == -100) { mystop = true; }
+            if (myresult.posvalue == 100) { mystop = true; }
+            if (myresult.POKingIsInCheck == true) { mystop = true; }
+            if (myresult.ForcedDraw == true) { mystop = true; }
+            //for mate in a couple of moves
+            if (myresult.posvalue < -95) { mystop = true; }
+            if (myresult.posvalue > 95) { mystop = true; }
+
+            return mystop;
+        }
+        public calculationresponse DoIterativeDeepening(int external_depth)
+        {
+            calculationresponse myresult;
+            myresult.posvalue = 0;
+            myresult.moveidx = -1;
+            myresult.POKingIsInCheck = false;
+
+            double startalpha = -100;
+            double startbeta = 100;
+
+            chessmove mycandidatemove = new chessmove();
+            Init_chessmove(ref mycandidatemove);
+
+            int dynamic_depth;
+
+            dynamic_depth = Math.Min(external_depth, 3);
+
+            //TEMPORARY
+            //Code for 'PRESORT' must be removed
+            //Because that's already part of iterative deepening
+            //but for now we only disable it
+            myenginesettings.presort_when_depth_gt = 100;//very high value
+            //TEMPORARY
+
+            myresult = Calculation_tree_internal(0, startalpha, startbeta, dynamic_depth,
+                                       myenginesettings.setting_SearchForFastestMate);
+            while (StopConditionIterativeDeepening(myresult, dynamic_depth, external_depth) == false)
+            {
+                if (externalabort == false)
+                {
+                    MyWeirdEngineMoveGenerator.SynchronizeChessmove(positionstack[0].movelist[myresult.moveidx],
+                                                                    ref mycandidatemove);
+                }
+                set_moveprioindex(0);
+                if (dynamic_depth >= myenginesettings.display_when_depth_gt)
+                {
+                    string s = "List after sorting : ";
+                    s += this.MyWeirdEngineJson.DisplayMovelist(positionstack[0], true);
+                    this.MyWeirdEngineJson.writelog(s);
+                }
+                dynamic_depth++;
+                myresult = Calculation_tree_internal(0, startalpha, startbeta, dynamic_depth,
+                                           myenginesettings.setting_SearchForFastestMate);
             }
             return myresult;
         }
@@ -919,7 +989,7 @@ namespace TheWeirdEngine
 
             for (int i = 0; i < movecount; i++)
             {
-                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
+                int newposidx = MyWeirdEngineMoveGenerator.ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, alpha, beta,
                                                                      myenginesettings.presort_using_depth, false);
                 positionstack[posidx].movelist[i].calculatedvalue = newresponse.posvalue;
@@ -999,12 +1069,14 @@ namespace TheWeirdEngine
             myresult.posvalue = 0.0;
             myresult.moveidx = -1;
             myresult.POKingIsInCheck = false;
+            myresult.ForcedDraw = false;
 
             MyWeirdEnginePositionCompare.SetRepetitionCounter(posidx);
             if (positionstack[posidx].RepetitionCounter >= 2)
             {
                 //MessageBox.Show("Found 2fold rep situation");
                 myresult.posvalue = 0.0;
+                myresult.ForcedDraw = true;
                 return myresult;
             }
 
@@ -1046,6 +1118,7 @@ namespace TheWeirdEngine
             if (DrawByMaterial(ref positionstack[posidx]) == true)
             {
                 myresult.posvalue = 0.0;
+                myresult.ForcedDraw = true;
                 return myresult;
             }
 
@@ -1158,7 +1231,7 @@ namespace TheWeirdEngine
 
             for (int i = 0; i < movecount; i++)
             {
-                int newposidx = ExecuteMove(posidx, positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], prevposidx);
+                int newposidx = MyWeirdEngineMoveGenerator.ExecuteMove(posidx, positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], prevposidx);
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, new_alpha, new_beta,
                                                                                newdepth - 1, SearchForFastestMate);
                 positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]].calculatedvalue = newresponse.posvalue;
@@ -1227,6 +1300,7 @@ namespace TheWeirdEngine
             if (MyWeirdEngineMoveGenerator.PMKingIsInCheck(ref positionstack[posidx]) == false & noescapecheck == true)
             {
                 myresult.posvalue = 0;
+                myresult.ForcedDraw = true;
                 return myresult;
             }
 
@@ -1266,195 +1340,6 @@ namespace TheWeirdEngine
             }
 
             return myresult;
-        }
-        public void ApplyImitators(int posidx, int newposidx, chessmove pmove, int pti)
-        {
-            //JokerInfo begin
-            if (positionstack[posidx].colourtomove == 1)
-            {
-                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
-                {
-                    positionstack[newposidx].BlackJokerSubstitute_pti = positionstack[posidx].WhiteJokerSubstitute_pti;
-                }
-                else if (positionstack[posidx].BlackHasJoker == false)
-                {
-                    positionstack[newposidx].BlackJokerSubstitute_pti = -1;
-                }
-                else if (pmove.PromoteToPiece != 0)
-                {
-                    positionstack[newposidx].BlackJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
-                }
-                else
-                {
-                    positionstack[newposidx].BlackJokerSubstitute_pti = pti;
-                }
-            }
-            else
-            {
-                if (piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
-                {
-                    positionstack[newposidx].WhiteJokerSubstitute_pti = positionstack[posidx].BlackJokerSubstitute_pti;
-                }
-                else if (positionstack[posidx].WhiteHasJoker == false)
-                {
-                    positionstack[newposidx].WhiteJokerSubstitute_pti = -1;
-                }
-                else if (pmove.PromoteToPiece != 0)
-                {
-                    positionstack[newposidx].WhiteJokerSubstitute_pti = pieceTypeIndex(pmove.PromoteToPiece);
-                }
-                else
-                {
-                    positionstack[newposidx].WhiteJokerSubstitute_pti = pti;
-                }
-            }
-            //JokerInfo end
-
-            //ElfInfo begin
-            if (positionstack[posidx].colourtomove == 1)
-            {
-                if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & pmove.IsCapture == true)
-                {
-                    //special move
-                    positionstack[newposidx].BlackElfMoveType = MoveType.other;
-                }
-                else if (pmove.IsCapture == true)
-                {
-                    positionstack[newposidx].BlackElfMoveType = MoveType.Capture;
-                }
-                else if (positionstack[posidx].BlackHasElf == false)
-                {
-                    positionstack[newposidx].BlackElfMoveType = MoveType.other;
-                }
-                else
-                {
-                    positionstack[newposidx].BlackElfMoveType = MoveType.Noncapture;
-                }
-            }
-            else
-            {
-                if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & pmove.IsCapture == true)
-                {
-                    //special move
-                    positionstack[newposidx].WhiteElfMoveType = MoveType.other;
-                }
-                else if (pmove.IsCapture == true)
-                {
-                    positionstack[newposidx].WhiteElfMoveType = MoveType.Capture;
-                }
-                else if (positionstack[posidx].WhiteHasElf == false)
-                {
-                    positionstack[newposidx].WhiteElfMoveType = MoveType.other;
-                }
-                else
-                {
-                    positionstack[newposidx].WhiteElfMoveType = MoveType.Noncapture;
-                }
-            }
-            //ElfInfo end
-
-        }
-        public int ExecuteMove(int posidx, chessmove pmove, int prevposidx)
-        {
-            int newposidx = posidx + 1;
-            int pti = pieceTypeIndex(pmove.MovingPiece);
-
-            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & prevposidx >= 0 & pmove.IsCapture == true)
-            {
-                SynchronizePosition(ref positionstack[prevposidx], ref positionstack[newposidx]);
-            }
-            else
-            {
-                SynchronizePosition(ref positionstack[posidx], ref positionstack[newposidx]);
-            }
-
-            int i1 = pmove.coordinates[0];
-            int j1 = pmove.coordinates[1];
-            int i2 = pmove.coordinates[2];
-            int j2 = pmove.coordinates[3];
-            int i_qr = -1;
-            int i_kr = -1;
-
-            positionstack[newposidx].precedingmove[0] = i1;
-            positionstack[newposidx].precedingmove[1] = j1;
-            positionstack[newposidx].precedingmove[2] = i2;
-            positionstack[newposidx].precedingmove[3] = j2;
-
-            if (pmove.PromoteToPiece != 0)
-            {
-                positionstack[newposidx].squares[i2, j2] = pmove.PromoteToPiece;
-            }
-            else
-            {
-                positionstack[newposidx].squares[i2, j2] = pmove.MovingPiece;
-            }
-            this.positionstack[newposidx].squares[i1, j1] = 0;
-
-            //Set castling info for new position BEGIN
-            if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.King)
-            {
-                if (positionstack[posidx].colourtomove == 1)
-                {
-                    positionstack[newposidx].whitekinghasmoved = true;
-                }
-                else
-                {
-                    positionstack[newposidx].blackkinghasmoved = true;
-                }
-            }
-            else if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Rook)
-            {
-                if (this.positionstack[posidx].colourtomove == 1)
-                {
-                    i_qr = positionstack[posidx].whitequeensiderookcoord.x;
-                    i_kr = positionstack[posidx].whitekingsiderookcoord.x;
-                    if (i1 == i_qr) { positionstack[newposidx].whitequeensiderookhasmoved = true; }
-                    else if (i1 == i_kr) { positionstack[newposidx].whitekingsiderookhasmoved = true; }
-                }
-                else
-                {
-                    i_qr = positionstack[posidx].blackqueensiderookcoord.x;
-                    i_kr = positionstack[posidx].blackkingsiderookcoord.x;
-                    if (i1 == i_qr) { positionstack[newposidx].blackqueensiderookhasmoved = true; }
-                    else if (i1 == i_kr) { positionstack[newposidx].blackkingsiderookhasmoved = true; }
-
-                }
-            }
-            //Set castling info for new position END
-
-            if (pmove.IsEnPassant == true)
-            {
-                int io1 = pmove.othercoordinates[0];
-                int jo1 = pmove.othercoordinates[1];
-                positionstack[newposidx].squares[io1, jo1] = 0;
-            }
-            if (pmove.IsCastling == true)
-            {
-                int io1 = pmove.othercoordinates[0];
-                int jo1 = pmove.othercoordinates[1];
-                int io2 = pmove.othercoordinates[2];
-                int jo2 = pmove.othercoordinates[3];
-                int otherpiece = this.positionstack[newposidx].squares[io1, jo1];
-                if (io1 != i2)
-                {
-                    positionstack[newposidx].squares[io1, jo1] = 0;
-                }
-                positionstack[newposidx].squares[io2, jo2] = otherpiece;
-            }
-
-            if (positionstack[posidx].colourtomove == 1)
-            {
-                positionstack[newposidx].colourtomove = -1;
-            }
-            else
-            {
-                positionstack[newposidx].colourtomove = 1;
-            }
-
-            ApplyImitators(posidx, newposidx, pmove, pti);
-
-
-            return newposidx;
         }
     }
 }

@@ -997,5 +997,195 @@ namespace TheWeirdEngine
                 //DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }
         }
+
+        public void ApplyImitators(int posidx, int newposidx, chessmove pmove, int pti)
+        {
+            //JokerInfo begin
+            if (MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove == 1)
+            {
+                if (MyWeirdEngineMoveFinder.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].BlackJokerSubstitute_pti = MyWeirdEngineMoveFinder.positionstack[posidx].WhiteJokerSubstitute_pti;
+                }
+                else if (MyWeirdEngineMoveFinder.positionstack[posidx].BlackHasJoker == false)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].BlackJokerSubstitute_pti = -1;
+                }
+                else if (pmove.PromoteToPiece != 0)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].BlackJokerSubstitute_pti = MyWeirdEngineMoveFinder.pieceTypeIndex(pmove.PromoteToPiece);
+                }
+                else
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].BlackJokerSubstitute_pti = pti;
+                }
+            }
+            else
+            {
+                if (MyWeirdEngineMoveFinder.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteJokerSubstitute_pti = MyWeirdEngineMoveFinder.positionstack[posidx].BlackJokerSubstitute_pti;
+                }
+                else if (MyWeirdEngineMoveFinder.positionstack[posidx].WhiteHasJoker == false)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteJokerSubstitute_pti = -1;
+                }
+                else if (pmove.PromoteToPiece != 0)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteJokerSubstitute_pti = MyWeirdEngineMoveFinder.pieceTypeIndex(pmove.PromoteToPiece);
+                }
+                else
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteJokerSubstitute_pti = pti;
+                }
+            }
+            //JokerInfo end
+
+            //ElfInfo begin
+            if (MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove == 1)
+            {
+                if (MyWeirdEngineMoveFinder.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & pmove.IsCapture == true)
+                {
+                    //special move
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].BlackElfMoveType = MoveType.other;
+                }
+                else if (pmove.IsCapture == true)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].BlackElfMoveType = MoveType.Capture;
+                }
+                else if (MyWeirdEngineMoveFinder.positionstack[posidx].BlackHasElf == false)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].BlackElfMoveType = MoveType.other;
+                }
+                else
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].BlackElfMoveType = MoveType.Noncapture;
+                }
+            }
+            else
+            {
+                if (MyWeirdEngineMoveFinder.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & pmove.IsCapture == true)
+                {
+                    //special move
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteElfMoveType = MoveType.other;
+                }
+                else if (pmove.IsCapture == true)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteElfMoveType = MoveType.Capture;
+                }
+                else if (MyWeirdEngineMoveFinder.positionstack[posidx].WhiteHasElf == false)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteElfMoveType = MoveType.other;
+                }
+                else
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].WhiteElfMoveType = MoveType.Noncapture;
+                }
+            }
+            //ElfInfo end
+
+        }
+        public int ExecuteMove(int posidx, chessmove pmove, int prevposidx)
+        {
+            int newposidx = posidx + 1;
+            int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(pmove.MovingPiece);
+
+            if (MyWeirdEngineMoveFinder.piecetypes[pti].SpecialPiece_ind == SpecialPiece.TimeThief & prevposidx >= 0 & pmove.IsCapture == true)
+            {
+                MyWeirdEngineMoveFinder.SynchronizePosition(ref MyWeirdEngineMoveFinder.positionstack[prevposidx], ref MyWeirdEngineMoveFinder.positionstack[newposidx]);
+            }
+            else
+            {
+                MyWeirdEngineMoveFinder.SynchronizePosition(ref MyWeirdEngineMoveFinder.positionstack[posidx], ref MyWeirdEngineMoveFinder.positionstack[newposidx]);
+            }
+
+            int i1 = pmove.coordinates[0];
+            int j1 = pmove.coordinates[1];
+            int i2 = pmove.coordinates[2];
+            int j2 = pmove.coordinates[3];
+            int i_qr = -1;
+            int i_kr = -1;
+
+            MyWeirdEngineMoveFinder.positionstack[newposidx].precedingmove[0] = i1;
+            MyWeirdEngineMoveFinder.positionstack[newposidx].precedingmove[1] = j1;
+            MyWeirdEngineMoveFinder.positionstack[newposidx].precedingmove[2] = i2;
+            MyWeirdEngineMoveFinder.positionstack[newposidx].precedingmove[3] = j2;
+
+            if (pmove.PromoteToPiece != 0)
+            {
+                MyWeirdEngineMoveFinder.positionstack[newposidx].squares[i2, j2] = pmove.PromoteToPiece;
+            }
+            else
+            {
+                MyWeirdEngineMoveFinder.positionstack[newposidx].squares[i2, j2] = pmove.MovingPiece;
+            }
+            this.MyWeirdEngineMoveFinder.positionstack[newposidx].squares[i1, j1] = 0;
+
+            //Set castling info for new position BEGIN
+            if (MyWeirdEngineMoveFinder.piecetypes[pti].SpecialPiece_ind == SpecialPiece.King)
+            {
+                if (MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove == 1)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].whitekinghasmoved = true;
+                }
+                else
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].blackkinghasmoved = true;
+                }
+            }
+            else if (MyWeirdEngineMoveFinder.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Rook)
+            {
+                if (this.MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove == 1)
+                {
+                    i_qr = MyWeirdEngineMoveFinder.positionstack[posidx].whitequeensiderookcoord.x;
+                    i_kr = MyWeirdEngineMoveFinder.positionstack[posidx].whitekingsiderookcoord.x;
+                    if (i1 == i_qr) { MyWeirdEngineMoveFinder.positionstack[newposidx].whitequeensiderookhasmoved = true; }
+                    else if (i1 == i_kr) { MyWeirdEngineMoveFinder.positionstack[newposidx].whitekingsiderookhasmoved = true; }
+                }
+                else
+                {
+                    i_qr = MyWeirdEngineMoveFinder.positionstack[posidx].blackqueensiderookcoord.x;
+                    i_kr = MyWeirdEngineMoveFinder.positionstack[posidx].blackkingsiderookcoord.x;
+                    if (i1 == i_qr) { MyWeirdEngineMoveFinder.positionstack[newposidx].blackqueensiderookhasmoved = true; }
+                    else if (i1 == i_kr) { MyWeirdEngineMoveFinder.positionstack[newposidx].blackkingsiderookhasmoved = true; }
+
+                }
+            }
+            //Set castling info for new position END
+
+            if (pmove.IsEnPassant == true)
+            {
+                int io1 = pmove.othercoordinates[0];
+                int jo1 = pmove.othercoordinates[1];
+                MyWeirdEngineMoveFinder.positionstack[newposidx].squares[io1, jo1] = 0;
+            }
+            if (pmove.IsCastling == true)
+            {
+                int io1 = pmove.othercoordinates[0];
+                int jo1 = pmove.othercoordinates[1];
+                int io2 = pmove.othercoordinates[2];
+                int jo2 = pmove.othercoordinates[3];
+                int otherpiece = this.MyWeirdEngineMoveFinder.positionstack[newposidx].squares[io1, jo1];
+                if (io1 != i2)
+                {
+                    MyWeirdEngineMoveFinder.positionstack[newposidx].squares[io1, jo1] = 0;
+                }
+                MyWeirdEngineMoveFinder.positionstack[newposidx].squares[io2, jo2] = otherpiece;
+            }
+
+            if (MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove == 1)
+            {
+                MyWeirdEngineMoveFinder.positionstack[newposidx].colourtomove = -1;
+            }
+            else
+            {
+                MyWeirdEngineMoveFinder.positionstack[newposidx].colourtomove = 1;
+            }
+
+            ApplyImitators(posidx, newposidx, pmove, pti);
+
+
+            return newposidx;
+        }
     }
 }
