@@ -805,11 +805,6 @@ namespace TheWeirdEngine
             this.MyWeirdEngineJson.SetLogfilename();
             calculationresponse myresult;
 
-            if (myenginesettings.display_when_depth_gt < requested_depth - 2 & requested_depth > 8)
-            {
-                myenginesettings.display_when_depth_gt = requested_depth - 2;
-            }
-
             if (myenginesettings.consult_tt_when_depth_gt > myenginesettings.store_in_tt_when_depth_gt)
             {
                 MyWeirdEngineJson.writelog("Invalid settings");
@@ -842,8 +837,11 @@ namespace TheWeirdEngine
 
             this.nodecount = 0;
             this.externalabort = false;
+
+            //This is the change for iterative deepening
+            //myresult = DoIterativeDeepening(requested_depth);
             myresult = this.Calculation_tree_internal(0, -100, 100, requested_depth,
-                                      this.myenginesettings.setting_SearchForFastestMate);
+                       this.myenginesettings.setting_SearchForFastestMate, false);
 
             if (requested_depth > myenginesettings.display_when_depth_gt)
             {
@@ -888,15 +886,11 @@ namespace TheWeirdEngine
 
             dynamic_depth = Math.Min(external_depth, 3);
 
-            //TEMPORARY
-            //Code for 'PRESORT' must be removed
-            //Because that's already part of iterative deepening
-            //but for now we only disable it
-            myenginesettings.presort_when_depth_gt = 100;//very high value
-            //TEMPORARY
+            //Not sure if presort should eventually be eliminated
+            //myenginesettings.presort_when_depth_gt = 100;//very high value
 
             myresult = Calculation_tree_internal(0, startalpha, startbeta, dynamic_depth,
-                                       myenginesettings.setting_SearchForFastestMate);
+                                       myenginesettings.setting_SearchForFastestMate, false);
             while (StopConditionIterativeDeepening(myresult, dynamic_depth, external_depth) == false)
             {
                 if (externalabort == false)
@@ -905,15 +899,15 @@ namespace TheWeirdEngine
                                                                     ref mycandidatemove);
                 }
                 set_moveprioindex(0);
-                if (dynamic_depth >= myenginesettings.display_when_depth_gt)
-                {
-                    string s = "List after sorting : ";
-                    s += this.MyWeirdEngineJson.DisplayMovelist(positionstack[0], true);
-                    this.MyWeirdEngineJson.writelog(s);
-                }
+
+                string s = "dynamic_depth : " + dynamic_depth.ToString();
+                s += " list after sorting : ";
+                s += this.MyWeirdEngineJson.DisplayMovelist(positionstack[0], true);
+                this.MyWeirdEngineJson.writelog(s);
+
                 dynamic_depth++;
                 myresult = Calculation_tree_internal(0, startalpha, startbeta, dynamic_depth,
-                                           myenginesettings.setting_SearchForFastestMate);
+                                           myenginesettings.setting_SearchForFastestMate, true);
             }
             return myresult;
         }
@@ -991,7 +985,7 @@ namespace TheWeirdEngine
             {
                 int newposidx = MyWeirdEngineMoveGenerator.ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, alpha, beta,
-                                                                     myenginesettings.presort_using_depth, false);
+                                                                     myenginesettings.presort_using_depth, false, false);
                 positionstack[posidx].movelist[i].calculatedvalue = newresponse.posvalue;
                 if (positionstack[posidx].colourtomove == 1)
                 {
@@ -1061,15 +1055,22 @@ namespace TheWeirdEngine
             return pdepth;
         }
         public calculationresponse Calculation_tree_internal(int posidx, double alpha, double beta,
-                                                                int pdepth, bool SearchForFastestMate)
+                                                                int pdepth, bool SearchForFastestMate,
+                                                                bool use_moves_prio_on_0_f)
         {
             if (pdepth > 2) { Application.DoEvents(); }
+
             this.nodecount += 1;
             calculationresponse myresult;
             myresult.posvalue = 0.0;
             myresult.moveidx = -1;
             myresult.POKingIsInCheck = false;
             myresult.ForcedDraw = false;
+
+            if (this.externalabort == true)
+            {
+                return myresult;
+            }
 
             MyWeirdEnginePositionCompare.SetRepetitionCounter(posidx);
             if (positionstack[posidx].RepetitionCounter >= 2)
@@ -1099,7 +1100,11 @@ namespace TheWeirdEngine
                     prevposidx = positionstack.Length - 1;
                 }
             }
-            MyWeirdEngineMoveGenerator.GetAttacksMoves(ref positionstack[posidx], pdepth, prevposidx);
+
+            if (use_moves_prio_on_0_f == false)
+            {
+                MyWeirdEngineMoveGenerator.GetAttacksMoves(ref positionstack[posidx], pdepth, prevposidx);
+            }
 
             if (MyWeirdEngineMoveGenerator.POKingIsInCheck(ref positionstack[posidx]) == true)
             {
@@ -1170,12 +1175,8 @@ namespace TheWeirdEngine
             double new_beta = beta;
 
             //presort BEGIN
-            if (pdepth > this.myenginesettings.presort_when_depth_gt)
+            if (pdepth > this.myenginesettings.presort_when_depth_gt & use_moves_prio_on_0_f == false)
             {
-                if (this.externalabort == true)
-                {
-                    return myresult;
-                }
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
                     string s = "List before sorting : ";
@@ -1193,7 +1194,7 @@ namespace TheWeirdEngine
                 }
             }
             //presort END
-            if (t_prio_ordermatch > -1)
+            if (t_prio_ordermatch > -1 & use_moves_prio_on_0_f == false)
             {
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
@@ -1233,7 +1234,7 @@ namespace TheWeirdEngine
             {
                 int newposidx = MyWeirdEngineMoveGenerator.ExecuteMove(posidx, positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], prevposidx);
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, new_alpha, new_beta,
-                                                                               newdepth - 1, SearchForFastestMate);
+                                                                               newdepth - 1, SearchForFastestMate, false);
                 positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]].calculatedvalue = newresponse.posvalue;
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {

@@ -46,6 +46,7 @@ namespace TheWeirdEngine
             MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
             MyWeirdEngineJson.LoadPositionJson(MyWeirdEngineJson.jsonsourcepath + "positions", "bulldogmainposition");
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", "bulldogmainposition");
+            MyWeirdEngineJson.LoadEngineSettingsFromJson("enginesettings");
 
             MyBoardPainter = new BoardPainter(this.MyWeirdEngineMoveFinder, this.pictureBox1);
             this.SelectResourcesFolder();
