@@ -166,6 +166,20 @@ namespace TheWeirdEngine
                     case 9: s = "j"; break;
                     case 10: s = "k"; break;
                     case 11: s = "l"; break;
+                    case 12: s = "m"; break;
+                    case 13: s = "n"; break;
+                    case 14: s = "o"; break;
+                    case 15: s = "p"; break;
+                    case 16: s = "q"; break;
+                    case 17: s = "r"; break;
+                    case 18: s = "s"; break;
+                    case 19: s = "t"; break;
+                    case 20: s = "u"; break;
+                    case 21: s = "v"; break;
+                    case 22: s = "w"; break;
+                    case 23: s = "x"; break;
+                    case 24: s = "y"; break;
+                    case 25: s = "z"; break;
                 }
                 g.DrawString(s, MyFont, Brushes.White, MyPoint);
             }

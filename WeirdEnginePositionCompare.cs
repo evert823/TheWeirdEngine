@@ -26,6 +26,7 @@ namespace TheWeirdEngine
         public double used_alpha;
         public double used_beta;
         public double calculated_value;
+        public int number_of_no_selfcheck_moves;
         public chessmove bestmove;
     }
     public class WeirdEnginePositionCompare
@@ -71,6 +72,7 @@ namespace TheWeirdEngine
             ttitem.used_alpha = 0;
             ttitem.used_beta = 0;
             ttitem.calculated_value = 0;
+            ttitem.number_of_no_selfcheck_moves = 0;
             MyWeirdEngineMoveFinder.Init_chessmove(ref ttitem.bestmove);
         }
         public void AllocateTransTable()
@@ -92,7 +94,8 @@ namespace TheWeirdEngine
                                                          int used_depth,
                                                          double used_alpha,
                                                          double used_beta,
-                                                         double calculated_value)
+                                                         double calculated_value,
+                                                         int number_of_no_selfcheck_moves)
         {
             
             if (t_naive_match > -1)
@@ -105,7 +108,8 @@ namespace TheWeirdEngine
             if (TransTable_no_items_available < TransTable_no_items_allocated)
             {
                 StoreIntoTransTable(frompos, TransTable_no_items_available, mv,
-                                    used_depth, used_alpha, used_beta, calculated_value);
+                                    used_depth, used_alpha, used_beta, calculated_value,
+                                    number_of_no_selfcheck_moves);
                 TransTable_no_items_available += 1;
                 return;
             }
@@ -114,14 +118,16 @@ namespace TheWeirdEngine
                 dumbcursor = 0;
             }
             StoreIntoTransTable(frompos, dumbcursor, mv,
-                                    used_depth, used_alpha, used_beta, calculated_value);
+                                    used_depth, used_alpha, used_beta, calculated_value,
+                                    number_of_no_selfcheck_moves);
             dumbcursor += 1;
         }
         public void StoreIntoTransTable(chessposition frompos, int itemidx, chessmove mv,
                                                                int used_depth,
                                                                double used_alpha,
                                                                double used_beta,
-                                                               double calculated_value)
+                                                               double calculated_value,
+                                                               int number_of_no_selfcheck_moves)
         {
             TransTable[itemidx].t_position.boardwidth = frompos.boardwidth;
             TransTable[itemidx].t_position.boardheight = frompos.boardheight;
@@ -155,6 +161,7 @@ namespace TheWeirdEngine
             TransTable[itemidx].used_alpha = used_alpha;
             TransTable[itemidx].used_beta = used_beta;
             TransTable[itemidx].calculated_value = calculated_value;
+            TransTable[itemidx].number_of_no_selfcheck_moves = number_of_no_selfcheck_moves;
         }
         public bool alpha_beta_compatible(int p, double current_alpha, double current_beta)
         {

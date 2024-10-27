@@ -32,6 +32,7 @@ namespace TheWeirdEngine
         public int moveidx;
         public bool POKingIsInCheck;
         public bool ForcedDraw;
+        public int number_of_no_selfcheck_resp;
     }
     public struct vector
     {
@@ -82,6 +83,7 @@ namespace TheWeirdEngine
         public SpecialPiece SpecialPiece_ind;
         public bool IsDivergent;
         public bool CheckDuplicateMoves;
+        public double EstimatedValue;
         public vector[] stepleapmovevectors;
         public vector[] slidemovevectors;
         public vector[] stepleapcapturevectors;
@@ -94,11 +96,13 @@ namespace TheWeirdEngine
         public int[] coordinates;
         public bool IsEnPassant;
         public bool IsCapture;
+        public double CapturedValue;
         public bool IsCastling;
         //othercoordinates will give the Rook that co-moves with castling, or the pawn captured en passant
         public int[] othercoordinates;
         public int PromoteToPiece;
         public double calculatedvalue;
+        public int number_of_no_selfcheck_resp;
     }
     public struct BoardTopology
     {
@@ -309,11 +313,13 @@ namespace TheWeirdEngine
             mv.coordinates = new int[4] { 0, 0, 0, 0 };
             mv.IsEnPassant = false;
             mv.IsCapture = false;
+            mv.CapturedValue = 0.0;
             mv.IsCastling = false;
             mv.othercoordinates = null;
             mv.othercoordinates = new int[4] { -1, -1, -1, -1 };
             mv.PromoteToPiece = 0;
             mv.calculatedvalue = 0;
+            mv.number_of_no_selfcheck_resp = 0;
         }
         public void AllocateMovelist(ref chessposition pposition)
         {
@@ -323,34 +329,6 @@ namespace TheWeirdEngine
             for (int mi = 0; mi < movelist_allocated; mi++)
             {
                 Init_chessmove(ref pposition.movelist[mi]);
-            }
-        }
-        public double PieceType2Value(int pti)
-        {
-            switch (this.piecetypes[pti].name)
-            {
-                case "King":
-                    return 1000.0;
-                case "Queen":
-                    return 9.1;
-                case "Rook":
-                    return 5.0;
-                case "Bishop":
-                    return 3.01;
-                case "Knight":
-                    return 3.0;
-                case "Pawn":
-                    return 1.0;
-                case "Archbishop":
-                    return 8.3;
-                case "Chancellor":
-                    return 8.4;
-                case "Guard":
-                    return 4.0;
-                case "Hunter":
-                    return 4.9;
-                default:
-                    return 2.05;
             }
         }
         public int pieceTypeIndex(int psquare)
@@ -602,11 +580,11 @@ namespace TheWeirdEngine
                         {
                             if (pposition.squares[i, j] > 0)
                             {
-                                materialbalance += this.PieceType2Value(pti);
+                                materialbalance += piecetypes[pti].EstimatedValue;
                             }
                             else
                             {
-                                materialbalance -= this.PieceType2Value(pti);
+                                materialbalance -= piecetypes[pti].EstimatedValue;
                             }
                         }
                     }
@@ -813,6 +791,7 @@ namespace TheWeirdEngine
                 myresult.moveidx = -1;
                 myresult.POKingIsInCheck = false;
                 myresult.ForcedDraw = false;
+                myresult.number_of_no_selfcheck_resp = 0;
                 return myresult;
             }
             if (IsValidPosition(ref positionstack[0]) == false)
@@ -823,6 +802,7 @@ namespace TheWeirdEngine
                 myresult.moveidx = -1;
                 myresult.POKingIsInCheck = false;
                 myresult.ForcedDraw = false;
+                myresult.number_of_no_selfcheck_resp = 0;
                 return myresult;
             }
 
@@ -837,11 +817,15 @@ namespace TheWeirdEngine
 
             this.nodecount = 0;
             this.externalabort = false;
+            DateTime startdatetime = DateTime.Now;
 
             //This is the change for iterative deepening
             //myresult = DoIterativeDeepening(requested_depth);
             myresult = this.Calculation_tree_internal(0, -100, 100, requested_depth,
                        this.myenginesettings.setting_SearchForFastestMate, false);
+
+            DateTime enddatetime = DateTime.Now;
+            TimeSpan duration = enddatetime - startdatetime;
 
             if (requested_depth > myenginesettings.display_when_depth_gt)
             {
@@ -850,6 +834,7 @@ namespace TheWeirdEngine
                     this.MyWeirdEnginePositionCompare.TransTable_no_positions_reused.ToString()
                     + " available " + MyWeirdEnginePositionCompare.TransTable_no_items_available.ToString());
 
+                MyWeirdEngineJson.writelog("duration : " + duration.ToString());
                 MyWeirdEngineJson.DumpTranspositionTable();
             }
             return myresult;
@@ -950,30 +935,60 @@ namespace TheWeirdEngine
                 }
             }
         }
-        public void set_moveprioindex(int posidx)
+        public bool moveA_prio_before_moveB(int colourtomove, chessmove moveA, chessmove moveB)
         {
-            int movecount = positionstack[posidx].movelist_totalfound;
-            movePrioItem[] workarray = new movePrioItem[movecount];
-
-            for (int i = 0; i < movecount; i++)
+            if (colourtomove == 1)
             {
-                workarray[i].moveidx = i;
-                workarray[i].movevalue = positionstack[posidx].movelist[i].calculatedvalue;
-            }
-
-            if (positionstack[posidx].colourtomove == 1)
-            {
-                //order list by movevalue descending so best move for white first
-                Array.Sort<movePrioItem>(workarray, (x, y) => y.movevalue.CompareTo(x.movevalue));
+                if (moveA.calculatedvalue > moveB.calculatedvalue) { return true; }
+                if (moveA.calculatedvalue < moveB.calculatedvalue) { return false; }
             }
             else
             {
-                //order list by movevalue ascending so best move for black first
-                Array.Sort<movePrioItem>(workarray, (x, y) => x.movevalue.CompareTo(y.movevalue));
+                if (moveA.calculatedvalue < moveB.calculatedvalue) { return true; }
+                if (moveA.calculatedvalue > moveB.calculatedvalue) { return false; }
             }
-            for (int movei = 0; movei < movecount; movei++)
+            if (moveA.IsCapture == true & moveB.IsCapture == false) { return true; }
+            if (moveA.IsCapture == false & moveB.IsCapture == true) { return false; }
+            if (moveA.CapturedValue > moveB.CapturedValue) { return true; }
+            if (moveA.CapturedValue < moveB.CapturedValue) { return false; }
+            if (moveA.number_of_no_selfcheck_resp > 0 &
+                moveA.number_of_no_selfcheck_resp < moveB.number_of_no_selfcheck_resp) { return true; }
+            if (moveB.number_of_no_selfcheck_resp > 0 &
+                moveA.number_of_no_selfcheck_resp > moveB.number_of_no_selfcheck_resp) { return false; }
+            if (moveA.PromoteToPiece != 0 & moveB.PromoteToPiece == 0) { return true; }
+            if (moveA.PromoteToPiece == 0 & moveB.PromoteToPiece != 0) { return false; }
+            if (moveA.PromoteToPiece != 0 & moveB.PromoteToPiece != 0)
             {
-                positionstack[posidx].moveprioindex[movei] = workarray[movei].moveidx;
+                int ptpa = pieceTypeIndex(moveA.PromoteToPiece);
+                int ptpb = pieceTypeIndex(moveB.PromoteToPiece);
+                double PromotionValueA = piecetypes[ptpa].EstimatedValue;
+                double PromotionValueB = piecetypes[ptpb].EstimatedValue;
+                if (PromotionValueA > PromotionValueB) { return true; }
+                if (PromotionValueA < PromotionValueB) { return false; }
+            }
+            //No reason left to prio moveA before moveB or vice versa
+            return true;
+        }
+        public void set_moveprioindex(int posidx)
+        {
+            int movecount = positionstack[posidx].movelist_totalfound;
+            int helpi;
+
+            //Default_moveprioindex(ref positionstack[posidx]);
+
+            for (int m1 = 0; m1 < movecount - 1; m1++)
+            {
+                for (int m2 = m1 + 1; m2 < movecount; m2++)
+                {
+                    if (moveA_prio_before_moveB(positionstack[posidx].colourtomove,
+                                     positionstack[posidx].movelist[positionstack[posidx].moveprioindex[m1]],
+                                     positionstack[posidx].movelist[positionstack[posidx].moveprioindex[m2]]) == false)
+                    {
+                        helpi = positionstack[posidx].moveprioindex[m1];
+                        positionstack[posidx].moveprioindex[m1] = positionstack[posidx].moveprioindex[m2];
+                        positionstack[posidx].moveprioindex[m2] = helpi;
+                    }
+                }
             }
         }
         public void reprioritize_movelist(int posidx, double alpha, double beta, int prevposidx)
@@ -985,8 +1000,9 @@ namespace TheWeirdEngine
             {
                 int newposidx = MyWeirdEngineMoveGenerator.ExecuteMove(posidx, positionstack[posidx].movelist[i], prevposidx);
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, alpha, beta,
-                                                                     myenginesettings.presort_using_depth, false, false);
+                                                          myenginesettings.presort_using_depth, false, false);
                 positionstack[posidx].movelist[i].calculatedvalue = newresponse.posvalue;
+                positionstack[posidx].movelist[i].number_of_no_selfcheck_resp = newresponse.number_of_no_selfcheck_resp;
                 if (positionstack[posidx].colourtomove == 1)
                 {
                     if (newresponse.posvalue >= 100)
@@ -1066,6 +1082,7 @@ namespace TheWeirdEngine
             myresult.moveidx = -1;
             myresult.POKingIsInCheck = false;
             myresult.ForcedDraw = false;
+            myresult.number_of_no_selfcheck_resp = 0;
 
             if (this.externalabort == true)
             {
@@ -1228,14 +1245,17 @@ namespace TheWeirdEngine
             {
                 bestmovevalue = 120;
             }
-            bool noescapecheck = true;
+            int number_of_no_selfcheck_moves = 0;
 
             for (int i = 0; i < movecount; i++)
             {
                 int newposidx = MyWeirdEngineMoveGenerator.ExecuteMove(posidx, positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], prevposidx);
                 calculationresponse newresponse = Calculation_tree_internal(newposidx, new_alpha, new_beta,
-                                                                               newdepth - 1, SearchForFastestMate, false);
+                                                                             newdepth - 1, SearchForFastestMate,
+                                                                             false);
+
                 positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]].calculatedvalue = newresponse.posvalue;
+                positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]].number_of_no_selfcheck_resp = newresponse.number_of_no_selfcheck_resp;
                 if (pdepth > this.myenginesettings.display_when_depth_gt)
                 {
                     string mvstr = MyWeirdEngineJson.ShortNotation(positionstack[posidx].movelist[positionstack[posidx].moveprioindex[i]], false);
@@ -1245,7 +1265,7 @@ namespace TheWeirdEngine
                 }
                 if (newresponse.POKingIsInCheck == false)
                 {
-                    noescapecheck = false;
+                    number_of_no_selfcheck_moves++;
                 }
 
                 if (this.positionstack[posidx].colourtomove == 1)
@@ -1285,7 +1305,7 @@ namespace TheWeirdEngine
             }
 
             //Mate
-            if (MyWeirdEngineMoveGenerator.PMKingIsInCheck(ref positionstack[posidx]) == true & noescapecheck == true)
+            if (MyWeirdEngineMoveGenerator.PMKingIsInCheck(ref positionstack[posidx]) == true & number_of_no_selfcheck_moves == 0)
             {
                 if (positionstack[posidx].colourtomove == 1)
                 {
@@ -1298,7 +1318,7 @@ namespace TheWeirdEngine
                 return myresult;
             }
             //Stalemate
-            if (MyWeirdEngineMoveGenerator.PMKingIsInCheck(ref positionstack[posidx]) == false & noescapecheck == true)
+            if (MyWeirdEngineMoveGenerator.PMKingIsInCheck(ref positionstack[posidx]) == false & number_of_no_selfcheck_moves == 0)
             {
                 myresult.posvalue = 0;
                 myresult.ForcedDraw = true;
@@ -1331,13 +1351,15 @@ namespace TheWeirdEngine
             }
 
             myresult.moveidx = bestmoveidx;
+            myresult.number_of_no_selfcheck_resp = number_of_no_selfcheck_moves;
 
             //Here store into transposition table
             if (pdepth > myenginesettings.store_in_tt_when_depth_gt)
             {
                 MyWeirdEnginePositionCompare.StorePosition(positionstack[posidx], t_naive_match,
                                                            positionstack[posidx].movelist[bestmoveidx],
-                                                           pdepth, alpha, beta, myresult.posvalue);
+                                                           pdepth, alpha, beta, myresult.posvalue,
+                                                           number_of_no_selfcheck_moves);
             }
 
             return myresult;

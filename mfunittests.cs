@@ -764,6 +764,7 @@ namespace TheWeirdEngine
             TestExecuteMove(ppath, "13A_ExecuteMove_black_01", "-T", 2, 5, 0, 3);
 
             MyWeirdEngineJson.LoadPieceTypesFromJson("fide");
+            MyWeirdEngineJson.writelog("Unittests - Now going to 14A");
             TestMate_high_depth(ppath, "14A_mate_in_1_depth_14_white", 14, 4, 2, 0, 2);
             TestMate_high_depth(ppath, "14A_mate_in_1_depth_14_black", 14, 4, 5, 0, 5);
             TestMate_high_depth(ppath, "14B_mate_in_2_depth_5_bug_white", 5, 7, 3, 6, 2);

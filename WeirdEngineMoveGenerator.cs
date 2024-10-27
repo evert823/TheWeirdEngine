@@ -184,11 +184,16 @@ namespace TheWeirdEngine
                 }
             }
         }
+        public void AssignCapturedValue(chessposition pposition, ref chessmove mv, int i2, int j2)
+        {
+            int pti2 = MyWeirdEngineMoveFinder.pieceTypeIndex(pposition.squares[i2, j2]);
+            mv.CapturedValue = MyWeirdEngineMoveFinder.piecetypes[pti2].EstimatedValue;
+        }
         public void Default_moveprioindex(ref chessposition pposition)
         {
-            for (int i = 0; i < pposition.movelist_totalfound; i++)
+            for (int movei = 0; movei < pposition.movelist_totalfound; movei++)
             {
-                pposition.moveprioindex[i] = i;
+                pposition.moveprioindex[movei] = movei;
             }
         }
         public void GetAttacksMoves(ref chessposition pposition, int depth, int prevposidx)
@@ -256,6 +261,7 @@ namespace TheWeirdEngine
                             InitializeMove(ref pposition, movei, i, j, i2, j2);
                             pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                             pposition.movelist[movei].IsCapture = true;
+                            AssignCapturedValue(pposition, ref pposition.movelist[movei], i2, j2);
                             GetPromotion(ref pposition, movei, pti, pti_self);
                         }
                     }
@@ -503,6 +509,7 @@ namespace TheWeirdEngine
                             InitializeMove(ref pposition, movei, i, j, i2, j2);
                             pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                             pposition.movelist[movei].IsCapture = true;
+                            AssignCapturedValue(pposition, ref pposition.movelist[movei], i2, j2);
                             GetPromotion(ref pposition, movei, pti, pti_self);
                         }
                     }
@@ -575,6 +582,7 @@ namespace TheWeirdEngine
             tomove.coordinates[3] = frommove.coordinates[3];
             tomove.IsEnPassant = frommove.IsEnPassant;
             tomove.IsCapture = frommove.IsCapture;
+            tomove.CapturedValue = frommove.CapturedValue;
             tomove.IsCastling = frommove.IsCastling;
             tomove.othercoordinates[0] = frommove.othercoordinates[0];
             tomove.othercoordinates[1] = frommove.othercoordinates[1];
@@ -582,6 +590,7 @@ namespace TheWeirdEngine
             tomove.othercoordinates[3] = frommove.othercoordinates[3];
             tomove.PromoteToPiece = frommove.PromoteToPiece;
             tomove.calculatedvalue = frommove.calculatedvalue;
+            tomove.number_of_no_selfcheck_resp = frommove.number_of_no_selfcheck_resp;
         }
         public void InitializeMove(ref chessposition pposition, int movei, int pi1, int pj1, int pi2, int pj2)
         {
@@ -592,6 +601,7 @@ namespace TheWeirdEngine
             pposition.movelist[movei].coordinates[3] = pj2;
             pposition.movelist[movei].IsEnPassant = false;
             pposition.movelist[movei].IsCapture = false;
+            pposition.movelist[movei].CapturedValue = 0;
             pposition.movelist[movei].IsCastling = false;
             pposition.movelist[movei].othercoordinates[0] = -1;
             pposition.movelist[movei].othercoordinates[1] = -1;
@@ -616,19 +626,7 @@ namespace TheWeirdEngine
             }
             if (IsDuplicateMove == true)
             {
-                pposition.movelist[lmi].MovingPiece = 0;
-                pposition.movelist[lmi].coordinates[0] = 0;
-                pposition.movelist[lmi].coordinates[1] = 0;
-                pposition.movelist[lmi].coordinates[2] = 0;
-                pposition.movelist[lmi].coordinates[3] = 0;
-                pposition.movelist[lmi].IsEnPassant = false;
-                pposition.movelist[lmi].IsCapture = false;
-                pposition.movelist[lmi].IsCastling = false;
-                pposition.movelist[lmi].othercoordinates[0] = -1;
-                pposition.movelist[lmi].othercoordinates[1] = -1;
-                pposition.movelist[lmi].othercoordinates[2] = -1;
-                pposition.movelist[lmi].othercoordinates[3] = -1;
-                pposition.movelist[lmi].PromoteToPiece = 0;
+                MyWeirdEngineMoveFinder.Init_chessmove(ref pposition.movelist[lmi]);
                 pposition.movelist_totalfound = lmi;
             }
         }
@@ -736,6 +734,7 @@ namespace TheWeirdEngine
                         movei = pposition.movelist_totalfound;
                         InitializeMove(ref pposition, movei, i, j, i2, j2);
                         pposition.movelist[movei].IsCapture = true;
+                        AssignCapturedValue(MyWeirdEngineMoveFinder.positionstack[prevposidx], ref pposition.movelist[movei], i2, j2);
                         pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
                         pposition.movelist_totalfound += 1;
                         //DeleteLatestMoveIfDuplicate(ref pposition, pti);
@@ -846,6 +845,7 @@ namespace TheWeirdEngine
                 pposition.movelist[movei].othercoordinates[2] = -1;
                 pposition.movelist[movei].othercoordinates[3] = -1;
                 pposition.movelist[movei].IsCapture = true;
+                AssignCapturedValue(pposition, ref pposition.movelist[movei], x_to, y_to);
                 pposition.movelist_totalfound += 1;
                 //DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }
@@ -863,6 +863,7 @@ namespace TheWeirdEngine
                 pposition.movelist[movei].othercoordinates[2] = -1;
                 pposition.movelist[movei].othercoordinates[3] = -1;
                 pposition.movelist[movei].IsCapture = true;
+                AssignCapturedValue(pposition, ref pposition.movelist[movei], x_to, y_to);
                 pposition.movelist_totalfound += 1;
                 //DeleteLatestMoveIfDuplicate(ref pposition, pti);
             }

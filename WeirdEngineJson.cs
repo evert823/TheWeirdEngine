@@ -57,7 +57,9 @@ namespace TheWeirdEngine
         public double used_alpha;
         public double used_beta;
         public double calculated_value;
-        public string bestmove;
+        public int number_of_no_selfcheck_moves;
+        public string bestmove_str;
+        public chessmove bestmove;
         public int pos_in_tt;
     }
     public struct jsonTransTable
@@ -225,6 +227,7 @@ namespace TheWeirdEngine
             this.MyWeirdEngineMoveFinder.piecetypes[seq].name = a.name;
             this.MyWeirdEngineMoveFinder.piecetypes[seq].IsDivergent = a.IsDivergent;
             this.MyWeirdEngineMoveFinder.piecetypes[seq].CheckDuplicateMoves = a.CheckDuplicateMoves;
+            this.MyWeirdEngineMoveFinder.piecetypes[seq].EstimatedValue = a.EstimatedValue;
             if (a.stepleapmovevectors != null)
             {
                 this.MyWeirdEngineMoveFinder.piecetypes[seq].stepleapmovevectors = new vector[a.stepleapmovevectors.Length];
@@ -482,8 +485,14 @@ namespace TheWeirdEngine
                     MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].used_beta;
                 myposall.TranspositionTable[p].calculated_value =
                     MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].calculated_value;
-                myposall.TranspositionTable[p].bestmove =
+                myposall.TranspositionTable[p].number_of_no_selfcheck_moves =
+                    MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].number_of_no_selfcheck_moves;
+                myposall.TranspositionTable[p].bestmove_str =
                     ShortNotation(MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].bestmove, true);
+                MyWeirdEngineMoveFinder.Init_chessmove(ref myposall.TranspositionTable[p].bestmove);
+                MyWeirdEngineMoveFinder.MyWeirdEngineMoveGenerator.SynchronizeChessmove(
+                                MyWeirdEngineMoveFinder.MyWeirdEnginePositionCompare.TransTable[p].bestmove,
+                                ref myposall.TranspositionTable[p].bestmove);
                 myposall.TranspositionTable[p].pos_in_tt = p;
             }
             jsonString = JsonConvert.SerializeObject(myposall, Formatting.Indented);
