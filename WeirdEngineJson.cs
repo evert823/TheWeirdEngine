@@ -304,6 +304,22 @@ namespace TheWeirdEngine
                 writer.Close();
             }
         }
+        public int MaxPieceSymbolLength()
+        {
+            int n = this.MyWeirdEngineMoveFinder.piecetypes.Length;
+            string s;
+            int mylen = 0;
+            for (int i = 0; i < n; i++)
+            {
+                
+                s = this.MyWeirdEngineMoveFinder.piecetypes[i].symbol;
+                if (s.Length > mylen)
+                {
+                    mylen = s.Length;
+                }
+            }
+            return mylen;
+        }
         public void jsonchessposition_to_positionstack(jsonchessposition loadedpos, int posidx, bool hasprecedingmove)
         {
             this.MyWeirdEngineMoveFinder.positionstack[posidx].colourtomove = loadedpos.colourtomove;
@@ -339,10 +355,20 @@ namespace TheWeirdEngine
         {
             bool hasprecedingmove = true;
             string json;
-            using (StreamReader r = new StreamReader(ppath + "\\" + pFileName + ".json"))
+
+            try
             {
-                json = r.ReadToEnd();
+                using (StreamReader r = new StreamReader(ppath + "\\" + pFileName + ".json"))
+                {
+                    json = r.ReadToEnd();
+                }
             }
+            catch
+            {
+                MessageBox.Show("ppath " + ppath + " pFileName " + pFileName + " problem with loading");
+                return;
+            }
+
             jsonchesspositions loadedposset;
             jsonchessposition loadedpos;
 
@@ -405,6 +431,8 @@ namespace TheWeirdEngine
             mypos.WhiteElfMoveType = pposition.WhiteElfMoveType.ToString();
             mypos.BlackElfMoveType = pposition.BlackElfMoveType.ToString();
 
+            int targetwidth = this.MaxPieceSymbolLength() + 1;
+
             for (int j = 0; j < mypos.boardheight; j++)
             {
                 int rj = (mypos.boardheight - 1) - j;
@@ -412,7 +440,7 @@ namespace TheWeirdEngine
                 for (int i = 0; i < mypos.boardwidth; i++)
                 {
                     string mysymbol = this.PieceType2Str(pposition.squares[i, rj]);
-                    while (mysymbol.Length < 2)
+                    while (mysymbol.Length < targetwidth)
                     {
                         mysymbol = " " + mysymbol;
                     }

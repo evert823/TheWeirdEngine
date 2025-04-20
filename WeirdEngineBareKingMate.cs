@@ -28,17 +28,12 @@ namespace TheWeirdEngine
         {
             this.MyWeirdEngineMoveFinder = pWeirdEngineMoveFinder;
         }
-
-        public int DistanceBetweenSquares(int i1, int j1, int i2, int j2)
-        {
-            return MyWeirdEngineMoveFinder.MyBoardTopology.DistanceBetweenSquares[i1, j1, i2, j2];
-        }
-        public cornerInfo CheckOneCorner(ref chessposition pposition, int i, int j, vector targetkingcoord)
+        public cornerInfo CheckOneCorner(chessposition pposition, int i, int j, vector targetkingcoord)
         {
             cornerInfo myresult;
             myresult.cornercoord.x = i;
             myresult.cornercoord.y = j;
-            myresult.DistanceToKing = DistanceBetweenSquares(i, j, targetkingcoord.x, targetkingcoord.y);
+            myresult.DistanceToKing = MyWeirdEngineMoveFinder.MyWeirdEngineEval.DistanceBetweenSquares(i, j, targetkingcoord.x, targetkingcoord.y);
             myresult.BishopCanAttack = false;
             if (pposition.WhiteBareKing == true)
             {
@@ -64,7 +59,7 @@ namespace TheWeirdEngine
             }
             return myresult;
         }
-        public cornerInfo PickCorner(ref chessposition pposition, vector targetkingcoord)
+        public cornerInfo PickCorner(chessposition pposition, vector targetkingcoord)
         {
             //Output: x, y, distance, bishop-aligned
 
@@ -73,10 +68,10 @@ namespace TheWeirdEngine
             cornerInfo myresult;
 
             cornerInfo[] AllCorners = new cornerInfo[4];
-            AllCorners[0] = CheckOneCorner(ref pposition, 0, 0, targetkingcoord);
-            AllCorners[1] = CheckOneCorner(ref pposition, pposition.boardwidth - 1, 0, targetkingcoord);
-            AllCorners[2] = CheckOneCorner(ref pposition, 0, pposition.boardheight - 1, targetkingcoord);
-            AllCorners[3] = CheckOneCorner(ref pposition, pposition.boardwidth - 1, pposition.boardheight - 1, targetkingcoord);
+            AllCorners[0] = CheckOneCorner(pposition, 0, 0, targetkingcoord);
+            AllCorners[1] = CheckOneCorner(pposition, pposition.boardwidth - 1, 0, targetkingcoord);
+            AllCorners[2] = CheckOneCorner(pposition, 0, pposition.boardheight - 1, targetkingcoord);
+            AllCorners[3] = CheckOneCorner(pposition, pposition.boardwidth - 1, pposition.boardheight - 1, targetkingcoord);
 
             bestci = 0;
             for (int ci = 1;ci < 4;ci ++)
@@ -95,47 +90,27 @@ namespace TheWeirdEngine
             myresult = AllCorners[bestci];
             return myresult;
         }
-        public double MateBareKing(ref chessposition pposition)
+        public double MateBareKing(chessposition pposition)
         {
             //Handle the position where one has bare King and the other has mating material
             //(This is already validated before we enter here)
             vector targetkingcoord;
-            int sumofsquareddistances;
-            int numberofchasingpieces;
-            int d;
             double AvgD;
             double AvgD2;
 
             if (pposition.WhiteBareKing == true)
             {
                 targetkingcoord = pposition.whitekingcoord;
+                AvgD = MyWeirdEngineMoveFinder.MyWeirdEngineEval.AvgSquaredDistanceToEnemyKing(pposition, -1);
             }
             else
             {
                 targetkingcoord = pposition.blackkingcoord;
+                AvgD = MyWeirdEngineMoveFinder.MyWeirdEngineEval.AvgSquaredDistanceToEnemyKing(pposition, 1);
             }
 
-            cornerInfo bestcorner = PickCorner(ref pposition, targetkingcoord);
+            cornerInfo bestcorner = PickCorner(pposition, targetkingcoord);
 
-            sumofsquareddistances = 0;
-            numberofchasingpieces = 0;
-            for (int i = 0; i < pposition.boardwidth; i++)
-            {
-                for (int j = 0; j < pposition.boardheight; j++)
-                {
-                    if (pposition.squares[i, j] != 0)
-                    {
-                        if ((pposition.WhiteBareKing == true & pposition.squares[i, j] < 0) ||
-                            (pposition.BlackBareKing == true & pposition.squares[i, j] > 0))
-                        {
-                            d = DistanceBetweenSquares(i, j, targetkingcoord.x, targetkingcoord.y);
-                            numberofchasingpieces += 1;
-                            sumofsquareddistances += (d * d);
-                        }
-                    }
-                }
-            }
-            AvgD = sumofsquareddistances / numberofchasingpieces;
             AvgD2 = ((bestcorner.DistanceToKing * bestcorner.DistanceToKing) + AvgD) / 2;
             double MaxAvgD2 = ((double)pposition.boardheight * (double)pposition.boardheight) +
                               ((double)pposition.boardwidth * (double)pposition.boardwidth);

@@ -524,6 +524,7 @@ namespace TheWeirdEngine
         {
             AllTestsPassed = true;
             MyWeirdEngineMoveFinder.myenginesettings.setting_SearchForFastestMate = true;
+            MyWeirdEngineMoveFinder.myenginesettings.display_when_depth_gt = 7;
             MessageBox.Show("Start with running all unittests");
 
             TestCastle(ppath, "01A_castle_white_01");

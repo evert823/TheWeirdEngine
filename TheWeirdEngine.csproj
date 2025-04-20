@@ -89,6 +89,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WeirdEngineBareKingMate.cs" />
+    <Compile Include="WeirdEngineEval.cs" />
     <Compile Include="WeirdEngineJson.cs" />
     <Compile Include="WeirdEngineMoveFinder.cs" />
     <Compile Include="WeirdEngineMoveGenerator.cs" />

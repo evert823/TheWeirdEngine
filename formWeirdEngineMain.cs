@@ -191,12 +191,12 @@ namespace TheWeirdEngine
             PositionGenerator MyPositionGenerator;
             MyPositionGenerator = new PositionGenerator(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
 
-            string infilename = "maingame";
+            string infilename = "allpiecesever";
             MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
             MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
 
             this.DisableGUI();
-            MyPositionGenerator.genmain();
+            MyPositionGenerator.genveryverylarge();
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
             this.EnableGUI();
@@ -309,10 +309,30 @@ namespace TheWeirdEngine
             this.EnableGUI();
         }
 
+        private void test_eval_one_position(string ppositionname)
+        {
+            string mypath = "C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions";
+            MyWeirdEngineJson.LoadPositionJson(mypath, ppositionname);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(0);
+            string s = ppositionname;
+            s += " ev : " + a.posvalue.ToString();
+            MyWeirdEngineJson.writelog(s);
+        }
         private void otherTestsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.DisableGUI();
 
+
+            string mypath = "C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions";
+            MyWeirdEngineJson.LoadPositionJson(mypath, "testposition");
+
+            string s = "";
+            MessageBox.Show(s);
+
+            MessageBox.Show("done test");
+
+            this.pictureBox1.Invalidate();
+            this.RefreshInformation();
 
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
