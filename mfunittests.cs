@@ -764,6 +764,9 @@ namespace TheWeirdEngine
             TestExecuteMove(ppath, "13A_ExecuteMove_white_01", "T", 2, 2, 0, 4);
             TestExecuteMove(ppath, "13A_ExecuteMove_black_01", "-T", 2, 5, 0, 3);
 
+            TestMate_n(ppath, "15A_mate_in_1_nightrider_white", 1, 0, 2, 1, 4);
+            TestMate_n(ppath, "15A_mate_in_1_nightrider_black", 1, 9, 5, 8, 3);
+
             MyWeirdEngineJson.LoadPieceTypesFromJson("fide");
             MyWeirdEngineJson.writelog("Unittests - Now going to 14A");
             TestMate_high_depth(ppath, "14A_mate_in_1_depth_14_white", 14, 4, 2, 0, 2);
@@ -785,6 +788,7 @@ namespace TheWeirdEngine
             AllTestsPassed = true;
             MyWeirdEngineMoveFinder.myenginesettings.setting_SearchForFastestMate = true;
             MessageBox.Show("Start with running new unittests");
+
 
             if (AllTestsPassed == true)
             {
