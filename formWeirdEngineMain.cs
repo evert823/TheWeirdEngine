@@ -60,7 +60,7 @@ namespace TheWeirdEngine
         {
             this.ResourcesFolder = "Q:\\Persoonlijk\\Wiskunde en programmeren\\C#\\WeirdEngine\\weirdengineresources";
 
-            while (File.Exists(this.ResourcesFolder + "\\weirdenginesettings.xml") == false)
+            while (File.Exists(this.ResourcesFolder + "\\vacantonwhite.jpg") == false)
             {
                 MessageBox.Show("Select the folder containing your application files by selecting the settingsfile or one of the piece images.");
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
