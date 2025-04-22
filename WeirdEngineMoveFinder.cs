@@ -41,11 +41,10 @@ namespace TheWeirdEngine
     }
     public struct squareInfoItem
     {
-        //After changing this: review calculation of squareInfonumberofbytes!!
         public int AttackedByPM;
         public int AttackedByPO;
-        public int n_adjacent_whitewitches;
-        public int n_adjacent_blackwitches;
+        public byte n_adjacent_whitewitches;
+        public byte n_adjacent_blackwitches;
         public bool adjacent_whitefemmefatale;
         public bool adjacent_blackfemmefatale;
     }
@@ -109,9 +108,6 @@ namespace TheWeirdEngine
     {
         public int boardwidth;
         public int boardheight;
-        public int numberofsquares;
-        public int squaresnumberofbytes;
-        public int squareInfonumberofbytes;
         public bool[,] IsWhiteSquare;
         public int[,,,] DistanceBetweenSquares;
         public bool[,,,] SquaresAdjacent;
@@ -175,7 +171,6 @@ namespace TheWeirdEngine
 
         public WeirdEngineJson MyWeirdEngineJson;//reference to Json object that can do some logging
         public WeirdEngineBareKingMate MyWeirdEngineBareKingMate;
-        public WeirdEngineEval MyWeirdEngineEval;
         public WeirdEnginePositionCompare MyWeirdEnginePositionCompare;
         public WeirdEngineMoveGenerator MyWeirdEngineMoveGenerator;
 
@@ -184,12 +179,10 @@ namespace TheWeirdEngine
         public bool externalabort;
         public chesspiecetype[] piecetypes;
         public chessposition[] positionstack;
-        public squareInfoItem[,] initialized_squareInfo;
         public BoardTopology MyBoardTopology;
         public WeirdEngineMoveFinder()
         {
             this.MyWeirdEngineBareKingMate = new WeirdEngineBareKingMate(this);
-            this.MyWeirdEngineEval = new WeirdEngineEval(this);
             this.MyWeirdEnginePositionCompare = new WeirdEnginePositionCompare(this);
             this.MyWeirdEngineMoveGenerator = new WeirdEngineMoveGenerator(this);
             this.myenginesettings.presort_when_depth_gt = 4;
@@ -264,9 +257,6 @@ namespace TheWeirdEngine
         }
         public void ClearNonPersistent(ref chessposition pposition)
         {
-
-            //System.Buffer.BlockCopy(initialized_squareInfo, 0, pposition.squareInfo, 0, MyBoardTopology.squareInfonumberofbytes);
-            //C# BlockCopy Object must be an array of primitives
             for (int i = 0;i < pposition.boardwidth;i++)
             {
                 for (int j = 0; j < pposition.boardheight;j++)
@@ -557,19 +547,126 @@ namespace TheWeirdEngine
             }
             return 0.0;
         }
+        public bool DrawByMaterial(ref chessposition pposition)
+        {
+            if (pposition.WhiteBareKing == true & pposition.BlackBareKing == true) { return true; }
+            //NOT FINISHED for now good enough to handle KBN vs K
+            //Two bare Kings was already excluded earlier
+            if (pposition.WhiteBareKing == false & pposition.BlackBareKing == false) { return false; }
+
+            //Now exactly one of the players has bare King
+            if (pposition.WhiteHasMatingMaterial == true || pposition.BlackHasMatingMaterial == true)
+            {
+                return false;
+            }
+            return true;
+        }
+        public double EvaluationByMaterial(ref chessposition pposition)
+        {
+            double materialbalance = 0.0;
+
+            for (int i = 0; i < pposition.boardwidth; i++)
+            {
+                for (int j = 0; j < pposition.boardheight; j++)
+                {
+                    if (pposition.squares[i, j] != 0)
+                    {
+                        int pti = this.pieceTypeIndex(pposition.squares[i, j]);
+                        if (this.piecetypes[pti].SpecialPiece_ind == SpecialPiece.King)
+                        {
+                            //no action
+                        }
+                        else
+                        {
+                            if (pposition.squares[i, j] > 0)
+                            {
+                                materialbalance += piecetypes[pti].EstimatedValue;
+                            }
+                            else
+                            {
+                                materialbalance -= piecetypes[pti].EstimatedValue;
+                            }
+                        }
+                    }
+                }
+            }
+            if (materialbalance > 8)
+            {
+                return 80.0;
+            }
+            if (materialbalance < -8)
+            {
+                return -80.0;
+            }
+            return materialbalance * 10;
+        }
+        public double EvaluationByAttack(ref chessposition pposition)
+        {
+            int AttackedByWhitetotal = 0;
+            int AttackedByBlacktotal = 0;
+
+            for (int i = 0; i < pposition.boardwidth; i++)
+            {
+                for (int j = 0; j < pposition.boardheight; j++)
+                {
+                    if (pposition.colourtomove == 1)
+                    {
+                        AttackedByWhitetotal += pposition.squareInfo[i, j].AttackedByPM;
+                        AttackedByBlacktotal += pposition.squareInfo[i, j].AttackedByPO;
+                    }
+                    else
+                    {
+                        AttackedByWhitetotal += pposition.squareInfo[i, j].AttackedByPO;
+                        AttackedByBlacktotal += pposition.squareInfo[i, j].AttackedByPM;
+                    }
+                }
+            }
+            double resultev = (AttackedByWhitetotal - AttackedByBlacktotal) / 2.0;
+
+            //Assigning points for giving check did not help at all!!!
+            //if (WhiteKingIsInCheck(ref pposition))
+            //{
+            //    resultev -= 5;
+            //}
+            //if (BlackKingIsInCheck(ref pposition))
+            //{
+            //    resultev += 5;
+            //}
+
+            if (resultev > 80)
+            {
+                return 80.0;
+            }
+            if (resultev < -80)
+            {
+                return -80.0;
+            }
+            return resultev;
+        }
+        public double StaticEvaluation(ref chessposition pposition)
+        {
+            //Minimum/maximum score for 'soft' results should be -80/80 respectively !!!
+            double myev;
+
+            if (pposition.WhiteBareKing == true & pposition.BlackHasMatingMaterial == true)
+            {
+                myev = MyWeirdEngineBareKingMate.MateBareKing(ref pposition);
+                return myev;
+            }
+            else if (pposition.BlackBareKing == true & pposition.WhiteHasMatingMaterial == true)
+            {
+                myev = MyWeirdEngineBareKingMate.MateBareKing(ref pposition);
+                return myev;
+            }
+
+            //double myev = EvaluationByMaterial(ref pposition);
+            myev = EvaluationByAttack(ref pposition);
+            return myev;
+        }
         public void SetBoardTopology(int pboardwidth, int pboardheight)
         {
             MyBoardTopology.boardwidth = pboardwidth;
             MyBoardTopology.boardheight = pboardheight;
-
-            MyBoardTopology.numberofsquares = pboardwidth * pboardheight;
-            int size = sizeof(int);
-            MyBoardTopology.squaresnumberofbytes = size * MyBoardTopology.numberofsquares;
-
-            size = sizeof(int) * 4;
-            size += sizeof(bool);
-            MyBoardTopology.squareInfonumberofbytes = size * MyBoardTopology.numberofsquares;
-
             MyBoardTopology.IsWhiteSquare = null;
             MyBoardTopology.IsWhiteSquare = new bool[pboardwidth, pboardheight];
             for (int i = 0; i < pboardwidth; i++)
@@ -604,26 +701,8 @@ namespace TheWeirdEngine
                 }
             }
         }
-        public void Prepare_initialized_squareInfo(int pboardwidth, int pboardheight)
-        {
-            initialized_squareInfo = null;
-            initialized_squareInfo = new squareInfoItem[pboardwidth, pboardheight];
-            for (int i = 0; i < pboardwidth; i++)
-            {
-                for (int j = 0; j < pboardheight; j++)
-                {
-                    initialized_squareInfo[i, j].AttackedByPM = 0;
-                    initialized_squareInfo[i, j].AttackedByPO = 0;
-                    initialized_squareInfo[i, j].n_adjacent_whitewitches = 0;
-                    initialized_squareInfo[i, j].n_adjacent_blackwitches = 0;
-                    initialized_squareInfo[i, j].adjacent_whitefemmefatale = false;
-                    initialized_squareInfo[i, j].adjacent_blackfemmefatale = false;
-                }
-            }
-        }
         public void init_positionstack(int pboardwidth, int pboardheight)
         {
-            Prepare_initialized_squareInfo(pboardwidth, pboardheight);
             this.SetBoardTopology(pboardwidth, pboardheight);
             this.positionstack = null;
             this.positionstack = new chessposition[positionstack_size];
@@ -650,7 +729,6 @@ namespace TheWeirdEngine
             topos.WhiteElfMoveType = frompos.WhiteElfMoveType;
             topos.BlackElfMoveType = frompos.BlackElfMoveType;
 
-            //System.Buffer.BlockCopy(frompos.squares, 0, topos.squares, 0, MyBoardTopology.squaresnumberofbytes);
             for (int i = 0; i < frompos.boardwidth; i++)
             {
                 for (int j = 0; j < frompos.boardheight; j++)
@@ -704,17 +782,6 @@ namespace TheWeirdEngine
             //this.MyWeirdEnginePositionCompare.TestItemsIntoTransTable();
             this.MyWeirdEngineJson.SetLogfilename();
             calculationresponse myresult;
-
-            if (myenginesettings.display_when_depth_gt < 0 & requested_depth > 4)
-            {
-                int dwdg = myenginesettings.display_when_depth_gt;
-                myenginesettings.display_when_depth_gt = requested_depth + dwdg;
-            }
-            if (myenginesettings.display_when_depth_gt < 0 & requested_depth <= 4)
-            {
-                int dwdg = myenginesettings.display_when_depth_gt;
-                myenginesettings.display_when_depth_gt = requested_depth;
-            }
 
             if (myenginesettings.consult_tt_when_depth_gt > myenginesettings.store_in_tt_when_depth_gt)
             {
@@ -1070,7 +1137,7 @@ namespace TheWeirdEngine
                 return myresult;
             }
 
-            if (MyWeirdEngineEval.DrawByMaterial(ref positionstack[posidx]) == true)
+            if (DrawByMaterial(ref positionstack[posidx]) == true)
             {
                 myresult.posvalue = 0.0;
                 myresult.ForcedDraw = true;
@@ -1079,7 +1146,7 @@ namespace TheWeirdEngine
 
             if (pdepth == 0)
             {
-                myresult.posvalue = MyWeirdEngineEval.StaticEvaluation(positionstack[posidx]);
+                myresult.posvalue = StaticEvaluation(ref positionstack[posidx]);
                 return myresult;
             }
 

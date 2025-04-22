@@ -58,7 +58,17 @@ namespace TheWeirdEngine
         {
             calculationresponse a;
             a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
-            if (a.posvalue >= 97.0 || a.posvalue <= -97.0)
+            if (a.posvalue >= 99.0 || a.posvalue <= -99.0)
+            {
+                return true;
+            }
+            return false;
+        }
+        public bool IsMate(int depth)
+        {
+            calculationresponse a;
+            a = MyWeirdEngineMoveFinder.Calculation_tree(depth);
+            if (a.posvalue >= (100 - (depth * 0.1)) || a.posvalue <= ((depth * 0.1) - 100))
             {
                 return true;
             }
@@ -96,41 +106,17 @@ namespace TheWeirdEngine
         }
         public void genone_puzzle()
         {
-            ClearMainPosition(8, 8);
-            PutOnePiece("K", 0, 0, 7, 7);
-            PutOnePiece("-K", 3, 4, 3, 4);
-            PutOnePiece("p", 0, 0, 1, 5);
-            PutOnePiece("p", 1, 1, 1, 5);
-            PutOnePiece("p", 2, 2, 1, 5);
-            PutOnePiece("p", 3, 3, 1, 5);
-            PutOnePiece("p", 4, 4, 1, 5);
-            PutOnePiece("p", 5, 5, 1, 5);
-            PutOnePiece("p", 6, 6, 1, 5);
-            PutOnePiece("p", 7, 7, 1, 5);
-            PutOnePiece("-p", 0, 0, 2, 6);
-            PutOnePiece("-p", 1, 1, 2, 6);
-            PutOnePiece("-p", 2, 2, 2, 6);
-            PutOnePiece("-p", 3, 3, 2, 6);
-            PutOnePiece("-p", 4, 4, 2, 6);
-            PutOnePiece("-p", 5, 5, 2, 6);
-            PutOnePiece("-p", 6, 6, 2, 6);
-            PutOnePiece("-p", 7, 7, 2, 6);
-            PutOnePiece("R", 0, 7, 0, 7);
-            PutOnePiece("R", 0, 7, 0, 7);
-            PutOnePiece("N", 0, 7, 0, 7);
-            PutOnePiece("N", 0, 7, 0, 7);
-            PutOnePiece("B", 0, 7, 0, 7);
-            PutOnePiece("B", 0, 7, 0, 7);
-            PutOnePiece("Q", 0, 7, 0, 7);
-            PutOnePiece("-R", 0, 7, 0, 7);
-            PutOnePiece("-R", 0, 7, 0, 7);
-            PutOnePiece("-N", 0, 7, 0, 7);
-            PutOnePiece("-N", 0, 7, 0, 7);
-            PutOnePiece("-B", 0, 7, 0, 7);
-            PutOnePiece("-B", 0, 7, 0, 7);
-            PutOnePiece("-Q", 0, 7, 0, 7);
+            ClearMainPosition(7, 7);
+            PutOnePiece("K", 4, 4, 0, 3);
+            PutOnePiece("-K", 6, 6, 0, 1);
+            PutOnePiece("-N", 2, 6, 0, 5);
+            PutOnePiece("N", 2, 6, 0, 3);
+            PutOnePiece("B", 0, 6, 0, 6);
+            PutOnePiece("E", 2, 4, 0, 4);
+            PutOnePiece("H", 2, 4, 0, 4);
             //MyWeirdEngineMoveFinder.positionstack[0].colourtomove = RandomColourToMove();
             MyWeirdEngineMoveFinder.positionstack[0].colourtomove = 1;
+            MyWeirdEngineMoveFinder.positionstack[0].WhiteElfMoveType = MoveType.Noncapture;
         }
         public void gennontrivial()
         {
@@ -141,53 +127,39 @@ namespace TheWeirdEngine
                 postrivial = IsTrivial(3);
             }
         }
-        public void gengreat_puzzle()
+        public void gennontrivial_puzzle()
         {
-            calculationresponse a;
-            int counter = 0;
-            bool searchdone = false;
-            while (searchdone == false)
+            bool postrivial = true;
+            while (postrivial == true)
             {
                 genone_puzzle();
-
-                if (MyWeirdEngineMoveFinder.positionstack[0].squares[4, 7] == 0)
+                postrivial = IsTrivial(4);
+            }
+        }
+        public void gengreat_puzzle()
+        {
+            int counter = 0;
+            bool posgreat = false;
+            while (posgreat == false)
+            {
+                counter += 1;
+                if (counter % 20 == 0)
                 {
-                    counter += 1;
-                    if (counter % 20 == 0)
-                    {
-                        MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\",
-                                                            "failed_gen_" + counter.ToString());
-                    }
-                    a = MyWeirdEngineMoveFinder.Calculation_tree(4);
-                    if (a.moveidx > -1)
-                    {
-                        int pi = MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx].PromoteToPiece;
-                        int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(pi);
-                        if (pti > -1)
-                        {
-                            if (a.posvalue == 99.7 | a.posvalue == 99.9)
-                            {
-                                MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\",
-                                                                    "random_mate_2_" + counter.ToString());
-                                if (MyWeirdEngineMoveFinder.piecetypes[pti].name == "Knight")
-                                {
-                                    searchdone = true;
-                                    MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\", "frompositiongenerator");
-                                }
-                            }
-                        }
-                    }
+                    MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\",
+                                                        "failed_gen_" + counter.ToString());
                 }
+                gennontrivial_puzzle();
+                posgreat = IsMate(8);
             }
         }
         public void genmain()
         {
             //MyWeirdEngineMoveFinder.setting_SearchForFastestMate = false;
-            MyWeirdEngineJson.LoadPieceTypesFromJson("fide");
             MyWeirdEngineMoveFinder.myenginesettings.display_when_depth_gt = 8;
             gengreat_puzzle();
-            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions\\", "frompositiongenerator");
             MessageBox.Show("DONE generating great position!!");
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "randompositions\\", "frompositiongenerator");
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions\\", "frompositiongenerator");
         }
         public void genmany()
         {
@@ -210,49 +182,6 @@ namespace TheWeirdEngine
             }
             MyWeirdEngineJson.writelog("totvalue : " + totvalue.ToString());
             //MessageBox.Show("totvalue : " + totvalue.ToString());
-        }
-        public void genveryverylarge()
-        {
-            ClearMainPosition(60, 60);
-            PutOnePiece("K", 0, 59, 0, 59);
-            PutOnePiece("-K", 0, 59, 0, 59);
-            for (int i = 0; i < 60; i++)
-            {
-                PutOnePiece("p", i, i, 4, 35);
-                PutOnePiece("-p", i, i, 25, 55);
-            }
-            for (int i = 0; i < 6; i++)
-            {
-                PutOnePiece("Q", 0, 59, 0, 59);
-                PutOnePiece("-Q", 0, 59, 0, 59);
-                PutOnePiece("R", 0, 59, 0, 59);
-                PutOnePiece("-R", 0, 59, 0, 59);
-                PutOnePiece("B", 0, 59, 0, 59);
-                PutOnePiece("-B", 0, 59, 0, 59);
-                PutOnePiece("N", 0, 59, 0, 59);
-                PutOnePiece("-N", 0, 59, 0, 59);
-                PutOnePiece("L", 0, 59, 0, 59);
-                PutOnePiece("-L", 0, 59, 0, 59);
-                PutOnePiece("D", 0, 59, 0, 59);
-                PutOnePiece("-D", 0, 59, 0, 59);
-                PutOnePiece("T", 0, 59, 0, 59);
-                PutOnePiece("-T", 0, 59, 0, 59);
-                PutOnePiece("A", 0, 59, 0, 59);
-                PutOnePiece("-A", 0, 59, 0, 59);
-                PutOnePiece("C", 0, 59, 0, 59);
-                PutOnePiece("-C", 0, 59, 0, 59);
-                PutOnePiece("W", 0, 59, 0, 59);
-                PutOnePiece("-W", 0, 59, 0, 59);
-                PutOnePiece("X", 0, 59, 0, 59);
-                PutOnePiece("-X", 0, 59, 0, 59);
-                PutOnePiece("H", 0, 59, 0, 59);
-                PutOnePiece("-H", 0, 59, 0, 59);
-                PutOnePiece("J", 0, 59, 0, 59);
-                PutOnePiece("-J", 0, 59, 0, 59);
-                PutOnePiece("V", 0, 59, 0, 59);
-                PutOnePiece("-V", 0, 59, 0, 59);
-            }
-            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions\\", "frompositiongenerator");
         }
 
     }
