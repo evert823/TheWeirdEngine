@@ -130,6 +130,11 @@ namespace TheWeirdEngine
                     }
                     catch (System.Exception)
                     {
+                        bmp_name = resourcefolder
+                            + "_notfound"
+                            + colourpart + ".jpg";
+                        MyBitmap = new Bitmap(bmp_name);
+                        g.DrawImage(MyBitmap, new RectangleF(draw_x, draw_y, MyBitmap.Width, MyBitmap.Height));
                     }
                 }
             }
