@@ -21,11 +21,6 @@ namespace TheWeirdEngine
         public int consult_tt_when_depth_gt;
         public int store_in_tt_when_depth_gt;
     }
-    public struct movePrioItem
-    {
-        public int moveidx;
-        public double movevalue;
-    }
     public struct calculationresponse
     {
         public double posvalue;
@@ -783,6 +778,15 @@ namespace TheWeirdEngine
             this.MyWeirdEngineJson.SetLogfilename();
             calculationresponse myresult;
 
+            if (myenginesettings.display_when_depth_gt == -1)
+            {
+                myenginesettings.display_when_depth_gt = 7;
+                if (requested_depth > myenginesettings.display_when_depth_gt + 1)
+                {
+                    myenginesettings.display_when_depth_gt = requested_depth - 1;
+                }
+            }
+
             if (myenginesettings.consult_tt_when_depth_gt > myenginesettings.store_in_tt_when_depth_gt)
             {
                 MyWeirdEngineJson.writelog("Invalid settings");
@@ -819,8 +823,6 @@ namespace TheWeirdEngine
             this.externalabort = false;
             DateTime startdatetime = DateTime.Now;
 
-            //This is the change for iterative deepening
-            //myresult = DoIterativeDeepening(requested_depth);
             myresult = this.Calculation_tree_internal(0, -100, 100, requested_depth,
                        this.myenginesettings.setting_SearchForFastestMate, false);
 
@@ -836,63 +838,6 @@ namespace TheWeirdEngine
 
                 MyWeirdEngineJson.writelog("duration : " + duration.ToString());
                 MyWeirdEngineJson.DumpTranspositionTable();
-            }
-            return myresult;
-        }
-        public bool StopConditionIterativeDeepening(calculationresponse myresult, int dynamic_depth, int external_depth)
-        {
-            bool mystop = false;
-            if (externalabort == true) { mystop = true; }
-            if (dynamic_depth > external_depth) { mystop = true; }
-            if (myresult.posvalue == -100) { mystop = true; }
-            if (myresult.posvalue == 100) { mystop = true; }
-            if (myresult.POKingIsInCheck == true) { mystop = true; }
-            if (myresult.ForcedDraw == true) { mystop = true; }
-            //for mate in a couple of moves
-            if (myresult.posvalue < -95) { mystop = true; }
-            if (myresult.posvalue > 95) { mystop = true; }
-
-            return mystop;
-        }
-        public calculationresponse DoIterativeDeepening(int external_depth)
-        {
-            calculationresponse myresult;
-            myresult.posvalue = 0;
-            myresult.moveidx = -1;
-            myresult.POKingIsInCheck = false;
-
-            double startalpha = -100;
-            double startbeta = 100;
-
-            chessmove mycandidatemove = new chessmove();
-            Init_chessmove(ref mycandidatemove);
-
-            int dynamic_depth;
-
-            dynamic_depth = Math.Min(external_depth, 3);
-
-            //Not sure if presort should eventually be eliminated
-            //myenginesettings.presort_when_depth_gt = 100;//very high value
-
-            myresult = Calculation_tree_internal(0, startalpha, startbeta, dynamic_depth,
-                                       myenginesettings.setting_SearchForFastestMate, false);
-            while (StopConditionIterativeDeepening(myresult, dynamic_depth, external_depth) == false)
-            {
-                if (externalabort == false)
-                {
-                    MyWeirdEngineMoveGenerator.SynchronizeChessmove(positionstack[0].movelist[myresult.moveidx],
-                                                                    ref mycandidatemove);
-                }
-                set_moveprioindex(0);
-
-                string s = "dynamic_depth : " + dynamic_depth.ToString();
-                s += " list after sorting : ";
-                s += this.MyWeirdEngineJson.DisplayMovelist(positionstack[0], true);
-                this.MyWeirdEngineJson.writelog(s);
-
-                dynamic_depth++;
-                myresult = Calculation_tree_internal(0, startalpha, startbeta, dynamic_depth,
-                                           myenginesettings.setting_SearchForFastestMate, true);
             }
             return myresult;
         }
