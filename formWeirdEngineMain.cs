@@ -140,18 +140,9 @@ namespace TheWeirdEngine
             this.RefreshInformation();
             //MessageBox.Show(this.MyWeirdEngineJson.DisplayMovelist(ref MyWeirdEngineMoveFinder.positionstack[0]));
             //MessageBox.Show(this.MyWeirdEngineJson.DisplayAttacks(ref MyWeirdEngineMoveFinder.positionstack[0]));
-            string s = "posvalue " + a.posvalue.ToString();
-            s += " moveidx " + a.moveidx.ToString();
-            string mvstr;
-            if (a.moveidx > -1)
-            {
-                mvstr = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[a.moveidx], false);
-            }
-            else
-            {
-                mvstr = "There was no move";
-            }
-            s += " ShortNotation " + mvstr;
+
+            string s;
+            s = MyWeirdEngineMoveFinder.FinalResponseLogString(a);
             MessageBox.Show(s);
             //MyWeirdEngineJson.LoadPositionFromFEN("8/8/1p2PR2/5K2/1Pk1p1r1/2p2bpP/3P2n1/N4B2 b");
             //MyWeirdEngineJson.SavePositionAsJson("thiscamefromfen");

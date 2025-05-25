@@ -768,6 +768,24 @@ namespace TheWeirdEngine
             }
             return true;
         }
+        public string FinalResponseLogString(calculationresponse myresult)
+        {
+            string s = "posvalue " + myresult.posvalue.ToString();
+            s += " moveidx " + myresult.moveidx.ToString();
+            string mvstr;
+
+            if (myresult.moveidx > -1)
+            {
+                mvstr = MyWeirdEngineJson.ShortNotation(positionstack[0].movelist[myresult.moveidx], false);
+            }
+            else
+            {
+                mvstr = "There was no move";
+            }
+            s += " ShortNotation " + mvstr;
+
+            return s;
+        }
         public calculationresponse Calculation_tree(int requested_depth)
         {
             this.Set_SpecialPiece_ind();
@@ -780,11 +798,7 @@ namespace TheWeirdEngine
 
             if (myenginesettings.display_when_depth_gt == -1)
             {
-                myenginesettings.display_when_depth_gt = 7;
-                if (requested_depth > myenginesettings.display_when_depth_gt + 1)
-                {
-                    myenginesettings.display_when_depth_gt = requested_depth - 1;
-                }
+                myenginesettings.display_when_depth_gt = requested_depth - 1;
             }
 
             if (myenginesettings.consult_tt_when_depth_gt > myenginesettings.store_in_tt_when_depth_gt)
@@ -811,6 +825,7 @@ namespace TheWeirdEngine
             }
 
             MyWeirdEngineJson.LogAllSettings();
+            MyWeirdEngineJson.writelog(string.Format("requested_depth : {0}", requested_depth));
 
             if (HasPreviousPosition() == true)
             {
@@ -839,6 +854,7 @@ namespace TheWeirdEngine
                 MyWeirdEngineJson.writelog("duration : " + duration.ToString());
                 MyWeirdEngineJson.DumpTranspositionTable();
             }
+            MyWeirdEngineJson.writelog("Final response : " + FinalResponseLogString(myresult));
             return myresult;
         }
         public int FindMove(chessposition pposition, chessmove mv)
