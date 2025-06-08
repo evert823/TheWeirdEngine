@@ -774,6 +774,21 @@ namespace TheWeirdEngine
             TestMate_high_depth(ppath, "14B_mate_in_2_depth_5_bug_white", 5, 7, 3, 6, 2);
             TestMate_high_depth(ppath, "14B_mate_in_2_depth_5_bug_black", 5, 7, 4, 6, 5);
 
+            MyWeirdEngineJson.LoadPieceTypesFromJson("unittestgame");
+            TestMove(ppath, "16A_limited_range_white", "Queen3", 4, 4, 7, 7, true);
+            TestMove(ppath, "16A_limited_range_white", "Queen3", 4, 4, 8, 8, false);
+            TestMove(ppath, "16A_limited_range_white", "Queen3", 4, 4, 7, 4, true);
+            TestMove(ppath, "16A_limited_range_white", "Queen3", 4, 4, 4, 0, false);
+            TestMove(ppath, "16A_limited_range_white", "Queen3", 4, 4, 4, 1, true);
+            TestMove(ppath, "16A_limited_range_white", "Queen3", 4, 4, 2, 4, false);
+
+            TestMove(ppath, "16A_limited_range_black", "Queen3", 4, 5, 7, 2, true);
+            TestMove(ppath, "16A_limited_range_black", "Queen3", 4, 5, 8, 1, false);
+            TestMove(ppath, "16A_limited_range_black", "Queen3", 4, 5, 7, 5, true);
+            TestMove(ppath, "16A_limited_range_black", "Queen3", 4, 5, 4, 9, false);
+            TestMove(ppath, "16A_limited_range_black", "Queen3", 4, 5, 4, 8, true);
+            TestMove(ppath, "16A_limited_range_black", "Queen3", 4, 5, 2, 5, false);
+
             if (AllTestsPassed == true)
             {
                 MessageBox.Show("All unittests passed");
@@ -787,6 +802,7 @@ namespace TheWeirdEngine
         {
             AllTestsPassed = true;
             MyWeirdEngineMoveFinder.myenginesettings.setting_SearchForFastestMate = true;
+            MyWeirdEngineMoveFinder.myenginesettings.display_when_depth_gt = 7;
             MessageBox.Show("Start with running new unittests");
 
 
