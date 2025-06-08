@@ -460,8 +460,8 @@ namespace TheWeirdEngine
             DateTime enddatetime = DateTime.Now;
             int secondsneeded = (int)(enddatetime - startdatetime).TotalSeconds;
 
-            MessageBox.Show(ppositionfilename + " observed secondsneeded " + secondsneeded.ToString()
-                                              + " baseline_seconds " + baseline_seconds.ToString());
+            //MessageBox.Show(ppositionfilename + " observed secondsneeded " + secondsneeded.ToString()
+            //                                  + " baseline_seconds " + baseline_seconds.ToString());
 
             if (secondsneeded > baseline_seconds)
             {

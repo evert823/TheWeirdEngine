@@ -29,10 +29,16 @@ namespace TheWeirdEngine
         public bool ForcedDraw;
         public int number_of_no_selfcheck_resp;
     }
+    public struct location
+    {
+        public int x;
+        public int y;
+    }
     public struct vector
     {
         public int x;
         public int y;
+        public int maxrange;//zero or negative means: no maxrange specified
     }
     public struct squareInfoItem
     {
@@ -125,12 +131,12 @@ namespace TheWeirdEngine
         public MoveType BlackElfMoveType;
         public int[,] squares;//python square[j][i] becomes C# square[i, j]
         public squareInfoItem[,] squareInfo;
-        public vector whitekingcoord;
-        public vector whitekingsiderookcoord;
-        public vector whitequeensiderookcoord;
-        public vector blackkingcoord;
-        public vector blackkingsiderookcoord;
-        public vector blackqueensiderookcoord;
+        public location whitekingcoord;
+        public location whitekingsiderookcoord;
+        public location whitequeensiderookcoord;
+        public location blackkingcoord;
+        public location blackkingsiderookcoord;
+        public location blackqueensiderookcoord;
 
         public bool WhiteBareKing;
         public bool BlackBareKing;
