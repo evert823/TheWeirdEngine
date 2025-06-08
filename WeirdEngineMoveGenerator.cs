@@ -476,6 +476,12 @@ namespace TheWeirdEngine
             }
             return false;
         }
+        public bool maxrange_exceeded(int maxrangecounter, vector v)
+        {
+            if (v.maxrange < 1) { return false; }
+            if (maxrangecounter <= v.maxrange) { return false; }
+            return true;
+        }
         public void GetSlideAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
                                                   bool getcaptures, bool getnoncaptures, int depth, int pti,
                                                   int pti_self, FreezeType ft)
@@ -484,6 +490,17 @@ namespace TheWeirdEngine
             int j2;
             int movei;
             bool blocked;
+            int maxrangecounter;
+
+            //Efficiency 08-06-2025
+            if (getcaptures == false)
+            {
+                if ((pposition.squares[i, j] < 0 & pposition.colourtomove > 0) ||
+                    (pposition.squares[i, j] > 0 & pposition.colourtomove < 0))
+                {
+                    return;
+                }
+            }
 
             i2 = i + v.x;
             if (pposition.squares[i, j] > 0)
@@ -495,7 +512,10 @@ namespace TheWeirdEngine
                 j2 = j - v.y;
             }
             blocked = false;
-            while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight & blocked == false)
+            maxrangecounter = 1;
+
+            while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight
+                & blocked == false & maxrange_exceeded(maxrangecounter, v) == false)
             {
                 if (getcaptures == true & ft.capturefreeze == false)
                 {
@@ -542,6 +562,7 @@ namespace TheWeirdEngine
                 {
                     j2 = j2 - v.y;
                 }
+                maxrangecounter++;
             }
         }
         public void GetSlideAttacksMoves(ref chessposition pposition, int i, int j, int depth)
