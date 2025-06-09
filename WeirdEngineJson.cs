@@ -228,28 +228,12 @@ namespace TheWeirdEngine
             this.MyWeirdEngineMoveFinder.piecetypes[seq].IsDivergent = a.IsDivergent;
             this.MyWeirdEngineMoveFinder.piecetypes[seq].CheckDuplicateMoves = a.CheckDuplicateMoves;
             this.MyWeirdEngineMoveFinder.piecetypes[seq].EstimatedValue = a.EstimatedValue;
-            if (a.stepleapmovevectors != null)
-            {
-                this.MyWeirdEngineMoveFinder.piecetypes[seq].stepleapmovevectors = new vector[a.stepleapmovevectors.Length];
-                for (int i = 0; i < a.stepleapmovevectors.Length; i++)
-                {
-                    this.MyWeirdEngineMoveFinder.piecetypes[seq].stepleapmovevectors[i] = a.stepleapmovevectors[i];
-                }
-            }
             if (a.slidemovevectors != null)
             {
                 this.MyWeirdEngineMoveFinder.piecetypes[seq].slidemovevectors = new vector[a.slidemovevectors.Length];
                 for (int i = 0; i < a.slidemovevectors.Length; i++)
                 {
                     this.MyWeirdEngineMoveFinder.piecetypes[seq].slidemovevectors[i] = a.slidemovevectors[i];
-                }
-            }
-            if (a.stepleapcapturevectors != null)
-            {
-                this.MyWeirdEngineMoveFinder.piecetypes[seq].stepleapcapturevectors = new vector[a.stepleapcapturevectors.Length];
-                for (int i = 0; i < a.stepleapcapturevectors.Length; i++)
-                {
-                    this.MyWeirdEngineMoveFinder.piecetypes[seq].stepleapcapturevectors[i] = a.stepleapcapturevectors[i];
                 }
             }
             if (a.slidecapturevectors != null)

@@ -206,7 +206,6 @@ namespace TheWeirdEngine
                 {
                     if (pposition.squares[i, j] != 0)
                     {
-                        this.GetStepLeapAttacksMoves(ref pposition, i, j, depth);
                         this.GetSlideAttacksMoves(ref pposition, i, j, depth);
                     }
                     if (depth > 0)
@@ -230,54 +229,6 @@ namespace TheWeirdEngine
                 GetCastling(ref pposition);
             }
             Default_moveprioindex(ref pposition);
-        }
-        public void GetStepLeapAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
-                                                     bool getcaptures, bool getnoncaptures, int depth, int pti,
-                                                     int pti_self, FreezeType ft)
-        {
-            int i2;
-            int j2;
-            int movei;
-            i2 = i + v.x;
-            if (pposition.squares[i, j] > 0)
-            {
-                j2 = j + v.y;
-            }
-            else
-            {
-                j2 = j - v.y;
-            }
-            if (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight)
-            {
-                if (getcaptures == true & ft.capturefreeze == false)
-                {
-                    this.MarkAttacked(ref pposition, i2, j2, pposition.squares[i, j]);
-                    if (depth > 0)
-                    {
-                        if ((pposition.squares[i2, j2] > 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
-                            (pposition.squares[i2, j2] < 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
-                        {
-                            movei = pposition.movelist_totalfound;
-                            InitializeMove(ref pposition, movei, i, j, i2, j2);
-                            pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
-                            pposition.movelist[movei].IsCapture = true;
-                            AssignCapturedValue(pposition, ref pposition.movelist[movei], i2, j2);
-                            GetPromotion(ref pposition, movei, pti, pti_self);
-                        }
-                    }
-                }
-                if (getnoncaptures == true & depth > 0 & ft.noncapturefreeze == false)
-                {
-                    if ((pposition.squares[i2, j2] == 0 & pposition.squares[i, j] < 0 & pposition.colourtomove < 0) ||
-                        (pposition.squares[i2, j2] == 0 & pposition.squares[i, j] > 0 & pposition.colourtomove > 0))
-                    {
-                        movei = pposition.movelist_totalfound;
-                        InitializeMove(ref pposition, movei, i, j, i2, j2);
-                        pposition.movelist[movei].MovingPiece = pposition.squares[i, j];
-                        GetPromotion(ref pposition, movei, pti, pti_self);
-                    }
-                }
-            }
         }
         public int jokersubspti(ref chessposition pposition, int i, int j, int pti)
         {
@@ -338,35 +289,6 @@ namespace TheWeirdEngine
             }
             return myresponse;
         }
-        public void GetStepLeapAttacksMoves(ref chessposition pposition, int i, int j, int depth)
-        {
-            int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(pposition.squares[i, j]);
-            int pti_self = pti;
-            FreezeType ft = GetFreezeType(pposition, i, j, pti_self);
-            if (MyWeirdEngineMoveFinder.piecetypes[pti].SpecialPiece_ind == SpecialPiece.Joker)
-            {
-                pti = jokersubspti(ref pposition, i, j, pti);
-            }
-
-            if (MyWeirdEngineMoveFinder.piecetypes[pti].IsDivergent == false)
-            {
-                foreach (vector v in MyWeirdEngineMoveFinder.piecetypes[pti].stepleapmovevectors)
-                {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, true, depth, pti, pti_self, ft);
-                }
-            }
-            else
-            {
-                foreach (vector v in MyWeirdEngineMoveFinder.piecetypes[pti].stepleapmovevectors)
-                {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, false, true, depth, pti, pti_self, ft);
-                }
-                foreach (vector v in MyWeirdEngineMoveFinder.piecetypes[pti].stepleapcapturevectors)
-                {
-                    GetStepLeapAttacksMovesPerVector(ref pposition, i, j, v, true, false, depth, pti, pti_self, ft);
-                }
-            }
-        }
         public bool SquareIsTransparent(ref chessposition pposition, int i, int j, int i2, int j2, int pti)
         {
             //A Witch is transparent for pieces of her own colour.
@@ -400,33 +322,6 @@ namespace TheWeirdEngine
                 }
             }
             return IsTransparent;
-        }
-        public bool SquareStepLeapAttackedFromSquare(ref chessposition pposition, int i, int j, int i3, int j3,
-                                                     vector v)
-        {
-            //Establish if [i3,j3] is attacked from [i,j] using StepLeap vector v yes or no
-            //We would need this if we would have combined Time Thief power with step-leap vectors
-
-            int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(pposition.squares[i, j]);
-            FreezeType ft = GetFreezeType(pposition, i, j, pti);
-            if (ft.capturefreeze == true) { return false; }
-
-            int i2;
-            int j2;
-            i2 = i + v.x;
-            if (pposition.squares[i, j] > 0)
-            {
-                j2 = j + v.y;
-            }
-            else
-            {
-                j2 = j - v.y;
-            }
-            if (i2 == i3 & j2 == j3)
-            {
-                return true;
-            }
-            return false;
         }
         public bool SquareSlideAttackedFromSquare(ref chessposition pposition, int i, int j, int i3, int j3,
                                                   vector v, int pti)

@@ -85,9 +85,7 @@ namespace TheWeirdEngine
         public bool IsDivergent;
         public bool CheckDuplicateMoves;
         public double EstimatedValue;
-        public vector[] stepleapmovevectors;
         public vector[] slidemovevectors;
-        public vector[] stepleapcapturevectors;
         public vector[] slidecapturevectors;
     }
 
