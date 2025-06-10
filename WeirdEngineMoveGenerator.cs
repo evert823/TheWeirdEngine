@@ -327,6 +327,9 @@ namespace TheWeirdEngine
                                                   vector v, int pti)
         {
             //Establish if [i3,j3] is attacked from [i,j] using Slide vector v yes or no
+            // TODO: check code duplication w.r.t. other method GetSlideAttacksMovesPerVector
+            // TODO: implement maxrange just like in GetSlideAttacksMovesPerVector
+            //    (but Time Thief doesn't have maxrange so NOT NOW)
 
             FreezeType ft = GetFreezeType(pposition, i, j, pti);
             if (ft.capturefreeze == true) { return false; }
