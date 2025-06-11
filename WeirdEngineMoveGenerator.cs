@@ -380,6 +380,51 @@ namespace TheWeirdEngine
             if (maxrangecounter <= v.maxrange) { return false; }
             return true;
         }
+        public bool IsBlockedFromLameness(ref chessposition pposition, int i, int j, int i2, int j2, int pti_self, vector v)
+        {
+            //This is for lame leapers like Xiangqi Knight
+            //Here we check if isvacant[] from v implies that the move that we are considering is illegal
+            //i, j is the ultimate starting square of the piece that wants to move
+            //i2, j2 is the starting square of this iteration (because we are sliding)
+            //pti_self is the identity of the piece that wants to move (piece type index)
+            //v is the vector under investigation
+
+            // TODO: Validate that i3, j3 does not coincide with a landing square (i2, j2 from next iteration)
+            // BUT: We assume that the piece definitions have been configured properly, so NOT NOW
+
+            if (v.ifvacant == null)
+            {
+                return false;
+            }
+
+            int i3;
+            int j3;
+            for (int iv = 0; iv < v.ifvacant.Length; iv++)
+            {
+                i3 = i2 + v.ifvacant[iv].x;
+                if (pposition.squares[i, j] > 0)
+                {
+                    j3 = j2 + v.ifvacant[iv].y;
+                }
+                else
+                {
+                    j3 = j2 - v.ifvacant[iv].y;
+                }
+
+                if (i3 >= 0 & i3 < pposition.boardwidth & j3 >= 0 & j3 < pposition.boardheight)
+                {
+                    if (pposition.squares[i3, j3] != 0)
+                    {
+                        bool IsTransparent = SquareIsTransparent(ref pposition, i, j, i3, j3, pti_self);
+                        if (IsTransparent == false)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
         public void GetSlideAttacksMovesPerVector(ref chessposition pposition, int i, int j, vector v,
                                                   bool getcaptures, bool getnoncaptures, int depth, int pti,
                                                   int pti_self, FreezeType ft)
@@ -400,6 +445,15 @@ namespace TheWeirdEngine
                 }
             }
 
+            if (IsBlockedFromLameness(ref pposition, i, j, i, j, pti_self, v))
+            {
+                //blocked = true;
+                return;
+            }
+            else
+            {
+                blocked = false;
+            }
             i2 = i + v.x;
             if (pposition.squares[i, j] > 0)
             {
@@ -409,7 +463,6 @@ namespace TheWeirdEngine
             {
                 j2 = j - v.y;
             }
-            blocked = false;
             maxrangecounter = 1;
 
             while (i2 >= 0 & i2 < pposition.boardwidth & j2 >= 0 & j2 < pposition.boardheight
@@ -451,16 +504,23 @@ namespace TheWeirdEngine
                         blocked = true;
                     }
                 }
-                i2 = i2 + v.x;
-                if (pposition.squares[i, j] > 0)
+                if (IsBlockedFromLameness(ref pposition, i, j, i2, j2, pti_self, v))
                 {
-                    j2 = j2 + v.y;
+                    blocked = true;
                 }
                 else
                 {
-                    j2 = j2 - v.y;
+                    i2 = i2 + v.x;
+                    if (pposition.squares[i, j] > 0)
+                    {
+                        j2 = j2 + v.y;
+                    }
+                    else
+                    {
+                        j2 = j2 - v.y;
+                    }
+                    maxrangecounter++;
                 }
-                maxrangecounter++;
             }
         }
         public void GetSlideAttacksMoves(ref chessposition pposition, int i, int j, int depth)

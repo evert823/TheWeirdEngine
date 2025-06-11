@@ -122,6 +122,49 @@ namespace TheWeirdEngine
                 AllTestsPassed = false;
             }
         }
+        public void TestManyMoves(string ppath, string ppositionfilename, string expectedmoves, string unexpectedmoves)
+        {
+            MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
+            MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", ppositionfilename);
+            calculationresponse a = MyWeirdEngineMoveFinder.Calculation_tree(1);
+
+            var expectedMovesList = expectedmoves.Split('|');
+            var unexpectedMovesList = unexpectedmoves.Split('|');
+
+            string relevantmovelist = "";
+            string onefoundmove;
+            for (int movei = 0; movei < MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound; movei++)
+            {
+                int pti = MyWeirdEngineMoveFinder.pieceTypeIndex(MyWeirdEngineMoveFinder.positionstack[0].movelist[movei].MovingPiece);
+                if (MyWeirdEngineMoveFinder.piecetypes[pti].name == "Horse" ||
+                    MyWeirdEngineMoveFinder.piecetypes[pti].name == "Horse3" ||
+                    MyWeirdEngineMoveFinder.piecetypes[pti].name == "Archer")
+                {
+                    int i = MyWeirdEngineMoveFinder.positionstack[0].moveprioindex[movei];
+                    onefoundmove = MyWeirdEngineJson.ShortNotation(MyWeirdEngineMoveFinder.positionstack[0].movelist[i], false);
+                    relevantmovelist += onefoundmove + "|";
+                    if (unexpectedMovesList.Contains(onefoundmove))
+                    {
+                        MessageBox.Show(ppositionfilename + onefoundmove + " did happen but was not expected");
+                        AllTestsPassed = false;
+                    }
+                }
+
+            }
+            var FoundMovesList = relevantmovelist.Split('|');
+
+            foreach (var expectedMove in expectedMovesList)
+            {
+                if (!FoundMovesList.Contains(expectedMove))
+                {
+                    MessageBox.Show(ppositionfilename + expectedMove + " did not happen but was expected");
+                    AllTestsPassed = false;
+                }
+            }
+
+            this.MyWeirdEngineJson.writelog_nots(ppositionfilename + "|" + relevantmovelist
+                + "|" + MyWeirdEngineMoveFinder.positionstack[0].movelist_totalfound.ToString());
+        }
         public void TestPawn(string ppath, string ppositionfilename, int pi1, int pj1, int pi2, int pj2)
         {
             MyWeirdEngineJson.LoadPositionJson(ppath, ppositionfilename);
@@ -789,6 +832,9 @@ namespace TheWeirdEngine
             TestMove(ppath, "16A_limited_range_black", "Queen3", 4, 5, 4, 8, true);
             TestMove(ppath, "16A_limited_range_black", "Queen3", 4, 5, 2, 5, false);
 
+            TestManyMoves(ppath, "17A_xiangqi_00_black", "X3h2xn5|XHt20-r19|Arp5-n6", "X3a9-b11|X3a9-c13|XHe16-g15|Ara1xb3");
+            TestManyMoves(ppath, "17A_xiangqi_00_white", "X3h19xn16|XHt1-r2|Arp16-n15", "X3a12-b10|X3a12-c8|XHe5|Ara20xb18");
+
             if (AllTestsPassed == true)
             {
                 MessageBox.Show("All unittests passed");
@@ -804,7 +850,6 @@ namespace TheWeirdEngine
             MyWeirdEngineMoveFinder.myenginesettings.setting_SearchForFastestMate = true;
             MyWeirdEngineMoveFinder.myenginesettings.display_when_depth_gt = 7;
             MessageBox.Show("Start with running new unittests");
-
 
             if (AllTestsPassed == true)
             {

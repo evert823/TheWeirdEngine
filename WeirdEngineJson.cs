@@ -99,6 +99,14 @@ namespace TheWeirdEngine
                 writer.Close();
             }
         }
+        public void writelog_nots(string themessage)
+        {
+            using (StreamWriter writer = new StreamWriter(this.jsonworkpath + "log\\" + this.logfilename, append: true))
+            {
+                writer.WriteLine(themessage);
+                writer.Close();
+            }
+        }
         public string DisplayMovelist(chessposition pposition, bool displayvalue)
         {
             string s = "";
