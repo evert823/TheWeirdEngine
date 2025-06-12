@@ -1009,7 +1009,8 @@ namespace TheWeirdEngine
                 {
                     return newdepth;
                 }
-                adjusteddepth = (int)Math.Round(((100 - foundvalue) * 10) + 1);
+                //adjusteddepth = (int)Math.Round(((100 - foundvalue) * 10) + 1);
+                adjusteddepth = (int)Math.Round((100 - foundvalue) * 10);
                 return Math.Min(newdepth, adjusteddepth);
             }
             else
@@ -1018,7 +1019,8 @@ namespace TheWeirdEngine
                 {
                     return newdepth;
                 }
-                adjusteddepth = (int)Math.Round(((foundvalue + 100) * 10) + 1);
+                //adjusteddepth = (int)Math.Round(((foundvalue + 100) * 10) + 1);
+                adjusteddepth = (int)Math.Round((foundvalue + 100) * 10);
                 return Math.Min(newdepth, adjusteddepth);
             }
         }
