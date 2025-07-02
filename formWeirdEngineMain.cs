@@ -59,7 +59,7 @@ namespace TheWeirdEngine
 
         private void SelectResourcesFolder()
         {
-            this.ResourcesFolder = "Q:\\Persoonlijk\\Wiskunde en programmeren\\C#\\WeirdEngine\\weirdengineresources";
+            this.ResourcesFolder = "C:\\Users\\Evert Jan\\Documents\\GitHub\\TheWeirdEngine\\weirdengineresources";
 
             while (File.Exists(this.ResourcesFolder + "\\vacantonwhite.jpg") == false)
             {
