@@ -41,6 +41,7 @@ namespace TheWeirdEngine
 
             this.MyWeirdEngineJson.jsonsourcepath = "C:\\Users\\Evert Jan\\Documents\\GitHub\\chesspython\\";
             this.MyWeirdEngineJson.jsonworkpath = "C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\";
+
             string infilename = "maingame";
             MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
             MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
@@ -130,7 +131,7 @@ namespace TheWeirdEngine
             string positionname = calculaterequest[0];
             int n_plies = int.Parse(calculaterequest[1]);
             //MessageBox.Show("positionname " + positionname + " n_plies " + n_plies.ToString());
-            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions", positionname);
+            MyWeirdEngineJson.LoadPositionJson(MyWeirdEngineJson.jsonworkpath + "positions", positionname);
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", positionname);
@@ -155,7 +156,7 @@ namespace TheWeirdEngine
             string[] calculaterequest = this.txtbEnterMove.Lines[0].ToString().Split('/');
             string positionname = calculaterequest[0];
             int n_plies = int.Parse(calculaterequest[1]);
-            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions", positionname);
+            MyWeirdEngineJson.LoadPositionJson(MyWeirdEngineJson.jsonworkpath + "positions", positionname);
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", positionname);
@@ -182,10 +183,6 @@ namespace TheWeirdEngine
             PositionGenerator MyPositionGenerator;
             MyPositionGenerator = new PositionGenerator(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
 
-            string infilename = "maingame";
-            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
-            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
-
             this.DisableGUI();
             MyPositionGenerator.genmain();
             this.pictureBox1.Invalidate();
@@ -207,19 +204,8 @@ namespace TheWeirdEngine
 
         private void manyNonTrivialToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            PositionGenerator MyPositionGenerator;
-            MyPositionGenerator = new PositionGenerator(this.MyWeirdEngineMoveFinder, this.MyWeirdEngineJson);
-
-            MyPositionGenerator.str_othervalues = this.txtbOtherValues.Lines[0].ToString().Split('/');
-
-            string infilename = "maingame";
-            MyWeirdEngineJson.LoadPieceTypesFromJson(infilename);
-            MyWeirdEngineJson.SavePieceTypesAsJson(infilename);
-
             this.DisableGUI();
-            MyPositionGenerator.genmany();
-            this.pictureBox1.Invalidate();
-            this.RefreshInformation();
+            MessageBox.Show("Under construction");
             this.EnableGUI();
         }
 
@@ -248,7 +234,7 @@ namespace TheWeirdEngine
             string positionname = calculaterequest[0];
             int n_plies = int.Parse(calculaterequest[1]);
             //MessageBox.Show("positionname " + positionname + " n_plies " + n_plies.ToString());
-            MyWeirdEngineJson.LoadPositionJson("C:\\Users\\Evert Jan\\pythonprojects\\chesspython_nogithub\\positions", positionname);
+            MyWeirdEngineJson.LoadPositionJson(MyWeirdEngineJson.jsonworkpath + "positions", positionname);
             this.pictureBox1.Invalidate();
             this.RefreshInformation();
             MyWeirdEngineJson.SavePositionAsJson(MyWeirdEngineJson.jsonworkpath + "positions_verify\\", positionname);
