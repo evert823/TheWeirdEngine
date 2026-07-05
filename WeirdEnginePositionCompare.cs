@@ -307,15 +307,21 @@ namespace TheWeirdEngine
         public void SetRepetitionCounter(int posidx)
         {
             MyWeirdEngineMoveFinder.positionstack[posidx].RepetitionCounter = 0;
-            for (int p = 0; p < posidx; p++)
+            int p;
+            bool eq;
+            eq = false;
+            p = posidx - 1;
+
+            while (p > -1 & eq == false)
             {
-                bool eq = this.PositionsAreEqual(MyWeirdEngineMoveFinder.positionstack[p],
+                eq = this.PositionsAreEqual(MyWeirdEngineMoveFinder.positionstack[p],
                     MyWeirdEngineMoveFinder.positionstack[posidx]);
                 if (eq == true)
                 {
                     MyWeirdEngineMoveFinder.positionstack[posidx].RepetitionCounter =
                         MyWeirdEngineMoveFinder.positionstack[p].RepetitionCounter + 1;
                 }
+                p--;
             }
             if (MyWeirdEngineMoveFinder.positionstack[posidx].RepetitionCounter == 0)
             {
